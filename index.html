@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>QuickZ · শিক্ষক ও শিক্ষার্থী পোর্টাল</title>
     
-    <!-- Real PWA Meta Tags (Do not use Blob for Native Install) -->
+    <!-- Real PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,10 +20,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class', // Enable class-based dark mode
-            theme: {
-                extend: {}
-            }
+            darkMode: 'class',
+            theme: { extend: {} }
         }
     </script>
     
@@ -45,13 +43,10 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        /* Dark Mode Body Background */
         .dark body { background: #0f172a; }
-        
         .bengali { font-family: 'Hind Siliguri', sans-serif; }
         .en { font-family: 'Outfit', sans-serif; }
         
-        /* Custom Card Styles (Light & Dark) */
         .portal-card {
             transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s, background-color 0.3s;
             will-change: transform;
@@ -60,8 +55,8 @@
             box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0,0,0,0.02);
         }
         .dark .portal-card {
-            background: rgba(30, 41, 59, 0.9); /* Tailwind slate-800 */
-            border-color: rgba(71, 85, 105, 0.4); /* Tailwind slate-600 */
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(71, 85, 105, 0.4);
             box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
         }
         .portal-card:hover {
@@ -97,19 +92,10 @@
         .footer-note { opacity: 0.7; transition: opacity 0.2s; }
         .footer-note:hover { opacity: 1; }
         
-        /* Install button animation */
-        #install-prompt-btn {
-            transition: all 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        #install-prompt-btn:hover {
-            transform: scale(1.02);
-        }
-        @media (display-mode: standalone) {
-            #install-container { display: none !important; }
-        }
+        #install-prompt-btn { transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        #install-prompt-btn:hover { transform: scale(1.02); }
+        @media (display-mode: standalone) { #install-container { display: none !important; } }
         
-        /* Theme Toggle Button Animation */
         #theme-toggle { transition: transform 0.3s; }
         #theme-toggle:active { transform: scale(0.9); }
     </style>
@@ -118,7 +104,7 @@
 
 <div class="w-full max-w-6xl mx-auto relative pt-4">
     
-    <!-- Theme Toggle Button (Top Right) -->
+    <!-- Theme Toggle Button -->
     <button id="theme-toggle" class="absolute top-0 right-0 p-3 w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-amber-400 hover:scale-105 transition-all z-50">
         <i class="fas fa-moon text-xl" id="theme-icon"></i>
     </button>
@@ -138,51 +124,30 @@
         </button>
     </div>
 
-    <!-- TWO PORTAL CARDS (Using Local Links) -->
+    <!-- TWO PORTAL CARDS -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-12">
-        
-        <!-- STUDENT CARD -->
-        <a href="./student.html" target="_self"
-           class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
+        <a href="./student.html" target="_self" class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
             <div class="absolute -top-6 -right-6 w-32 h-32 bg-indigo-100/40 dark:bg-indigo-900/20 rounded-full blur-2xl"></div>
             <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-50/30 dark:bg-indigo-900/10 rounded-full blur-3xl"></div>
-            
             <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-indigo-100 dark:border-slate-700 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6 group-hover:scale-105 transition-transform">
                 <i class="fas fa-graduation-cap text-2xl"></i>
             </div>
-            
-            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
-                শিক্ষার্থী
-                <span class="badge-soft text-xs bengali">প্রবেশ</span>
-            </h2>
-            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">
-                লাইভ পরীক্ষা, মক টেস্ট, র‍্যাংকিং, বিস্তারিত ফলাফল ও অগ্রগতি — সবকিছু এক জায়গায়।
-            </p>
-            
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">শিক্ষার্থী <span class="badge-soft text-xs bengali">প্রবেশ</span></h2>
+            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">লাইভ পরীক্ষা, মক টেস্ট, র‍্যাংকিং, বিস্তারিত ফলাফল ও অগ্রগতি — সবকিছু এক জায়গায়।</p>
             <div class="relative z-10 mt-auto flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold group-hover:gap-3 transition-all">
                 <span class="bengali text-base">শিক্ষার্থী পোর্টাল খুলুন</span>
                 <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
             </div>
         </a>
 
-        <!-- TEACHER CARD -->
-        <a href="./teacher.html" target="_self"
-           class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
+        <a href="./teacher.html" target="_self" class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
             <div class="absolute -top-6 -left-6 w-32 h-32 bg-emerald-100/40 dark:bg-emerald-900/20 rounded-full blur-2xl"></div>
             <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-full blur-3xl"></div>
-            
             <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-emerald-100 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-105 transition-transform">
                 <i class="fas fa-chalkboard-teacher text-2xl"></i>
             </div>
-            
-            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
-                শিক্ষক
-                <span class="badge-soft badge-emerald bg-emerald-50 text-emerald-700 bengali">প্রবেশ</span>
-            </h2>
-            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">
-                কোর্স তৈরি, লাইভ পরীক্ষা, প্রশ্নব্যাংক, শিক্ষার্থী ব্যবস্থাপনা ও সম্পূর্ণ অ্যানালিটিক্স।
-            </p>
-            
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">শিক্ষক <span class="badge-soft badge-emerald bg-emerald-50 text-emerald-700 bengali">প্রবেশ</span></h2>
+            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">কোর্স তৈরি, লাইভ পরীক্ষা, প্রশ্নব্যাংক, শিক্ষার্থী ব্যবস্থাপনা ও সম্পূর্ণ অ্যানালিটিক্স।</p>
             <div class="relative z-10 mt-auto flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold group-hover:gap-3 transition-all">
                 <span class="bengali text-base">শিক্ষক পোর্টাল খুলুন</span>
                 <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
@@ -190,21 +155,14 @@
         </a>
     </div>
 
-    <!-- SHORT DESCRIPTION -->
+    <!-- FEATURE SECTION -->
     <div class="text-center max-w-3xl mx-auto mb-16">
-        <p class="text-slate-600 dark:text-slate-400 text-lg md:text-xl bengali font-medium leading-relaxed">
-            শিক্ষক ও শিক্ষার্থীদের জন্য তৈরি আধুনিক পরীক্ষা ব্যবস্থাপনা প্লাটফর্ম। 
-            <br class="hidden sm:block">আপনার ভূমিকা নির্বাচন করে শুরু করুন।
-        </p>
+        <p class="text-slate-600 dark:text-slate-400 text-lg md:text-xl bengali font-medium leading-relaxed">শিক্ষক ও শিক্ষার্থীদের জন্য তৈরি আধুনিক পরীক্ষা ব্যবস্থাপনা প্লাটফর্ম। <br class="hidden sm:block">আপনার ভূমিকা নির্বাচন করে শুরু করুন।</p>
     </div>
 
-    <!-- FEATURE SECTION -->
     <div class="space-y-16">
         <div>
-            <div class="flex items-center gap-3 mb-8">
-                <div class="h-10 w-1.5 bg-indigo-500 rounded-full"></div>
-                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🎓 শিক্ষার্থীদের জন্য বিশেষ ফিচার</h3>
-            </div>
+            <div class="flex items-center gap-3 mb-8"><div class="h-10 w-1.5 bg-indigo-500 rounded-full"></div><h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🎓 শিক্ষার্থীদের জন্য বিশেষ ফিচার</h3></div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"><div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-broadcast-tower"></i></div><h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">লাইভ পরীক্ষা</h4><p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">রিয়েল-টাইম পরীক্ষায় অংশগ্রহণ, লাইভ র‍্যাংকিং ও তাৎক্ষণিক ফলাফল।</p></div>
                 <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"><div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-book-open"></i></div><h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">মক টেস্ট লাইব্রেরি</h4><p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয় ও অধ্যায়ভিত্তিক অসংখ্য অনুশীলন পরীক্ষা, উত্তর ও ব্যাখ্যাসহ।</p></div>
@@ -216,10 +174,7 @@
         </div>
 
         <div>
-            <div class="flex items-center gap-3 mb-8">
-                <div class="h-10 w-1.5 bg-emerald-500 rounded-full"></div>
-                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🧑‍🏫 শিক্ষকদের জন্য শক্তিশালী টুলস</h3>
-            </div>
+            <div class="flex items-center gap-3 mb-8"><div class="h-10 w-1.5 bg-emerald-500 rounded-full"></div><h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🧑‍🏫 শিক্ষকদের জন্য শক্তিশালী টুলস</h3></div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"><div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-folder-tree"></i></div><h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">প্রশ্ন লাইব্রেরি</h4><p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয় ও চ্যাপ্টার ভিত্তিক প্রশ্ন সংরক্ষণ, পুনর্ব্যবহার ও JSON ইম্পোর্ট।</p></div>
                 <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700"><div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-users-cog"></i></div><h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">কোর্স ও শিক্ষার্থী ব্যবস্থাপনা</h4><p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">কোর্স কোডের মাধ্যমে শিক্ষার্থী যুক্ত করা, অনুমোদন, ব্লক/এনাবল সুবিধা।</p></div>
@@ -244,23 +199,18 @@
     </div>
 </div>
 
-<!-- SCRIPTS (PWA + Dark Mode) -->
 <script>
-    // 1. Dark Mode Logic
+    // Theme logic
     const themeToggleBtn = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
     const htmlElement = document.documentElement;
 
-    // Check saved theme or system preference
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         htmlElement.classList.add('dark');
         themeIcon.classList.replace('fa-moon', 'fa-sun');
-    } else {
-        htmlElement.classList.remove('dark');
-        themeIcon.classList.replace('fa-sun', 'fa-moon');
+        themeIcon.classList.add('text-amber-400');
     }
 
-    // Toggle theme on button click
     themeToggleBtn.addEventListener('click', () => {
         htmlElement.classList.toggle('dark');
         if (htmlElement.classList.contains('dark')) {
@@ -274,16 +224,17 @@
         }
     });
 
-    // 2. Real PWA Service Worker Registration
+    // Register SW & Check Updates
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('✅ Service Worker Registered'))
-                .catch(err => console.error('❌ SW Registration failed:', err));
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('✅ Service Worker Registered for Offline');
+                reg.update(); // প্রতিবার ইন্টারনেট থাকলে ব্যাকগ্রাউন্ডে কোড আপডেট করবে
+            });
         });
     }
 
-    // 3. Install Prompt Logic
+    // Install Prompt
     let deferredPrompt;
     const installContainer = document.getElementById('install-container');
     const installBtn = document.getElementById('install-prompt-btn');
@@ -300,15 +251,13 @@
         installBtn.addEventListener('click', async () => {
             if (!deferredPrompt) return;
             deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response: ${outcome}`);
+            await deferredPrompt.userChoice;
             deferredPrompt = null;
             installContainer.classList.add('hidden');
         });
     }
 
     window.addEventListener('appinstalled', () => {
-        console.log('App successfully installed!');
         if (installContainer) installContainer.classList.add('hidden');
     });
 </script>
