@@ -1,0 +1,24 @@
+{
+  "name": "QuickZ Education",
+  "short_name": "QuickZ",
+  "description": "শিক্ষক ও শিক্ষার্থীদের জন্য আধুনিক পরীক্ষা ব্যবস্থাপনা",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
