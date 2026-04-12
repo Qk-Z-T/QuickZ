@@ -1,8 +1,8 @@
-const CACHE_NAME = 'quickz-v2';
+const CACHE_NAME = 'quickz-v3';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/manifest.json',
+    './',
+    './index.html',
+    './manifest.json',
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
@@ -14,12 +14,13 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
+// উন্নত Fetch Strategy: Network First, falling back to cache
 self.addEventListener('fetch', event => {
     event.respondWith(
-        caches.match(event.request).then(response => {
-            if (response) return response;
-            return fetch(event.request).catch(() => {
-                return new Response('You are offline.', {
+        fetch(event.request).catch(() => {
+            return caches.match(event.request, { ignoreSearch: true }).then(response => {
+                if (response) return response;
+                return new Response('You are offline and the page is not cached.', {
                     status: 503,
                     headers: { 'Content-Type': 'text/plain' }
                 });
