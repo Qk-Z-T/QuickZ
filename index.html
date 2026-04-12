@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>QuickZ · শিক্ষক ও শিক্ষার্থী পোর্টাল</title>
+    
+    <!-- PWA Meta Tags (standalone experience) -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QuickZ">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Apple touch icon (solid background, no browser chrome) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%234f46e5'/%3E%3Ctext x='256' y='360' font-family='Outfit, sans-serif' font-size='220' font-weight='800' fill='white' text-anchor='middle'%3EQZ%3C/text%3E%3C/svg%3E">
+    
+    <!-- Tailwind + Font Awesome + Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Hind Siliguri', 'Outfit', sans-serif;
+            background: #fafcff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            -webkit-font-smoothing: antialiased;
+        }
+        .bengali { font-family: 'Hind Siliguri', sans-serif; }
+        .en { font-family: 'Outfit', sans-serif; }
+        
+        .portal-card {
+            transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s;
+            will-change: transform;
+            border: 1px solid rgba(203, 213, 225, 0.4);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0,0,0,0.02);
+        }
+        .portal-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 40px -12px rgba(79, 70, 229, 0.12), 0 8px 18px -6px rgba(0,0,0,0.05);
+            border-color: rgba(129, 140, 248, 0.4);
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid #edf2f7;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px -5px rgba(0,0,0,0.02);
+        }
+        .feature-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 12px 24px -12px rgba(79, 70, 229, 0.1);
+        }
+        
+        .badge-soft {
+            background: #eef2ff;
+            color: #4f46e5;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+        }
+        
+        html { scroll-behavior: smooth; }
+        .footer-note { opacity: 0.7; transition: opacity 0.2s; }
+        .footer-note:hover { opacity: 1; }
+        
+        /* Install button styling */
+        #install-prompt-btn {
+            transition: all 0.25s;
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.02);
+        }
+        #install-prompt-btn:hover {
+            background: #f8fafc;
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -10px rgba(79, 70, 229, 0.15);
+        }
+        #install-container {
+            transition: opacity 0.2s;
+        }
+    </style>
+</head>
+<body class="antialiased text-slate-700">
+
+<div class="w-full max-w-6xl mx-auto">
+    
+    <!-- HEADER (শুধু QuickZ) -->
+    <div class="text-center mb-8 md:mb-12">
+        <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight en">
+            <span class="text-slate-800">Quick</span><span class="text-emerald-500">Z</span>
+        </h1>
+        <div class="h-1 w-20 bg-gradient-to-r from-indigo-400 to-emerald-400 rounded-full mx-auto mt-3 opacity-50"></div>
+    </div>
+
+    <!-- TWO PORTAL CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        
+        <!-- STUDENT CARD -->
+        <a href="https://qk-z-t.github.io/QuickZ.student/" target="_self"
+           class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline transition-all relative overflow-hidden">
+            <div class="absolute -top-6 -right-6 w-32 h-32 bg-indigo-100/40 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-50/30 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white shadow-md border border-indigo-100 flex items-center justify-center text-indigo-600 mb-6 group-hover:scale-105 transition-transform">
+                <i class="fas fa-graduation-cap text-2xl"></i>
+            </div>
+            
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                শিক্ষার্থী
+                <span class="badge-soft text-xs bengali">প্রবেশ</span>
+            </h2>
+            <p class="relative z-10 text-slate-600 text-base md:text-lg mb-5 bengali leading-relaxed">
+                লাইভ পরীক্ষা, মক টেস্ট, র‍্যাংকিং, বিস্তারিত ফলাফল ও অগ্রগতি — সবকিছু এক জায়গায়।
+            </p>
+            
+            <div class="relative z-10 mt-auto flex items-center gap-2 text-indigo-600 font-semibold group-hover:gap-3 transition-all">
+                <span class="bengali text-base">শিক্ষার্থী পোর্টাল খুলুন</span>
+                <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </a>
+
+        <!-- TEACHER CARD -->
+        <a href="https://qk-z-t.github.io/teacher.QuickZ/" target="_self"
+           class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline transition-all relative overflow-hidden">
+            <div class="absolute -top-6 -left-6 w-32 h-32 bg-emerald-100/40 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-emerald-50/30 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white shadow-md border border-emerald-100 flex items-center justify-center text-emerald-600 mb-6 group-hover:scale-105 transition-transform">
+                <i class="fas fa-chalkboard-teacher text-2xl"></i>
+            </div>
+            
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                শিক্ষক
+                <span class="badge-soft bg-emerald-50 text-emerald-700 bengali">প্রবেশ</span>
+            </h2>
+            <p class="relative z-10 text-slate-600 text-base md:text-lg mb-5 bengali leading-relaxed">
+                কোর্স তৈরি, লাইভ পরীক্ষা, প্রশ্নব্যাংক, শিক্ষার্থী ব্যবস্থাপনা ও সম্পূর্ণ অ্যানালিটিক্স।
+            </p>
+            
+            <div class="relative z-10 mt-auto flex items-center gap-2 text-emerald-600 font-semibold group-hover:gap-3 transition-all">
+                <span class="bengali text-base">শিক্ষক পোর্টাল খুলুন</span>
+                <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </a>
+    </div>
+
+    <!-- INSTALL PROMPT BUTTON (কার্ডের নিচে, কিন্তু ফিচারের উপরে) -->
+    <div id="install-container" class="flex justify-center mt-8 mb-6 hidden">
+        <button id="install-prompt-btn" class="bg-white text-indigo-700 px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-3 border bengali transition-all">
+            <i class="fas fa-download text-indigo-500"></i> 
+            <span>অ্যাপ হিসেবে ইনস্টল করুন</span>
+            <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">১ ট্যাপ</span>
+        </button>
+    </div>
+
+    <!-- SHORT DESCRIPTION -->
+    <div class="text-center max-w-3xl mx-auto mb-16 mt-6">
+        <p class="text-slate-600 text-lg md:text-xl bengali font-medium leading-relaxed">
+            শিক্ষক ও শিক্ষার্থীদের জন্য তৈরি আধুনিক পরীক্ষা ব্যবস্থাপনা প্লাটফর্ম। 
+            <br class="hidden sm:block">আপনার ভূমিকা নির্বাচন করে শুরু করুন।
+        </p>
+    </div>
+
+    <!-- FEATURE SECTION -->
+    <div class="space-y-16">
+        <div>
+            <div class="flex items-center gap-3 mb-8">
+                <div class="h-10 w-1.5 bg-indigo-500 rounded-full"></div>
+                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 bengali">🎓 শিক্ষার্থীদের জন্য বিশেষ ফিচার</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="feature-card"><div class="text-indigo-600 text-2xl mb-3"><i class="fas fa-broadcast-tower"></i></div><h4 class="font-bold text-lg mb-2 bengali">লাইভ পরীক্ষা</h4><p class="text-slate-500 text-sm bengali leading-relaxed">রিয়েল-টাইম পরীক্ষায় অংশগ্রহণ, লাইভ র‍্যাংকিং ও তাৎক্ষণিক ফলাফল।</p></div>
+                <div class="feature-card"><div class="text-indigo-600 text-2xl mb-3"><i class="fas fa-book-open"></i></div><h4 class="font-bold text-lg mb-2 bengali">মক টেস্ট লাইব্রেরি</h4><p class="text-slate-500 text-sm bengali leading-relaxed">বিষয় ও অধ্যায়ভিত্তিক অসংখ্য অনুশীলন পরীক্ষা, উত্তর ও ব্যাখ্যাসহ।</p></div>
+                <div class="feature-card"><div class="text-indigo-600 text-2xl mb-3"><i class="fas fa-chart-pie"></i></div><h4 class="font-bold text-lg mb-2 bengali">অগ্রগতি বিশ্লেষণ</h4><p class="text-slate-500 text-sm bengali leading-relaxed">বিষয়ভিত্তিক পারফরম্যান্স, দুর্বলতা চিহ্নিতকরণ ও উন্নতির রিপোর্ট।</p></div>
+                <div class="feature-card"><div class="text-indigo-600 text-2xl mb-3"><i class="fas fa-trophy"></i></div><h4 class="font-bold text-lg mb-2 bengali">লিডারবোর্ড ও র‍্যাংক</h4><p class="text-slate-500 text-sm bengali leading-relaxed">প্রতিটি লাইভ পরীক্ষায় নিজের অবস্থান দেখুন ও সেরাদের সাথে প্রতিযোগিতা করুন।</p></div>
+                <div class="feature-card"><div class="text-indigo-600 text-2xl mb-3"><i class="fas fa-history"></i></div><h4 class="font-bold text-lg mb-2 bengali">পূর্ববর্তী পরীক্ষা</h4><p class="text-slate-500 text-sm bengali leading-relaxed">যেকোনো সময় পুরনো পরীক্ষার প্রশ্ন ও সমাধান দেখার সুবিধা।</p></div>
+                <div class="feature-card"><div class="text-indigo-600 text-2xl mb-3"><i class="fas fa-bell"></i></div><h4 class="font-bold text-lg mb-2 bengali">নোটিফিকেশন ও নোটিস</h4><p class="text-slate-500 text-sm bengali leading-relaxed">শিক্ষকের দেওয়া নোটিস, পোল ও গুরুত্বপূর্ণ আপডেট সরাসরি পাবেন।</p></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="flex items-center gap-3 mb-8">
+                <div class="h-10 w-1.5 bg-emerald-500 rounded-full"></div>
+                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 bengali">🧑‍🏫 শিক্ষকদের জন্য শক্তিশালী টুলস</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="feature-card"><div class="text-emerald-600 text-2xl mb-3"><i class="fas fa-folder-tree"></i></div><h4 class="font-bold text-lg mb-2 bengali">প্রশ্ন লাইব্রেরি</h4><p class="text-slate-500 text-sm bengali leading-relaxed">বিষয় ও চ্যাপ্টার ভিত্তিক প্রশ্ন সংরক্ষণ, পুনর্ব্যবহার ও JSON ইম্পোর্ট।</p></div>
+                <div class="feature-card"><div class="text-emerald-600 text-2xl mb-3"><i class="fas fa-users-cog"></i></div><h4 class="font-bold text-lg mb-2 bengali">কোর্স ও শিক্ষার্থী ব্যবস্থাপনা</h4><p class="text-slate-500 text-sm bengali leading-relaxed">কোর্স কোডের মাধ্যমে শিক্ষার্থী যুক্ত করা, অনুমোদন, ব্লক/এনাবল সুবিধা।</p></div>
+                <div class="feature-card"><div class="text-emerald-600 text-2xl mb-3"><i class="fas fa-calendar-alt"></i></div><h4 class="font-bold text-lg mb-2 bengali">লাইভ পরীক্ষা সিডিউল</h4><p class="text-slate-500 text-sm bengali leading-relaxed">নির্দিষ্ট সময়ে পরীক্ষা চালু, স্বয়ংক্রিয় ফলাফল প্রকাশ ও সময় বৃদ্ধি।</p></div>
+                <div class="feature-card"><div class="text-emerald-600 text-2xl mb-3"><i class="fas fa-poll"></i></div><h4 class="font-bold text-lg mb-2 bengali">নোটিস ও পোল</h4><p class="text-slate-500 text-sm bengali leading-relaxed">কোর্সভিত্তিক নোটিশ, ভোটিং পোল তৈরি ও ফলাফল বিশ্লেষণ।</p></div>
+                <div class="feature-card"><div class="text-emerald-600 text-2xl mb-3"><i class="fas fa-chart-bar"></i></div><h4 class="font-bold text-lg mb-2 bengali">বিস্তারিত রিপোর্ট</h4><p class="text-slate-500 text-sm bengali leading-relaxed">প্রতিটি শিক্ষার্থীর উত্তরপত্র, সঠিক/ভুল বিশ্লেষণ ও র‍্যাংকিং।</p></div>
+                <div class="feature-card"><div class="text-emerald-600 text-2xl mb-3"><i class="fas fa-archive"></i></div><h4 class="font-bold text-lg mb-2 bengali">আর্কাইভ ও ব্যাকআপ</h4><p class="text-slate-500 text-sm bengali leading-relaxed">পুরনো কোর্স আর্কাইভ করা ও প্রয়োজনে পুনরুদ্ধার।</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HIGHLIGHTS -->
+    <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-center border-t border-slate-200 pt-12">
+        <div class="flex flex-col items-center"><div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mb-3"><i class="fas fa-shield-alt"></i></div><h5 class="font-bold bengali text-slate-800">নিরাপদ ও গোপনীয়</h5><p class="text-sm text-slate-500 bengali mt-1">শিক্ষার্থীর তথ্য সম্পূর্ণ সুরক্ষিত</p></div>
+        <div class="flex flex-col items-center"><div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-3"><i class="fas fa-bolt"></i></div><h5 class="font-bold bengali text-slate-800">রিয়েল-টাইম সিঙ্ক</h5><p class="text-sm text-slate-500 bengali mt-1">পরীক্ষা ও ফলাফল মুহূর্তেই আপডেট হয়</p></div>
+        <div class="flex flex-col items-center"><div class="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xl mb-3"><i class="fas fa-mobile-alt"></i></div><h5 class="font-bold bengali text-slate-800">মোবাইল ফ্রেন্ডলি</h5><p class="text-sm text-slate-500 bengali mt-1">স্মার্টফোন ও ট্যাবলেটে সমান কার্যকর</p></div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="mt-16 text-center text-sm text-slate-400 footer-note bengali">
+        © ২০২৫ QuickZ · শিক্ষার ডিজিটাল রূপান্তর
+    </div>
+</div>
+
+<!-- PWA: Manifest & Service Worker -->
+<script>
+    (function() {
+        "use strict";
+
+        // 1. Manifest (standalone display, no browser UI)
+        const manifestData = {
+            name: "QuickZ শিক্ষা প্লাটফর্ম",
+            short_name: "QuickZ",
+            description: "শিক্ষক ও শিক্ষার্থীদের জন্য আধুনিক পরীক্ষা ব্যবস্থাপনা",
+            start_url: ".",
+            display: "standalone",
+            orientation: "portrait",
+            background_color: "#fafcff",
+            theme_color: "#4f46e5",
+            icons: [
+                {
+                    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%234f46e5'/%3E%3Ctext x='256' y='360' font-family='Outfit, sans-serif' font-size='220' font-weight='800' fill='white' text-anchor='middle'%3EQZ%3C/text%3E%3C/svg%3E",
+                    sizes: "512x512",
+                    type: "image/svg+xml",
+                    purpose: "any"
+                },
+                {
+                    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='44' fill='%234f46e5'/%3E%3Ctext x='96' y='136' font-family='Outfit, sans-serif' font-size='84' font-weight='800' fill='white' text-anchor='middle'%3EQZ%3C/text%3E%3C/svg%3E",
+                    sizes: "192x192",
+                    type: "image/svg+xml",
+                    purpose: "any"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        
+        let manifestLink = document.querySelector('link[rel="manifest"]');
+        if (!manifestLink) {
+            manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            document.head.appendChild(manifestLink);
+        }
+        manifestLink.href = manifestURL;
+
+        // 2. Service Worker (minimal offline support)
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'quickz-landing-v2';
+                const urlsToCache = ['.'];
+                self.addEventListener('install', event => {
+                    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+                });
+                self.addEventListener('fetch', event => {
+                    event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
+                });
+            `;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swURL = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swURL).catch(()=>{});
+        }
+
+        // 3. Install prompt (কার্ডের নিচে দেখানো হবে)
+        let deferredPrompt;
+        const installContainer = document.getElementById('install-container');
+        const installBtn = document.getElementById('install-prompt-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installContainer) installContainer.classList.remove('hidden');
+            
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    if (!deferredPrompt) return;
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    installContainer.classList.add('hidden');
+                });
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            if (installContainer) installContainer.classList.add('hidden');
+            deferredPrompt = null;
+        });
+
+        console.log('🚀 QuickZ PWA · standalone experience ready');
+    })();
+</script>
+
+<style>
+    a { text-decoration: none; color: inherit; }
+</style>
+</body>
+</html>
