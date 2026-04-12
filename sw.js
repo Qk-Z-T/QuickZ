@@ -1,7 +1,9 @@
-const CACHE_NAME = 'quickz-v3';
+const CACHE_NAME = 'quickz-v5'; // ভার্সন আপডেট করা হয়েছে
 const urlsToCache = [
     './',
     './index.html',
+    './student.html',     // নতুন যুক্ত করা হলো
+    './teacher.html',     // নতুন যুক্ত করা হলো
     './manifest.json',
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
@@ -14,7 +16,7 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
-// উন্নত Fetch Strategy: Network First, falling back to cache
+// অফলাইনেও কাজ করার জন্য Fetch Strategy
 self.addEventListener('fetch', event => {
     event.respondWith(
         fetch(event.request).catch(() => {
