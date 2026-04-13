@@ -1,7 +1,7 @@
-const CACHE_NAME = 'quickz-offline-v1';
+const CACHE_NAME = 'quickz-pro-v1'; // ভার্সন নাম পরিবর্তন করা হলো
 
-// এই ফাইলগুলো অ্যাপ ইনস্টল হওয়ার সাথে সাথেই সেভ হয়ে যাবে
-const PRE_CACHE_URLS = [
+// কোর ফাইলগুলো যা ইনস্টল হওয়ার সাথে সাথে ডাউনলোড হয়ে যাবে
+const APP_FILES = [
     './',
     './index.html',
     './student.html',
@@ -13,70 +13,62 @@ const PRE_CACHE_URLS = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
+// ইনস্টল ইভেন্ট: ফাইলগুলো ব্যাকগ্রাউন্ডে ডাউনলোড করে স্টোরেজে সেভ করবে
 self.addEventListener('install', event => {
-    self.skipWaiting();
+    self.skipWaiting(); // নতুন আপডেট আসলে সাথে সাথে একটিভ হবে
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(PRE_CACHE_URLS);
+            console.log('📥 Downloading core files for offline use...');
+            // Promise.allSettled ব্যবহার করা হলো যাতে কোনো বাইরের লিংক ফেইল করলেও বাকিগুলো সেভ হয়
+            return Promise.allSettled(APP_FILES.map(url => cache.add(url).catch(err => console.warn('Cache add failed for:', url))));
         })
     );
 });
 
+// একটিভ ইভেন্ট: পুরনো ক্যাশ ক্লিয়ার করে নতুনটা জায়গা নেবে
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cache => {
                     if (cache !== CACHE_NAME) {
-                        return caches.delete(cache); // পুরোনো ক্যাশ ডিলিট করে নতুনটা রাখবে
+                        console.log('🧹 Clearing old cache:', cache);
+                        return caches.delete(cache);
                     }
                 })
             );
         })
     );
-    self.clients.claim();
+    self.clients.claim(); // পেজ রিলোড ছাড়াই কন্ট্রোল নিয়ে নেবে
 });
 
-// স্মার্ট অফলাইন সিস্টেম (Dynamic Caching)
+// স্মার্ট ফেচিং (Stale-While-Revalidate) - আল্টিমেট অফলাইন এক্সপেরিয়েন্স
 self.addEventListener('fetch', event => {
-    // যদি ব্রাউজার কোনো পেজ (HTML) খুঁজতে যায়
-    if (event.request.mode === 'navigate') {
-        event.respondWith(
-            fetch(event.request).catch(() => {
-                // ইন্টারনেট না থাকলে সরাসরি index.html (হোমপেজ) ওপেন করে দেবে
-                return caches.match('./index.html');
-            })
-        );
-        return;
-    }
+    // শুধুমাত্র GET রিকোয়েস্টগুলো ক্যাশ করবে
+    if (event.request.method !== 'GET') return;
 
-    // অন্যান্য ফাইল (CSS, JS, Images, Icons) এর জন্য
     event.respondWith(
         caches.match(event.request, { ignoreSearch: true }).then(cachedResponse => {
-            // যদি আগে থেকে সেভ করা থাকে, তবে অফলাইন থেকে দেবে
-            if (cachedResponse) {
-                return cachedResponse;
-            }
             
-            // আর যদি সেভ করা না থাকে, তবে ইন্টারনেট থেকে আনবে এবং ভবিষ্যতে অফলাইনের জন্য সেভ করে রাখবে
-            return fetch(event.request).then(networkResponse => {
-                // শুধুমাত্র ভ্যালিড রেসপন্স ক্যাশ করবে
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors') {
-                    return networkResponse;
+            // ব্যাকগ্রাউন্ডে ইন্টারনেটের মাধ্যমে ফাইল আপডেট করার কাজ
+            const fetchPromise = fetch(event.request).then(networkResponse => {
+                if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
                 }
-                
-                // ডাইনামিক ক্যাশিং (যেমন: FontAwesome এর ভেতরের ফন্ট ফাইলগুলো)
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                    if(event.request.url.startsWith('http')) {
-                        cache.put(event.request, responseToCache);
-                    }
-                });
                 return networkResponse;
             }).catch(() => {
-                // ইন্টারনেট না থাকলে এবং ক্যাশে না থাকলে কিছুই করবে না
-                return new Response('You are offline.', { status: 503 });
+                // ইন্টারনেট না থাকলে এবং ফাইল ক্যাশে না থাকলে হোমপেজে রিডাইরেক্ট করবে
+                if (event.request.mode === 'navigate') {
+                    return caches.match('./index.html');
+                }
             });
+
+            // ম্যাজিক এখানে: যদি ক্যাশে (স্টোরেজে) ফাইল থাকে, তবে ইন্টারনেট চেক না করেই সাথে সাথে দিয়ে দাও!
+            // আর ক্যাশে না থাকলে ইন্টারনেট থেকে আনো।
+            return cachedResponse || fetchPromise;
         })
     );
 });
