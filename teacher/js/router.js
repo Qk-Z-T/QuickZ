@@ -1,13 +1,15 @@
 // js/router.js
-// রাউটিং এবং পেজ নেভিগেশন ম্যানেজ করে
+// রাউটিং, পেজ নেভিগেশন, এবং ব্রাউজার ব্যাক/ফরওয়ার্ড সাপোর্ট
 
 import { AppState } from './core/state.js';
 import { db } from './config/firebase.js';
-import { Teacher } from './teacher-core.js';
+import { Teacher } from './teacher/teacher-core.js';
 import { collection, query, where, orderBy, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { clearListeners, initRealTimeSync } from './features/realtime-sync.js';
 
-// গ্লোবাল আনসাবস্ক্রাইব ক্লিয়ার ফাংশন (teacher-core.js থেকে ইম্পোর্ট হবে)
-import { clearListeners, initRealTimeSync } from './teacher-core.js';
+// হিস্ট্রি স্ট্যাক ম্যানেজ করার জন্য
+let isInternalNavigation = false;
+const validPages = ['home', 'create', 'rank', 'folders', 'management'];
 
 export const Router = {
     initTeacher: () => {
@@ -17,18 +19,19 @@ export const Router = {
         if (websiteLayout) websiteLayout.classList.remove('hidden');
         
         document.getElementById('app-container').classList.remove('hidden');
-        document.getElementById('app-container').classList.add('pt-16');
         document.getElementById('teacher-nav').classList.remove('hidden');
-        document.getElementById('teacher-nav').classList.add('flex');
         document.getElementById('teacher-header').classList.remove('hidden');
-        document.getElementById('teacher-header').classList.add('flex');
         
         Teacher.loadGroupsForSwitcher();
         
         if (!AppState.selectedGroup) {
             Teacher.selectGroupView('home');
         } else {
-            Router.teacher('home');
+            // প্রথম লোডে বর্তমান URL হিসেবে home সেট করে রাখি
+            const currentPage = 'home';
+            AppState.currentPage = currentPage;
+            window.history.replaceState({ page: currentPage }, '', `#${currentPage}`);
+            Router.teacher(currentPage);
         }
     },
     
@@ -106,20 +109,27 @@ export const Router = {
         }
     },
     
-    teacher: (p) => {
-        if (!AppState.selectedGroup && p !== 'management') {
+    // পেজ নেভিগেট করার মূল ফাংশন
+    navigateTo: (page, addToHistory = true) => {
+        if (!validPages.includes(page)) {
+            console.error('Invalid page:', page);
+            return;
+        }
+        
+        if (!AppState.selectedGroup && page !== 'management') {
             Swal.fire({
                 title: 'কোর্স নির্বাচন করুন',
                 text: 'এই অপশনটি ব্যবহার করতে আগে একটি কোর্স সিলেক্ট করুন।',
                 icon: 'warning',
                 confirmButtonColor: '#4f46e5'
             });
-            Teacher.selectGroupView(p);
+            Teacher.selectGroupView(page);
             return;
         }
 
         clearListeners();
-        AppState.currentPage = p;
+        AppState.currentPage = page;
+        console.log('Router: Navigating to', page);
         
         if (typeof Teacher.closeMobileSidebar === 'function') {
             Teacher.closeMobileSidebar();
@@ -128,36 +138,53 @@ export const Router = {
         document.querySelectorAll('.sidebar-nav-item.nav-item').forEach(el => {
             el.classList.remove('active');
         });
-        const activeNav = document.getElementById('nav-' + p);
+        const activeNav = document.getElementById('nav-' + page);
         if (activeNav) activeNav.classList.add('active');
         
         const titles = {home: 'ড্যাশবোর্ড হোম', create: 'পরীক্ষা তৈরি', rank: 'র‍্যাংকিং', folders: 'লাইব্রেরি', management: 'ম্যানেজমেন্ট'};
         const titleEl = document.getElementById('page-title');
-        if (titleEl) titleEl.innerHTML = (titles[p] || 'শিক্ষক') + ' <span style="color:#4f46e5">প্যানেল</span>';
+        if (titleEl) titleEl.innerHTML = (titles[page] || 'শিক্ষক') + ' <span style="color:#4f46e5">প্যানেল</span>';
         
-        document.querySelectorAll('#teacher-nav .nav-item').forEach(el => {
-            el.classList.remove('active', 'text-indigo-600');
-            el.classList.add('text-slate-400');
-        });
-        
-        if (p !== 'create') {
+        if (page !== 'create') {
             document.getElementById('floating-math-btn').classList.add('hidden');
             document.getElementById('math-symbols-panel').classList.remove('show');
         }
         
         const pagesRequiringGroup = ['home', 'create', 'rank', 'folders', 'management'];
-        if (pagesRequiringGroup.includes(p) && !AppState.selectedGroup) {
-            Teacher.selectGroupView(p);
+        if (pagesRequiringGroup.includes(page) && !AppState.selectedGroup) {
+            Teacher.selectGroupView(page);
             return;
         }
         
-        if(p==='home') Teacher.homeView();
-        if(p==='create') Teacher.createView();
-        if(p==='rank') Teacher.rankView();
-        if(p==='folders') Teacher.foldersView();
-        if(p==='management') Teacher.managementView();
+        if(page === 'home') Teacher.homeView();
+        if(page === 'create') Teacher.createView();
+        if(page === 'rank') Teacher.rankView();
+        if(page === 'folders') Teacher.foldersView();
+        if(page === 'management') Teacher.managementView();
+        
+        // ব্রাউজার হিস্ট্রিতে যুক্ত করা (যাতে ব্যাক বাটন কাজ করে)
+        if (addToHistory) {
+            window.history.pushState({ page: page }, '', `#${page}`);
+        }
+    },
+    
+    // পুরনো মেথডটি navigateTo ব্যবহার করবে
+    teacher: (p) => {
+        Router.navigateTo(p, true);
+    },
+    
+    // ব্যাক বাটন চাপলে এই ফাংশন কল হবে (main.js থেকে ডাকা হবে)
+    handlePopState: (event) => {
+        const state = event.state;
+        if (state && state.page && validPages.includes(state.page)) {
+            console.log('Popstate: navigating back to', state.page);
+            Router.navigateTo(state.page, false); // হিস্ট্রিতে আবার যুক্ত করবে না
+        } else {
+            // যদি কোনো স্টেট না থাকে, তাহলে হোমে যাও
+            console.log('Popstate: no state, going home');
+            Router.navigateTo('home', false);
+        }
     }
 };
 
-// গ্লোবাল এক্সপোজ
 window.Router = Router;
