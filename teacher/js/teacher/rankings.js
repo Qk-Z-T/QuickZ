@@ -1,11 +1,11 @@
 // js/teacher/rankings.js
-// র‍্যাংকিং ও ফলাফল দেখার ফিচার
+// র‍্যাংকিং ও ফলাফল দেখার ফিচার (MathHelper ও loadMathJax সহ)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
 import { 
-    collection, query, where, orderBy, onSnapshot, doc, getDoc 
+    collection, query, where, orderBy, onSnapshot, doc, getDoc, getDocs 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 let ExamCache = window.ExamCache;
@@ -35,7 +35,7 @@ Teacher.rankView = () => {
     } else {
         exams.forEach(e => {
             const date = moment(e.createdAt.toDate()).format('DD MMM, YYYY');
-            h += `<div onclick="Teacher.viewRank('${e.id}', '${e.title}')" class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-dark-tertiary cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group">
+            h += `<div onclick="Teacher.viewRank('${e.id}', '${e.title.replace(/'/g, "\\'")}')" class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-dark-tertiary cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group">
                 <div class="flex justify-between items-start mb-3">
                     <span class="text-xs font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded uppercase">লাইভ</span>
                     <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-100 transition">
@@ -139,6 +139,11 @@ Teacher.viewRank = async (eid, title) => {
                             <div class="text-xl font-bold text-emerald-400">${highest.toFixed(2)}</div>
                         </div>
                     </div>
+                    <div class="mt-3 flex justify-end">
+                        <button onclick="Teacher.openExamAnalysis('${eid}')" class="text-indigo-300 hover:text-indigo-100 px-3 py-1 rounded-full text-xs font-bold transition border border-indigo-500/50">
+                            <i class="fas fa-chart-bar mr-1"></i> বিশ্লেষণ
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary overflow-hidden shadow-sm">
@@ -166,9 +171,155 @@ Teacher.viewRank = async (eid, title) => {
     }
 };
 
+// বিশ্লেষণ ফাংশন (স্টুডেন্ট প্যানেল থেকে গৃহীত ও অভিযোজিত)
+Teacher.openExamAnalysis = async (examId) => {
+    const c = document.getElementById('app-container');
+    c.innerHTML = '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="bengali-text">বিশ্লেষণ লোড হচ্ছে...</p></div>';
+    
+    try {
+        const examDoc = await getDoc(doc(db, "exams", examId));
+        if (!examDoc.exists()) throw new Error("পরীক্ষা পাওয়া যায়নি");
+        const examData = examDoc.data();
+        
+        if (!examData.questions) throw new Error("প্রশ্নপত্র পাওয়া যায়নি");
+        let questions;
+        try {
+            questions = JSON.parse(examData.questions);
+        } catch (e) {
+            throw new Error("প্রশ্নপত্র ফরম্যাট সঠিক নয়");
+        }
+        if (!Array.isArray(questions) || questions.length === 0) throw new Error("কোনো প্রশ্ন নেই");
+        
+        const attemptsSnap = await getDocs(query(
+            collection(db, "attempts"),
+            where("examId", "==", examId),
+            where("isPractice", "==", false)
+        ));
+        const attempts = [];
+        attemptsSnap.forEach(d => {
+            const data = d.data();
+            if (data.answers && Array.isArray(data.answers)) {
+                attempts.push(data);
+            }
+        });
+        
+        const totalAttempts = attempts.length;
+        if (totalAttempts === 0) {
+            c.innerHTML = `
+                <div class="p-5 pb-20 text-center">
+                    <button onclick="Teacher.rankView()" class="mb-4 text-xs font-bold text-slate-500"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
+                    <div class="p-10 text-slate-400 bengali-text">এখনো কেউ এই পরীক্ষায় অংশগ্রহণ করেনি</div>
+                </div>`;
+            return;
+        }
+        
+        const questionStats = questions.map((q, idx) => {
+            const optionCounts = new Array(q.options.length).fill(0);
+            let correctCount = 0;
+            let wrongCount = 0;
+            let skippedCount = 0;
+            
+            attempts.forEach(att => {
+                const answer = att.answers[idx];
+                if (answer === null || answer === undefined) {
+                    skippedCount++;
+                } else if (answer >= 0 && answer < q.options.length) {
+                    optionCounts[answer]++;
+                    if (answer === q.correct) correctCount++;
+                    else wrongCount++;
+                } else {
+                    skippedCount++;
+                }
+            });
+            
+            const optionPercentages = optionCounts.map(count => totalAttempts > 0 ? (count / totalAttempts) * 100 : 0);
+            return {
+                ...q,
+                optionCounts,
+                optionPercentages,
+                correctCount,
+                wrongCount,
+                skippedCount,
+                totalAttempts
+            };
+        });
+        
+        let html = `
+        <div class="p-5 pb-20">
+            <button onclick="Teacher.rankView()" class="mb-4 text-xs font-bold text-slate-500 dark:text-slate-400 bengali-text">
+                <i class="fas fa-arrow-left"></i> র‍্যাংকিংয়ে ফিরুন
+            </button>
+            <h2 class="text-xl font-bold mb-4 text-center dark:text-white bengali-text">${examData.title} - বিস্তারিত বিশ্লেষণ</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 text-center bengali-text">মোট পরীক্ষার্থী: ${totalAttempts}</p>
+        `;
+        
+        questionStats.forEach((q, i) => {
+            const qText = window.MathHelper.renderExamContent(q.q);
+            const correctOpt = String.fromCharCode(65 + q.correct);
+            
+            let optionsHtml = '';
+            q.options.forEach((opt, oi) => {
+                const optText = window.MathHelper.renderExamContent(opt);
+                const percent = q.optionPercentages[oi].toFixed(1);
+                const count = q.optionCounts[oi];
+                const isCorrect = oi === q.correct;
+                optionsHtml += `
+                <div class="opt-res ${isCorrect ? 'right' : ''}">
+                    <div class="option-math flex-1">
+                        <span>${String.fromCharCode(65+oi)}.</span>
+                        <span>${optText}</span>
+                    </div>
+                    <div class="text-xs font-bold ${isCorrect ? 'text-green-600' : 'text-slate-500'}">
+                        ${percent}% (${count})
+                    </div>
+                </div>`;
+            });
+            
+            const correctPercent = totalAttempts > 0 ? ((q.correctCount / totalAttempts)*100) : 0;
+            const wrongPercent = totalAttempts > 0 ? ((q.wrongCount / totalAttempts)*100) : 0;
+            const skippedPercent = totalAttempts > 0 ? ((q.skippedCount / totalAttempts)*100) : 0;
+            
+            html += `
+            <div class="p-4 rounded-xl shadow-sm border mb-6" style="background-color:var(--card-bg);border-color:var(--border-light);">
+                <div class="flex justify-between mb-2">
+                    <span class="font-bold bengali-text">প্রশ্ন ${i+1}</span>
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded bengali-text">সঠিক উত্তর: ${correctOpt}</span>
+                </div>
+                <p class="font-semibold mb-3 math-render">${qText}</p>
+                <div class="space-y-1 mb-4">
+                    ${optionsHtml}
+                </div>
+                ${q.expl ? `<div class="text-xs p-3 rounded mb-3 explanation-box"><b>ব্যাখ্যা:</b> ${window.MathHelper.renderExamContent(q.expl)}</div>` : ''}
+                
+                <div class="mt-3">
+                    <div class="flex items-center gap-2 text-xs mb-2">
+                        <span class="w-16 bengali-text">সঠিক ${q.correctCount}</span>
+                        <span class="w-16 text-right bengali-text">ভুল ${q.wrongCount}</span>
+                        <span class="w-16 text-right bengali-text">স্কিপ ${q.skippedCount}</span>
+                    </div>
+                    <div class="h-6 bg-gray-200 rounded-full overflow-hidden flex text-white text-[10px] font-bold">
+                        <div class="bg-green-500 h-full flex items-center justify-center" style="width: ${correctPercent}%">${correctPercent.toFixed(1)}%</div>
+                        <div class="bg-red-500 h-full flex items-center justify-center" style="width: ${wrongPercent}%">${wrongPercent.toFixed(1)}%</div>
+                        <div class="bg-yellow-500 h-full flex items-center justify-center" style="width: ${skippedPercent}%">${skippedPercent.toFixed(1)}%</div>
+                    </div>
+                </div>
+            </div>`;
+        });
+        
+        html += `</div>`;
+        c.innerHTML = html;
+        
+        window.loadMathJax(null, c);
+    } catch (error) {
+        console.error(error);
+        Swal.fire('ত্রুটি', 'বিশ্লেষণ লোড করতে ব্যর্থ', 'error');
+        Teacher.rankView();
+    }
+};
+
 Teacher.viewUserResult = async (attemptId) => {
     const c = document.getElementById('app-container');
-    c.innerHTML = '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="mt-2 text-xs bengali-text">অপেক্ষা করুন...</p></div>';
+    c.innerHTML = '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="mt-2 text-xs bengali-text">ফলাফল লোড হচ্ছে...</p></div>';
     
     try {
         const attSnap = await getDoc(doc(db, "attempts", attemptId));
@@ -257,12 +408,7 @@ Teacher.viewUserResult = async (attemptId) => {
                     if (window.resultFilter === 'skipped' && st !== 'skipped') return;
                 }
                 
-                let questionHTML = q.q;
-                if (q.q.includes('\\') || q.q.includes('^') || q.q.includes('_')) {
-                    questionHTML = `<span class="math-render bengali-text">\\(${q.q}\\)</span>`;
-                } else {
-                    questionHTML = `<span class="bengali-text">${q.q}</span>`;
-                }
+                const questionHTML = window.MathHelper.renderExamContent(q.q);
                 
                 h += `<div class="ans-card ${st} p-4 rounded-xl mb-4 bg-white dark:bg-dark-secondary shadow-sm border dark:border-dark-tertiary">
                     <div class="flex justify-between mb-2 pb-2 border-b border-black/5 dark:border-dark-tertiary">
@@ -282,19 +428,14 @@ Teacher.viewUserResult = async (attemptId) => {
                                 icon='<i class="fas fa-times float-right mt-1 text-red-600 dark:text-red-400"></i>'; 
                             }
                             
-                            let optionText = o;
-                            if (o.includes('\\') || o.includes('^') || o.includes('_')) {
-                                optionText = `<span class="math-render bengali-text">\\(${o}\\)</span>`;
-                            } else {
-                                optionText = `<span class="bengali-text">${o}</span>`;
-                            }
+                            const optionText = window.MathHelper.renderExamContent(o);
                             
                             return `<div class="${cls}"><span class="bengali-text">${String.fromCharCode(65+oi)}. ${optionText}</span> ${icon}</div>`;
                         }).join('')}
                     </div>
                     <div class="mt-3 text-xs bg-white/60 dark:bg-dark-tertiary p-3 rounded border border-slate-200 dark:border-dark-tertiary">
                         <span class="font-bold text-indigo-600 dark:text-indigo-400 block mb-1 bengali-text">ব্যাখ্যা:</span>
-                        ${q.expl ? `<span class="bengali-text">${q.expl}</span>` : "<span class='bengali-text'>কোনো ব্যাখ্যা প্রদান করা হয়নি।</span>"}
+                        ${q.expl ? `<span class="bengali-text">${window.MathHelper.renderExamContent(q.expl)}</span>` : "<span class='bengali-text'>কোনো ব্যাখ্যা প্রদান করা হয়নি।</span>"}
                     </div>
                 </div>`;
             });
@@ -402,7 +543,7 @@ Teacher.viewUserResult = async (attemptId) => {
                 </div>
             `;
             
-            MathJax.typesetPromise();
+            window.loadMathJax(null, c);
         };
         
         window.filteredQuestions = [...qs];
