@@ -1,5 +1,5 @@
 // js/teacher/exam-create.js
-// পরীক্ষা তৈরি সংক্রান্ত সমস্ত ফিচার (MathHelper সহ)
+// Exam creation features (Complete English version)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -13,7 +13,7 @@ import { saveFolderStructureToFirebase } from '../features/realtime-sync.js';
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
 
-// ------------- ক্রিয়েট ভিউ -------------
+// ------------- Create View -------------
 Teacher.createView = () => {
     if (!AppState.selectedGroup) {
         Teacher.selectGroupView('create');
@@ -27,21 +27,21 @@ Teacher.createView = () => {
     <div class="pb-6 max-w-5xl">
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h2 class="text-2xl font-bold font-en text-slate-800 dark:text-white bengali-text">শিক্ষক ড্যাশবোর্ড</h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400 bengali-text mt-1">পরীক্ষা তৈরি এবং পরিচালনা করুন</p>
+                <h2 class="text-2xl font-bold font-en text-slate-800 dark:text-white">Teacher Dashboard</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Create and manage exams</p>
             </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
             <button onclick="Teacher.renderForm('live')" class="h-44 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white p-6 relative overflow-hidden shadow-lg transition hover:shadow-xl hover:-translate-y-1 text-left group">
                 <div class="bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-sm mb-4"><i class="fas fa-broadcast-tower text-2xl"></i></div>
-                <h3 class="text-xl font-bold bengali-text">লাইভ পরীক্ষা তৈরি</h3>
-                <p class="text-indigo-100 text-sm mt-1 bengali-text">নির্দিষ্ট সময়ের জন্য পরীক্ষা নির্ধারণ করুন।</p>
+                <h3 class="text-xl font-bold">Create Live Exam</h3>
+                <p class="text-indigo-100 text-sm mt-1">Schedule an exam for a specific time.</p>
                 <i class="fas fa-arrow-right absolute right-6 bottom-6 opacity-40 group-hover:opacity-80 transition"></i>
             </button>
             <button onclick="Teacher.renderForm('mock')" class="h-44 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 relative overflow-hidden shadow-lg transition hover:shadow-xl hover:-translate-y-1 text-left group">
                 <div class="bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-sm mb-4"><i class="fas fa-book-reader text-2xl"></i></div>
-                <h3 class="text-xl font-bold bengali-text">প্র্যাকটিস তৈরি</h3>
-                <p class="text-emerald-100 text-xs mt-1 bengali-text">বিষয় ও অধ্যায় ভিত্তিক মক টেস্ট।</p>
+                <h3 class="text-xl font-bold">Create Practice</h3>
+                <p class="text-emerald-100 text-xs mt-1">Mock tests with subjects and chapters.</p>
                 <i class="fas fa-pencil-alt absolute right-6 top-1/2 -translate-y-1/2 text-6xl opacity-20 group-hover:scale-110 transition"></i>
             </button>
         </div>
@@ -72,105 +72,105 @@ Teacher.renderForm = function(type) {
     document.getElementById('app-container').innerHTML = `
     <div class="p-0 max-w-4xl">
         <div class="flex justify-between items-center mb-4">
-            <button onclick="Teacher.createView()" class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 bengali-text">
-                <i class="fas fa-arrow-left"></i> ড্যাশবোর্ডে ফিরুন
+            <button onclick="Teacher.createView()" class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
             </button>
         </div>
-        <h2 class="text-xl font-bold mb-4 font-en text-slate-800 dark:text-white bengali-text">${isLive ? 'লাইভ পরীক্ষা' : 'প্র্যাকটিস টেস্ট'} তৈরি করুন</h2>
+        <h2 class="text-xl font-bold mb-4 font-en text-slate-800 dark:text-white">Create ${isLive ? 'Live Exam' : 'Practice Test'}</h2>
         <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary space-y-4">
-            <input id="nt" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl bengali-text" placeholder="পরীক্ষার শিরোনাম">
+            <input id="nt" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="Exam Title">
             <input type="hidden" id="nty" value="${type}"> 
             
             <div class="grid grid-cols-2 gap-3">
                 <div class="select-container">
-                    <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">বিষয়</label>
-                    <select id="nsub" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl bengali-text" ${type === 'mock' ? 'required' : ''}>
-                        <option value="">বিষয় নির্বাচন (ঐচ্ছিক)</option>
-                        ${subjects.map(s => `<option value="${s}" class="bengali-text">${s}</option>`).join('')}
+                    <label class="block text-sm font-bold mb-1 dark:text-white">Subject</label>
+                    <select id="nsub" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" ${type === 'mock' ? 'required' : ''}>
+                        <option value="">Select Subject (Optional)</option>
+                        ${subjects.map(s => `<option value="${s}">${s}</option>`).join('')}
                     </select>
                 </div>
                 <div class="select-container">
-                    <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">অধ্যায়</label>
-                    <select id="nchap" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl bengali-text" ${type === 'mock' ? 'required' : ''}>
-                        <option value="">অধ্যায় নির্বাচন (ঐচ্ছিক)</option>
+                    <label class="block text-sm font-bold mb-1 dark:text-white">Chapter</label>
+                    <select id="nchap" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" ${type === 'mock' ? 'required' : ''}>
+                        <option value="">Select Chapter (Optional)</option>
                     </select>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">সময় (মিনিট)</label>
-                    <input id="nd" type="number" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="যেমনঃ ৬০" required>
+                    <label class="block text-sm font-bold mb-1 dark:text-white">Duration (Minutes)</label>
+                    <input id="nd" type="number" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="e.g., 60" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">মোট নম্বর</label>
-                    <input id="nm" type="number" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="যেমনঃ ১০০" required>
+                    <label class="block text-sm font-bold mb-1 dark:text-white">Total Marks</label>
+                    <input id="nm" type="number" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="e.g., 100" required>
                 </div>
             </div>
             
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">নেগেটিভ মার্ক</label>
-                    <select id="nneg" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl bengali-text">
-                        <option value="0" selected>০ (কোনো নেগেটিভ নয়)</option>
-                        <option value="0.25">০.২৫ (¼ নম্বর)</option>
-                        <option value="0.50">০.৫০ (½ নম্বর)</option>
+                    <label class="block text-sm font-bold mb-1 dark:text-white">Negative Mark</label>
+                    <select id="nneg" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl">
+                        <option value="0" selected>0 (No Negative)</option>
+                        <option value="0.25">0.25 (¼ Mark)</option>
+                        <option value="0.50">0.50 (½ Mark)</option>
                     </select>
                 </div>
-                <div class="flex items-center text-xs text-slate-500 bg-slate-50 dark:bg-dark-tertiary dark:text-slate-400 p-2 rounded border dark:border-dark-tertiary bengali-text">ধরণ: ${type.toUpperCase()}</div>
+                <div class="flex items-center text-xs text-slate-500 bg-slate-50 dark:bg-dark-tertiary dark:text-slate-400 p-2 rounded border dark:border-dark-tertiary">Type: ${type.toUpperCase()}</div>
             </div>
             
             ${isLive ? `
             <div class="p-3 bg-indigo-50 dark:bg-indigo-900 rounded-xl border border-indigo-100 dark:border-indigo-800 space-y-3">
                 <div>
-                    <label class="text-sm font-bold text-indigo-800 dark:text-indigo-300 bengali-text">শুরুর সময়</label>
+                    <label class="text-sm font-bold text-indigo-800 dark:text-indigo-300">Start Time</label>
                     <input id="nst" type="datetime-local" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-lg text-sm">
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-indigo-800 dark:text-indigo-300 bengali-text">শেষ সময়</label>
+                    <label class="text-sm font-bold text-indigo-800 dark:text-indigo-300">End Time</label>
                     <input id="net" type="datetime-local" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-lg text-sm">
                 </div>
                 <div class="auto-publish-container">
                     <input type="checkbox" id="nautopub" checked>
-                    <label for="nautopub" class="text-sm font-bold text-slate-700 dark:text-slate-300 bengali-text">
-                        পরীক্ষা শেষে স্বয়ংক্রিয়ভাবে ফলাফল প্রকাশ করুন
+                    <label for="nautopub" class="text-sm font-bold text-slate-700 dark:text-slate-300">
+                        Auto Publish Result when exam ends
                     </label>
                 </div>
             </div>` : ''}
             
             <div class="flex items-center justify-between mb-3">
-                <label class="text-sm font-bold text-slate-700 dark:text-white bengali-text">প্রশ্ন মোড:</label>
+                <label class="text-sm font-bold text-slate-700 dark:text-white">Question Mode:</label>
                 <div class="flex items-center gap-2">
-                    <button id="mode-manual" onclick="Teacher.switchQuestionMode('manual')" class="px-3 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg bengali-text">ম্যানুয়াল</button>
-                    <button id="mode-json" onclick="Teacher.switchQuestionMode('json')" class="px-3 py-1.5 text-sm font-bold bg-slate-200 dark:bg-dark-tertiary text-slate-600 dark:text-slate-300 rounded-lg bengali-text">JSON</button>
+                    <button id="mode-manual" onclick="Teacher.switchQuestionMode('manual')" class="px-3 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg">Manual</button>
+                    <button id="mode-json" onclick="Teacher.switchQuestionMode('json')" class="px-3 py-1.5 text-sm font-bold bg-slate-200 dark:bg-dark-tertiary text-slate-600 dark:text-slate-300 rounded-lg">JSON</button>
                 </div>
             </div>
             
             <div id="questions-list" class="space-y-3 mb-6">
-                <h3 class="font-bold text-lg mb-2 dark:text-white bengali-text">প্রশ্ন তালিকা (${Teacher.questions.length})</h3>
-                <div class="text-center p-4 text-slate-400 bengali-text">এখনো কোনো প্রশ্ন যোগ করা হয়নি</div>
+                <h3 class="font-bold text-lg mb-2 dark:text-white">Questions List (${Teacher.questions.length})</h3>
+                <div class="text-center p-4 text-slate-400">No questions added yet</div>
             </div>
             
             <div id="manual-questions-container" class="space-y-4">
                 <div class="question-box dark:bg-black dark:border-dark-tertiary">
-                    <h3 class="font-bold text-lg mb-3 dark:text-white bengali-text" id="question-form-title">নতুন প্রশ্ন যোগ করুন</h3>
+                    <h3 class="font-bold text-lg mb-3 dark:text-white" id="question-form-title">Add New Question</h3>
                     
                     <div class="question-field-container mb-3">
-                        <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">প্রশ্ন</label>
-                        <textarea id="textarea-question" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl question-textarea auto-resize bengali-text" rows="3" placeholder="প্রশ্ন লিখুন..." oninput="autoResizeTextarea(this)"></textarea>
+                        <label class="block text-sm font-bold mb-1 dark:text-white">Question Text</label>
+                        <textarea id="textarea-question" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl question-textarea auto-resize" rows="3" placeholder="Enter question text..." oninput="autoResizeTextarea(this)"></textarea>
                         <button type="button" class="math-preview-btn" data-target="textarea-question">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="block text-sm font-bold mb-2 dark:text-white bengali-text">অপশন:</label>
+                        <label class="block text-sm font-bold mb-2 dark:text-white">Options:</label>
                         <div class="space-y-2">
                             ${['A', 'B', 'C', 'D'].map((letter, index) => `
                                 <div class="flex items-center gap-2">
                                     <span class="font-bold w-6 dark:text-white">${letter}.</span>
                                     <div class="question-field-container flex-1">
-                                        <textarea id="option-${letter.toLowerCase()}" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded option-textarea auto-resize bengali-text" rows="2" placeholder="অপশন ${letter}" oninput="autoResizeTextarea(this)"></textarea>
+                                        <textarea id="option-${letter.toLowerCase()}" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded option-textarea auto-resize" rows="2" placeholder="Option ${letter}" oninput="autoResizeTextarea(this)"></textarea>
                                         <button type="button" class="math-preview-btn" data-target="option-${letter.toLowerCase()}">
                                             <i class="fas fa-eye"></i>
                                         </button>
@@ -181,9 +181,9 @@ Teacher.renderForm = function(type) {
                     </div>
                     
                     <div class="mb-3">
-                        <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">সঠিক উত্তর</label>
-                        <select id="correct-answer" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded bengali-text">
-                            <option value="">সঠিক উত্তর নির্বাচন করুন</option>
+                        <label class="block text-sm font-bold mb-1 dark:text-white">Correct Answer</label>
+                        <select id="correct-answer" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded">
+                            <option value="">Select Correct Answer</option>
                             <option value="0">A</option>
                             <option value="1">B</option>
                             <option value="2">C</option>
@@ -192,9 +192,9 @@ Teacher.renderForm = function(type) {
                     </div>
                     
                     <div class="mb-3">
-                        <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">ব্যাখ্যা (ঐচ্ছিক)</label>
+                        <label class="block text-sm font-bold mb-1 dark:text-white">Explanation (Optional)</label>
                         <div class="question-field-container">
-                            <textarea id="explanation" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded explanation-textarea auto-resize bengali-text" rows="2" placeholder="এই প্রশ্নের ব্যাখ্যা লিখুন..." oninput="autoResizeTextarea(this)"></textarea>
+                            <textarea id="explanation" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded explanation-textarea auto-resize" rows="2" placeholder="Add explanation for this question (optional)..." oninput="autoResizeTextarea(this)"></textarea>
                             <button type="button" class="math-preview-btn" data-target="explanation">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -202,42 +202,42 @@ Teacher.renderForm = function(type) {
                     </div>
                     
                     <div class="mb-3">
-                        <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">পূর্ববর্তী বছর (ঐচ্ছিক)</label>
+                        <label class="block text-sm font-bold mb-1 dark:text-white">Previous Year (Optional)</label>
                         <div class="flex items-center gap-2">
-                            <input type="text" id="previous-year" class="flex-1 p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded bengali-text" placeholder="যেমনঃ ২০২০ এইচএসসি">
+                            <input type="text" id="previous-year" class="flex-1 p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded" placeholder="e.g., 2020 HSC">
                             <div class="flex items-center gap-2">
                                 <input type="checkbox" id="show-previous-year" class="rounded">
-                                <label for="show-previous-year" class="text-sm font-medium text-slate-700 dark:text-slate-300 bengali-text">
-                                    প্রশ্নে দেখান
+                                <label for="show-previous-year" class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                    Show in question
                                 </label>
                             </div>
                         </div>
                     </div>
                     
-                    <button onclick="Teacher.addQuestionToList()" id="add-question-btn" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition bengali-text">
-                        <i class="fas fa-plus mr-2"></i> তালিকায় যোগ করুন
+                    <button onclick="Teacher.addQuestionToList()" id="add-question-btn" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
+                        <i class="fas fa-plus mr-2"></i> Add Question to List
                     </button>
                 </div>
             </div>
             
             <div id="json-container" class="hidden">
                 <div class="json-actions">
-                    <button onclick="Teacher.copyJson()" class="bg-indigo-600 text-white px-3 py-2 rounded text-sm font-bold bengali-text">
-                        <i class="fas fa-copy mr-1"></i> JSON কপি
+                    <button onclick="Teacher.copyJson()" class="bg-indigo-600 text-white px-3 py-2 rounded text-sm font-bold">
+                        <i class="fas fa-copy mr-1"></i> Copy JSON
                     </button>
-                    <button onclick="Teacher.clearJson()" class="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold bengali-text">
-                        <i class="fas fa-trash mr-1"></i> JSON ক্লিয়ার
+                    <button onclick="Teacher.clearJson()" class="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                        <i class="fas fa-trash mr-1"></i> Clear JSON
                     </button>
                 </div>
-                <textarea id="nq" class="w-full h-40 p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl font-mono text-xs auto-resize" placeholder='JSON প্রশ্ন অ্যারে এখানে পেস্ট করুন...' oninput="autoResizeTextarea(this)"></textarea>
+                <textarea id="nq" class="w-full h-40 p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl font-mono text-xs auto-resize" placeholder='Paste JSON Question Array here...' oninput="autoResizeTextarea(this)"></textarea>
             </div>
             
             ${isLive ? `
             <div class="flex gap-2 mt-4">
-                <button onclick="Teacher.createExam(false)" class="flex-1 bg-slate-800 dark:bg-dark-tertiary text-white py-4 rounded-xl font-bold shadow hover:bg-slate-900 dark:hover:bg-black transition bengali-text">এখনই প্রকাশ করুন</button>
-                <button onclick="Teacher.createExam(true)" class="flex-1 bg-amber-500 text-white py-4 rounded-xl font-bold shadow hover:bg-amber-600 transition bengali-text">লাইব্রেরিতে সংরক্ষণ (ড্রাফট)</button>
+                <button onclick="Teacher.createExam(false)" class="flex-1 bg-slate-800 dark:bg-dark-tertiary text-white py-4 rounded-xl font-bold shadow hover:bg-slate-900 dark:hover:bg-black transition">Publish Now</button>
+                <button onclick="Teacher.createExam(true)" class="flex-1 bg-amber-500 text-white py-4 rounded-xl font-bold shadow hover:bg-amber-600 transition">Save to Library (Draft)</button>
             </div>` : `
-            <button onclick="Teacher.createExam(false)" class="bg-slate-800 dark:bg-dark-tertiary text-white w-full py-4 rounded-xl font-bold shadow hover:bg-slate-900 dark:hover:bg-black transition bengali-text">প্রকাশ করুন</button>`}
+            <button onclick="Teacher.createExam(false)" class="bg-slate-800 dark:bg-dark-tertiary text-white w-full py-4 rounded-xl font-bold shadow hover:bg-slate-900 dark:hover:bg-black transition">Publish Practice</button>`}
         </div>
     </div>`;
     
@@ -255,7 +255,7 @@ Teacher.renderForm = function(type) {
     subjectSelect.addEventListener('change', function() {
         const subject = this.value;
         
-        chapterSelect.innerHTML = '<option value="">অধ্যায় নির্বাচন (ঐচ্ছিক)</option>';
+        chapterSelect.innerHTML = '<option value="">Select Chapter (Optional)</option>';
         
         if (subject) {
             const subjectFolder = folderStructure[type].find(s => s.name === subject);
@@ -271,7 +271,6 @@ Teacher.renderForm = function(type) {
                 const option = document.createElement('option');
                 option.value = chapter;
                 option.textContent = chapter;
-                option.className = 'bengali-text';
                 chapterSelect.appendChild(option);
             });
         }
@@ -289,8 +288,8 @@ Teacher.switchQuestionMode = function(mode) {
     if(mode === 'manual') {
         document.getElementById('manual-questions-container').classList.remove('hidden');
         document.getElementById('json-container').classList.add('hidden');
-        document.getElementById('mode-manual').className = "px-3 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg bengali-text";
-        document.getElementById('mode-json').className = "px-3 py-1.5 text-sm font-bold bg-slate-200 dark:bg-dark-tertiary text-slate-600 dark:text-slate-300 rounded-lg bengali-text";
+        document.getElementById('mode-manual').className = "px-3 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg";
+        document.getElementById('mode-json').className = "px-3 py-1.5 text-sm font-bold bg-slate-200 dark:bg-dark-tertiary text-slate-600 dark:text-slate-300 rounded-lg";
         
         try {
             const jsonText = document.getElementById('nq').value;
@@ -304,8 +303,8 @@ Teacher.switchQuestionMode = function(mode) {
     } else {
         document.getElementById('manual-questions-container').classList.add('hidden');
         document.getElementById('json-container').classList.remove('hidden');
-        document.getElementById('mode-manual').className = "px-3 py-1.5 text-sm font-bold bg-slate-200 dark:bg-dark-tertiary text-slate-600 dark:text-slate-300 rounded-lg bengali-text";
-        document.getElementById('mode-json').className = "px-3 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg bengali-text";
+        document.getElementById('mode-manual').className = "px-3 py-1.5 text-sm font-bold bg-slate-200 dark:bg-dark-tertiary text-slate-600 dark:text-slate-300 rounded-lg";
+        document.getElementById('mode-json').className = "px-3 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg";
         
         if(Teacher.questions.length > 0) {
             document.getElementById('nq').value = JSON.stringify(Teacher.questions, null, 2);
@@ -318,7 +317,7 @@ Teacher.copyJson = function() {
     const jsonTextarea = document.getElementById('nq');
     jsonTextarea.select();
     document.execCommand('copy');
-    Swal.fire('কপি হয়েছে!', 'JSON ক্লিপবোর্ডে কপি হয়েছে', 'success');
+    Swal.fire('Copied!', 'JSON copied to clipboard', 'success');
 };
 
 Teacher.clearJson = function() {
@@ -338,7 +337,7 @@ Teacher.addQuestionToList = () => {
     const showPreviousYear = document.getElementById('show-previous-year').checked;
     
     if(!questionText || !optionA || !optionB || !optionC || !optionD || correctAnswer === '') {
-        Swal.fire('ত্রুটি', 'সব প্রয়োজনীয় ঘর পূরণ করুন', 'error');
+        Swal.fire('Error', 'Please fill all required fields', 'error');
         return;
     }
     
@@ -355,9 +354,9 @@ Teacher.addQuestionToList = () => {
         Teacher.questions[Teacher.currentQuestion] = question;
         Teacher.currentQuestion = null;
         
-        document.getElementById('add-question-btn').innerHTML = '<i class="fas fa-plus mr-2"></i> তালিকায় যোগ করুন';
+        document.getElementById('add-question-btn').innerHTML = '<i class="fas fa-plus mr-2"></i> Add Question to List';
         document.getElementById('add-question-btn').onclick = () => Teacher.addQuestionToList();
-        document.getElementById('question-form-title').innerText = 'নতুন প্রশ্ন যোগ করুন';
+        document.getElementById('question-form-title').innerText = 'Add New Question';
     } else {
         Teacher.questions.push(question);
     }
@@ -397,14 +396,14 @@ Teacher.updateQuestionsList = () => {
     
     if (Teacher.questions.length === 0) {
         questionsList.innerHTML = `
-            <h3 class="font-bold text-lg mb-2 dark:text-white bengali-text">প্রশ্ন তালিকা (${Teacher.questions.length})</h3>
-            <div class="text-center p-4 text-slate-400 bengali-text">এখনো কোনো প্রশ্ন যোগ করা হয়নি</div>
+            <h3 class="font-bold text-lg mb-2 dark:text-white">Questions List (${Teacher.questions.length})</h3>
+            <div class="text-center p-4 text-slate-400">No questions added yet</div>
         `;
         return;
     }
     
     questionsList.innerHTML = `
-        <h3 class="font-bold text-lg mb-2 dark:text-white bengali-text">প্রশ্ন তালিকা (${Teacher.questions.length})</h3>
+        <h3 class="font-bold text-lg mb-2 dark:text-white">Questions List (${Teacher.questions.length})</h3>
         ${Teacher.questions.map((q, index) => {
             const questionPreview = window.MathHelper.renderExamContent(q.q.substring(0, 100) + (q.q.length > 100 ? '...' : ''));
             return `
@@ -420,14 +419,14 @@ Teacher.updateQuestionsList = () => {
                         </button>
                     </div>
                 </div>
-                <div class="options dark:text-slate-300 bengali-text">
+                <div class="options dark:text-slate-300">
                     A. ${window.MathHelper.renderExamContent(q.options[0].substring(0, 50) + (q.options[0].length > 50 ? '...' : ''))}<br>
                     B. ${window.MathHelper.renderExamContent(q.options[1].substring(0, 50) + (q.options[1].length > 50 ? '...' : ''))}<br>
                     C. ${window.MathHelper.renderExamContent(q.options[2].substring(0, 50) + (q.options[2].length > 50 ? '...' : ''))}<br>
                     D. ${window.MathHelper.renderExamContent(q.options[3].substring(0, 50) + (q.options[3].length > 50 ? '...' : ''))}
                 </div>
-                <div class="correct-answer dark:text-emerald-400 bengali-text">
-                    সঠিক: ${String.fromCharCode(65 + q.correct)}
+                <div class="correct-answer dark:text-emerald-400">
+                    Correct: ${String.fromCharCode(65 + q.correct)}
                 </div>
             </div>
         `}).join('')}
@@ -450,9 +449,9 @@ Teacher.editQuestion = (index) => {
     
     Teacher.currentQuestion = index;
     
-    document.getElementById('add-question-btn').innerHTML = '<i class="fas fa-save mr-2"></i> প্রশ্ন আপডেট';
+    document.getElementById('add-question-btn').innerHTML = '<i class="fas fa-save mr-2"></i> Update Question';
     document.getElementById('add-question-btn').onclick = () => Teacher.addQuestionToList();
-    document.getElementById('question-form-title').innerText = `প্রশ্ন সম্পাদনা ${index + 1}`;
+    document.getElementById('question-form-title').innerText = `Edit Question ${index + 1}`;
     
     document.getElementById('textarea-question').focus();
     window.scrollTo({
@@ -469,12 +468,12 @@ Teacher.editQuestion = (index) => {
 
 Teacher.deleteQuestion = (index) => {
     Swal.fire({
-        title: 'প্রশ্ন মুছে ফেলবেন?',
-        text: "এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না!",
+        title: 'Delete Question?',
+        text: "This action cannot be undone!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'মুছে ফেলুন'
+        confirmButtonText: 'Delete'
     }).then((result) => {
         if (result.isConfirmed) {
             Teacher.questions.splice(index, 1);
@@ -482,32 +481,32 @@ Teacher.deleteQuestion = (index) => {
             
             if (Teacher.currentQuestion === index) {
                 Teacher.currentQuestion = null;
-                document.getElementById('add-question-btn').innerHTML = '<i class="fas fa-plus mr-2"></i> তালিকায় যোগ করুন';
-                document.getElementById('question-form-title').innerText = 'নতুন প্রশ্ন যোগ করুন';
+                document.getElementById('add-question-btn').innerHTML = '<i class="fas fa-plus mr-2"></i> Add Question to List';
+                document.getElementById('question-form-title').innerText = 'Add New Question';
             }
         }
     });
 };
 
 Teacher.createExam = async (isDraft = false) => {
-    const confirmText = isDraft ? 'লাইব্রেরিতে ড্রাফট হিসেবে সংরক্ষণ' : 'পরীক্ষা প্রকাশ';
+    const confirmText = isDraft ? 'Save to Library as Draft' : 'Publish Exam';
     const confirmMessage = isDraft ? 
-        'আপনি কি এই পরীক্ষাটি ড্রাফট হিসেবে লাইব্রেরিতে সংরক্ষণ করতে চান?' : 
-        'আপনি কি এই পরীক্ষাটি প্রকাশ করতে চান?';
+        'Are you sure you want to save this exam as draft?' : 
+        'Are you sure you want to publish this exam?';
     
     const confirm = await Swal.fire({
         title: confirmText,
         text: confirmMessage,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: `হ্যাঁ, ${confirmText}`
+        confirmButtonText: `Yes, ${confirmText}`
     });
 
     if(!confirm.isConfirmed) return;
     
     const loadingSwal = Swal.fire({
-        title: isDraft ? 'ড্রাফট সংরক্ষণ হচ্ছে...' : 'পরীক্ষা প্রকাশ হচ্ছে...',
-        text: 'অনুগ্রহ করে অপেক্ষা করুন...',
+        title: isDraft ? 'Saving Draft...' : 'Publishing Exam...',
+        text: 'Please wait...',
         allowOutsideClick: false,
         showConfirmButton: false,
         willOpen: () => {
@@ -525,14 +524,14 @@ Teacher.createExam = async (isDraft = false) => {
         const chap = document.getElementById('nchap').value;
         const autoPublish = document.getElementById('nautopub') ? document.getElementById('nautopub').checked : false;
         
-        if(!t || !d || !m) throw new Error("শিরোনাম, সময় এবং নম্বর আবশ্যক");
+        if(!t || !d || !m) throw new Error("Title, Duration, and Marks are required");
         
         let questions = '';
         
         if(window.questionMode === 'manual') {
             if(Teacher.questions.length === 0) {
                 Swal.close();
-                throw new Error("অনুগ্রহ করে অন্তত একটি প্রশ্ন যোগ করুন");
+                throw new Error("Please add at least one question");
             }
             questions = JSON.stringify(Teacher.questions);
         } else {
@@ -546,7 +545,7 @@ Teacher.createExam = async (isDraft = false) => {
             et = document.getElementById('net').value;
             if(!st || !et) {
                 Swal.close();
-                throw new Error("লাইভ পরীক্ষার জন্য শুরু ও শেষ সময় আবশ্যক");
+                throw new Error("Start and End time required for Live exams");
             }
         }
         
@@ -635,7 +634,7 @@ Teacher.createExam = async (isDraft = false) => {
         
         Swal.close();
         
-        Swal.fire('সফল', isDraft ? 'পরীক্ষা লাইব্রেরিতে ড্রাফট হিসেবে সংরক্ষিত হয়েছে' : 'পরীক্ষা সফলভাবে প্রকাশিত হয়েছে', 'success').then(() => {
+        Swal.fire('Success', isDraft ? 'Exam saved to Library as draft' : 'Exam published successfully', 'success').then(() => {
             if (isDraft) {
                 Teacher.foldersView();
             } else {
@@ -644,7 +643,7 @@ Teacher.createExam = async (isDraft = false) => {
         });
     } catch(e) {
         Swal.close();
-        Swal.fire('ত্রুটি', e.message, 'error');
+        Swal.fire('Error', e.message, 'error');
     }
 };
 
@@ -662,7 +661,7 @@ Teacher.updateExistingExam = async function(examId) {
         
         if(window.questionMode === 'manual') {
             if(Teacher.questions.length === 0) {
-                throw new Error("অনুগ্রহ করে অন্তত একটি প্রশ্ন যোগ করুন");
+                throw new Error("Please add at least one question");
             }
             questions = JSON.stringify(Teacher.questions);
         } else {
@@ -698,10 +697,10 @@ Teacher.updateExistingExam = async function(examId) {
         document.getElementById('floating-math-btn').classList.add('hidden');
         document.getElementById('math-symbols-panel').classList.remove('show');
         
-        Swal.fire('সফল', 'পরীক্ষা সফলভাবে আপডেট হয়েছে', 'success').then(() => {
+        Swal.fire('Success', 'Exam updated successfully', 'success').then(() => {
             Teacher.foldersView();
         });
     } catch(e) {
-        Swal.fire('ত্রুটি', e.message, 'error');
+        Swal.fire('Error', e.message, 'error');
     }
 };
