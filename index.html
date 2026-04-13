@@ -193,32 +193,31 @@
         <div class="flex flex-col items-center"><div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-slate-800 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-3 shadow-sm border border-amber-100 dark:border-slate-700"><i class="fas fa-mobile-alt"></i></div><h5 class="font-bold bengali text-slate-800 dark:text-white">মোবাইল ফ্রেন্ডলি</h5><p class="text-sm text-slate-500 dark:text-slate-400 bengali mt-1">স্মার্টফোন ও ট্যাবলেটে সমান কার্যকর</p></div>
     </div>
 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tamim's Info Card</title>
+    <title>Tamim's Flip Card</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="card-container">
         <div class="card" onclick="this.classList.toggle('is-flipped')">
-            
             <div class="card-face card-front">
-                <h2>Tamim Hossain</h2>
-                <p class="tagline">Web Developer & Science Student</p>
-                <div class="info-list">
-                    <p><strong>Dev:</strong> React, JS, HTML/CSS</p>
-                    <p><strong>Vibe:</strong> Physics, Chess, Football</p>
-                </div>
-                <div class="hint">Tap to see my photo!</div>
-            </div>
-
-            <div class="card-face card-back">
                 <img src="tamim.png" alt="Tamim Hossain Emon">
-                <div class="overlay-text">Click to Flip Back</div>
+                <div class="overlay-text">Tap to Reveal</div>
             </div>
             
+            <div class="card-face card-back">
+                <h2>Tamim Hossain</h2>
+                <p class="tagline">Web Developer & Science Enthusiast</p>
+                <div class="info-list">
+    
+                    <p><strong>Vibe:</strong> Chess, Football</p>
+                </div>
+                <div class="back-footer">Click to Flip Back</div>
+            </div>
         </div>
     </div>
 
