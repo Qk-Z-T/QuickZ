@@ -1,31 +1,34 @@
-const CACHE_NAME = 'quickz-pro-v1'; // ভার্সন নাম পরিবর্তন করা হলো
+// ১. নতুন ক্যাশ ভার্সন। কোড আপডেট করলে এই নাম পরিবর্তন করা ভালো।
+const CACHE_NAME = 'quickz-network-first-v1';
 
-// কোর ফাইলগুলো যা ইনস্টল হওয়ার সাথে সাথে ডাউনলোড হয়ে যাবে
-const APP_FILES = [
+// ২. অ্যাপের কোর ফাইল, যা ইনস্টল হওয়ার সময় একবার ডাউনলোড হবে।
+const CORE_FILES_TO_CACHE = [
     './',
     './index.html',
-    './student.html',
-    './teacher.html',
     './manifest.json',
+    './tamim.png',
     './icon-192.png',
     './icon-512.png',
+    './student/',
+    './student/index.html',
+    './teacher/',
+    './teacher/index.html',
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-// ইনস্টল ইভেন্ট: ফাইলগুলো ব্যাকগ্রাউন্ডে ডাউনলোড করে স্টোরেজে সেভ করবে
+// ৩. ইনস্টল ইভেন্ট: কোর ফাইলগুলো ডাউনলোড করে ক্যাশে সেভ করে।
 self.addEventListener('install', event => {
-    self.skipWaiting(); // নতুন আপডেট আসলে সাথে সাথে একটিভ হবে
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            console.log('📥 Downloading core files for offline use...');
-            // Promise.allSettled ব্যবহার করা হলো যাতে কোনো বাইরের লিংক ফেইল করলেও বাকিগুলো সেভ হয়
-            return Promise.allSettled(APP_FILES.map(url => cache.add(url).catch(err => console.warn('Cache add failed for:', url))));
+            console.log('📥 Service Worker installing and caching core files...');
+            return cache.addAll(CORE_FILES_TO_CACHE);
         })
     );
 });
 
-// একটিভ ইভেন্ট: পুরনো ক্যাশ ক্লিয়ার করে নতুনটা জায়গা নেবে
+// ৪. একটিভ ইভেন্ট: পুরোনো ভার্সনের ক্যাশ ডিলিট করে দেয়।
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -39,36 +42,38 @@ self.addEventListener('activate', event => {
             );
         })
     );
-    self.clients.claim(); // পেজ রিলোড ছাড়াই কন্ট্রোল নিয়ে নেবে
+    return self.clients.claim();
 });
 
-// স্মার্ট ফেচিং (Stale-While-Revalidate) - আল্টিমেট অফলাইন এক্সপেরিয়েন্স
+// ৫. Fetch ইভেন্ট: এটিই মূল ম্যাজিক (Network First Strategy)
 self.addEventListener('fetch', event => {
-    // শুধুমাত্র GET রিকোয়েস্টগুলো ক্যাশ করবে
-    if (event.request.method !== 'GET') return;
+    // শুধু GET রিকোয়েস্ট হ্যান্ডেল করবে
+    if (event.request.method !== 'GET') {
+        return;
+    }
 
     event.respondWith(
-        caches.match(event.request, { ignoreSearch: true }).then(cachedResponse => {
-            
-            // ব্যাকগ্রাউন্ডে ইন্টারনেটের মাধ্যমে ফাইল আপডেট করার কাজ
-            const fetchPromise = fetch(event.request).then(networkResponse => {
-                if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
-                    const responseClone = networkResponse.clone();
-                    caches.open(CACHE_NAME).then(cache => {
-                        cache.put(event.request, responseClone);
-                    });
-                }
-                return networkResponse;
-            }).catch(() => {
-                // ইন্টারনেট না থাকলে এবং ফাইল ক্যাশে না থাকলে হোমপেজে রিডাইরেক্ট করবে
-                if (event.request.mode === 'navigate') {
-                    return caches.match('./index.html');
-                }
-            });
+        // প্রথমে ইন্টারনেট থেকে আনার চেষ্টা করবে
+        fetch(event.request)
+            .then(networkResponse => {
+                // ইন্টারনেট থেকে সফলভাবে পেলে...
+                console.log('🌐 Serving from network:', event.request.url);
 
-            // ম্যাজিক এখানে: যদি ক্যাশে (স্টোরেজে) ফাইল থাকে, তবে ইন্টারনেট চেক না করেই সাথে সাথে দিয়ে দাও!
-            // আর ক্যাশে না থাকলে ইন্টারনেট থেকে আনো।
-            return cachedResponse || fetchPromise;
-        })
+                // একটি কপি ক্যাশে সেভ করে রাখবে ভবিষ্যতের জন্য
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, responseToCache);
+                });
+
+                // আসল রেসপন্সটি ব্রাউজারকে পাঠিয়ে দেবে
+                return networkResponse;
+            })
+            .catch(() => {
+                // যদি ইন্টারনেট থেকে আনতে ফেইল করে (অর্থাৎ অফলাইন)...
+                console.log('🔌 Serving from cache (offline):', event.request.url);
+                
+                // তখন ক্যাশ থেকে খুঁজে দেখাবে
+                return caches.match(event.request);
+            })
     );
 });
