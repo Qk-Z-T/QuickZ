@@ -1,6 +1,6 @@
 // js/teacher/library.js
-// লাইব্রেরি ব্যবস্থাপনা (ফোল্ডার ট্রি, সাবজেক্ট, চ্যাপ্টার, পরীক্ষা দেখা/এডিট/ডিলিট)
-// আপডেটেড: viewPaper ফাংশনে MathHelper ও loadMathJax ব্যবহার করা হয়েছে
+// Library Management (Folder Tree, Subjects, Chapters, View/Edit/Delete Exams)
+// English version with MathHelper support
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -14,7 +14,7 @@ import { saveFolderStructureToFirebase, initRealTimeSync } from '../features/rea
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
 
-// ------------- ফোল্ডার ভিউ -------------
+// ------------- Folders View -------------
 Teacher.foldersView = () => {
     if (!AppState.selectedGroup) {
         Teacher.selectGroupView('folders');
@@ -27,12 +27,12 @@ Teacher.foldersView = () => {
     document.getElementById('app-container').innerHTML = `
     <div class="pb-6">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold font-en text-slate-800 dark:text-white bengali-text">লাইব্রেরি ব্যবস্থাপনা</h2>
+            <h2 class="text-2xl font-bold font-en text-slate-800 dark:text-white">Library Management</h2>
         </div>
         
         <div class="text-center p-10">
             <div class="loader mx-auto"></div>
-            <p class="mt-2 text-sm text-slate-500 bengali-text">লোড হচ্ছে...</p>
+            <p class="mt-2 text-sm text-slate-500">Loading...</p>
         </div>
     </div>`;
     
@@ -51,27 +51,27 @@ Teacher.foldersView = () => {
             document.getElementById('app-container').innerHTML = `
             <div class="pb-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold font-en text-slate-800 dark:text-white bengali-text">লাইব্রেরি ব্যবস্থাপনা</h2>
+                    <h2 class="text-xl font-bold font-en text-slate-800 dark:text-white">Library Management</h2>
                 </div>
                 
                 <div class="flex flex-wrap gap-3 mb-6">
-                    <button onclick="Teacher.createSubject('live')" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 bengali-text">
-                        <i class="fas fa-plus"></i> লাইভ বিষয়
+                    <button onclick="Teacher.createSubject('live')" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Live Subject
                     </button>
-                    <button onclick="Teacher.createSubject('mock')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 bengali-text">
-                        <i class="fas fa-plus"></i> মক বিষয়
+                    <button onclick="Teacher.createSubject('mock')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Mock Subject
                     </button>
                 </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white bengali-text">
+                            <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
                                 <i class="fas fa-broadcast-tower live-icon"></i>
-                                লাইভ পরীক্ষা
+                                Live Exams
                             </h3>
                             <span class="text-xs bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 px-2 py-1 rounded font-bold">
-                                ${folderStructure.live.reduce((acc, s) => acc + s.exams.length, 0)} পরীক্ষা
+                                ${folderStructure.live.reduce((acc, s) => acc + s.exams.length, 0)} Exams
                             </span>
                         </div>
                         <div id="live-folder-tree" class="folder-tree space-y-1"></div>
@@ -79,12 +79,12 @@ Teacher.foldersView = () => {
                     
                     <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white bengali-text">
+                            <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
                                 <i class="fas fa-book-reader mock-icon"></i>
-                                মক পরীক্ষা
+                                Mock Exams
                             </h3>
                             <span class="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 px-2 py-1 rounded font-bold">
-                                ${folderStructure.mock.reduce((acc, s) => acc + s.exams.length, 0)} পরীক্ষা
+                                ${folderStructure.mock.reduce((acc, s) => acc + s.exams.length, 0)} Exams
                             </span>
                         </div>
                         <div id="mock-folder-tree" class="folder-tree space-y-1"></div>
@@ -93,12 +93,12 @@ Teacher.foldersView = () => {
                 
                 <div class="mt-6 bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white bengali-text">
+                        <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
                             <i class="fas fa-question-circle text-slate-400"></i>
-                            অশ্রেণীবদ্ধ পরীক্ষা
+                            Uncategorized Exams
                         </h3>
                         <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-1 rounded font-bold">
-                            ${folderStructure.uncategorized.length} পরীক্ষা
+                            ${folderStructure.uncategorized.length} Exams
                         </span>
                     </div>
                     <div id="uncategorized-exams" class="space-y-2"></div>
@@ -108,7 +108,7 @@ Teacher.foldersView = () => {
             Teacher.renderFolderTree();
             Teacher.renderUncategorizedExams();
         } catch (error) {
-            console.error('ফোল্ডার ডেটা রিফ্রেশ করতে ত্রুটি:', error);
+            console.error('Error refreshing folder data:', error);
         }
     };
     
@@ -137,9 +137,9 @@ Teacher.renderFolderTree = () => {
 
 Teacher.renderFolderSection = (subjects, type) => {
     if (subjects.length === 0) {
-        return `<div class="text-center p-4 text-slate-400 bengali-text">
+        return `<div class="text-center p-4 text-slate-400">
             <i class="fas fa-folder-open text-2xl mb-2 opacity-30"></i>
-            <p>এখনো কোনো ${type} বিষয় নেই</p>
+            <p>No ${type} subjects yet</p>
         </div>`;
     }
     
@@ -151,9 +151,9 @@ Teacher.renderFolderSection = (subjects, type) => {
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2 flex-1">
                     <i class="fas fa-folder folder-icon"></i>
-                    <span class="font-bold dark:text-white bengali-text">${subject.name}</span>
-                    <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-1 rounded bengali-text">
-                        ${subject.children.length} অধ্যায়
+                    <span class="font-bold dark:text-white">${subject.name}</span>
+                    <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-1 rounded">
+                        ${subject.children.length} Chapters
                     </span>
                 </div>
                 <div class="flex items-center gap-1">
@@ -167,17 +167,17 @@ Teacher.renderFolderSection = (subjects, type) => {
                             <i class="fas fa-ellipsis-v text-slate-400"></i>
                         </button>
                         <div class="dot-menu-dropdown dark:bg-dark-secondary dark:border-dark-tertiary" id="menu-subject-${subject.id}">
-                            <div class="menu-item add-chapter dark:text-emerald-400 bengali-text" onclick="Teacher.addChapterToSubject('${subject.id}', '${type}')">
+                            <div class="menu-item add-chapter dark:text-emerald-400" onclick="Teacher.addChapterToSubject('${subject.id}', '${type}')">
                                 <i class="fas fa-plus-circle"></i>
-                                অধ্যায় যোগ
+                                Add Chapter
                             </div>
-                            <div class="menu-item rename dark:text-purple-400 bengali-text" onclick="Teacher.renameItem('subject', '${subject.id}', '${subject.name}')">
+                            <div class="menu-item rename dark:text-purple-400" onclick="Teacher.renameItem('subject', '${subject.id}', '${subject.name}')">
                                 <i class="fas fa-pencil-alt"></i>
-                                পুনঃনামকরণ
+                                Rename
                             </div>
-                            <div class="menu-item delete dark:text-red-400 bengali-text" onclick="Teacher.deleteSubject('${subject.id}', '${type}')">
+                            <div class="menu-item delete dark:text-red-400" onclick="Teacher.deleteSubject('${subject.id}', '${type}')">
                                 <i class="fas fa-trash"></i>
-                                মুছে ফেলুন
+                                Delete
                             </div>
                         </div>
                     </div>
@@ -194,9 +194,9 @@ Teacher.renderFolderSection = (subjects, type) => {
                         <div class="flex justify-between items-center mb-2">
                             <div class="flex items-center gap-2">
                                 <i class="fas fa-folder-open text-slate-400"></i>
-                                <span class="font-medium dark:text-white bengali-text">${chapter.name}</span>
-                                <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-1 rounded bengali-text">
-                                    ${chapter.exams.length} পরীক্ষা
+                                <span class="font-medium dark:text-white">${chapter.name}</span>
+                                <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-1 rounded">
+                                    ${chapter.exams.length} Exams
                                 </span>
                             </div>
                             <div class="flex items-center gap-1">
@@ -210,17 +210,17 @@ Teacher.renderFolderSection = (subjects, type) => {
                                         <i class="fas fa-ellipsis-v text-slate-400"></i>
                                     </button>
                                     <div class="dot-menu-dropdown dark:bg-dark-secondary dark:border-dark-tertiary" id="menu-chapter-${chapter.id}">
-                                        <div class="menu-item add-exam dark:text-amber-400 bengali-text" onclick="Teacher.addExamToChapter('${subject.id}', '${chapter.id}', '${type}')">
+                                        <div class="menu-item add-exam dark:text-amber-400" onclick="Teacher.addExamToChapter('${subject.id}', '${chapter.id}', '${type}')">
                                             <i class="fas fa-plus"></i>
-                                            পরীক্ষা যোগ
+                                            Add Exam
                                         </div>
-                                        <div class="menu-item rename dark:text-purple-400 bengali-text" onclick="Teacher.renameItem('chapter', '${chapter.id}', '${chapter.name}')">
+                                        <div class="menu-item rename dark:text-purple-400" onclick="Teacher.renameItem('chapter', '${chapter.id}', '${chapter.name}')">
                                             <i class="fas fa-pencil-alt"></i>
-                                            পুনঃনামকরণ
+                                            Rename
                                         </div>
-                                        <div class="menu-item delete dark:text-red-400 bengali-text" onclick="Teacher.deleteChapter('${chapter.id}', '${type}')">
+                                        <div class="menu-item delete dark:text-red-400" onclick="Teacher.deleteChapter('${chapter.id}', '${type}')">
                                             <i class="fas fa-trash"></i>
-                                            মুছে ফেলুন
+                                            Delete
                                         </div>
                                     </div>
                                 </div>
@@ -238,28 +238,28 @@ Teacher.renderFolderSection = (subjects, type) => {
                                 const endTime = examData.endTime ? new Date(examData.endTime) : null;
                                 
                                 let statusClass = 'status-draft';
-                                let statusText = 'ড্রাফট';
+                                let statusText = 'Draft';
                                 
                                 if (isCancelled) {
                                     statusClass = 'status-cancelled';
-                                    statusText = 'বাতিল';
+                                    statusText = 'Cancelled';
                                 } else if (isPublished) {
                                     statusClass = 'status-ended';
-                                    statusText = 'সমাপ্ত';
+                                    statusText = 'Ended';
                                 } else if (startTime && endTime) {
                                     if (now < startTime) {
                                         statusClass = 'status-upcoming';
-                                        statusText = 'আসন্ন';
+                                        statusText = 'Upcoming';
                                     } else if (now >= startTime && now <= endTime) {
                                         statusClass = 'status-ongoing';
-                                        statusText = 'চলমান';
+                                        statusText = 'Ongoing';
                                     } else {
                                         statusClass = 'status-ended';
-                                        statusText = 'সমাপ্ত';
+                                        statusText = 'Ended';
                                     }
                                 } else if (isDraft) {
                                     statusClass = 'status-draft';
-                                    statusText = 'ড্রাফট';
+                                    statusText = 'Draft';
                                 }
                                 
                                 return `
@@ -268,11 +268,11 @@ Teacher.renderFolderSection = (subjects, type) => {
                                         <div class="flex items-center gap-2 flex-1">
                                             <i class="fas fa-file-alt ${type === 'live' ? 'live-icon' : 'exam-icon'}"></i>
                                             <div>
-                                                <div class="font-medium text-sm dark:text-white bengali-text">${exam.name}</div>
+                                                <div class="font-medium text-sm dark:text-white">${exam.name}</div>
                                                 <div class="flex items-center gap-2 mt-1">
-                                                    <span class="text-xs ${statusClass} px-2 py-0.5 rounded bengali-text">${statusText}</span>
+                                                    <span class="text-xs ${statusClass} px-2 py-0.5 rounded">${statusText}</span>
                                                     <div class="text-xs text-slate-500 dark:text-slate-400">
-                                                        ${moment(examData.createdAt?.toDate()).format('DD MMM, YYYY') || 'অজানা তারিখ'}
+                                                        ${moment(examData.createdAt?.toDate()).format('DD MMM, YYYY') || 'Unknown date'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -282,23 +282,23 @@ Teacher.renderFolderSection = (subjects, type) => {
                                                 <i class="fas fa-ellipsis-v text-slate-400"></i>
                                             </button>
                                             <div class="dot-menu-dropdown dark:bg-dark-secondary dark:border-dark-tertiary" id="menu-exam-${exam.id}">
-                                                <div class="menu-item view dark:text-blue-400 bengali-text" onclick="Teacher.viewPaper('${exam.id}')">
+                                                <div class="menu-item view dark:text-blue-400" onclick="Teacher.viewPaper('${exam.id}')">
                                                     <i class="fas fa-eye"></i>
-                                                    দেখুন
+                                                    View
                                                 </div>
-                                                <div class="menu-item edit dark:text-blue-400 bengali-text" onclick="Teacher.editExam('${exam.id}')">
+                                                <div class="menu-item edit dark:text-blue-400" onclick="Teacher.editExam('${exam.id}')">
                                                     <i class="fas fa-edit"></i>
-                                                    সম্পাদনা
+                                                    Edit
                                                 </div>
                                                 ${type === 'live' && isDraft ? `
-                                                <div class="menu-item take-exam dark:text-emerald-400 bengali-text" onclick="Teacher.takeExamNow('${exam.id}')">
+                                                <div class="menu-item take-exam dark:text-emerald-400" onclick="Teacher.takeExamNow('${exam.id}')">
                                                     <i class="fas fa-play"></i>
-                                                    এখনই নিন
+                                                    Take Exam
                                                 </div>
                                                 ` : ''}
-                                                <div class="menu-item delete dark:text-red-400 bengali-text" onclick="Teacher.deleteExam('${exam.id}')">
+                                                <div class="menu-item delete dark:text-red-400" onclick="Teacher.deleteExam('${exam.id}')">
                                                     <i class="fas fa-trash"></i>
-                                                    মুছে ফেলুন
+                                                    Delete
                                                 </div>
                                             </div>
                                         </div>
@@ -339,7 +339,7 @@ Teacher.renderUncategorizedExams = () => {
     let uncategorizedList = folderStructure.uncategorized || [];
     
     if (uncategorizedList.length === 0) {
-        container.innerHTML = `<div class="text-center p-4 text-slate-400 bengali-text">সব পরীক্ষা ফোল্ডারে সংগঠিত</div>`;
+        container.innerHTML = `<div class="text-center p-4 text-slate-400">All exams are organized in folders</div>`;
         return;
     }
     
@@ -359,28 +359,28 @@ Teacher.renderUncategorizedExams = () => {
         const endTime = examData.endTime ? new Date(examData.endTime) : null;
         
         let statusClass = 'status-draft';
-        let statusText = 'ড্রাফট';
+        let statusText = 'Draft';
         
         if (isCancelled) {
             statusClass = 'status-cancelled';
-            statusText = 'বাতিল';
+            statusText = 'Cancelled';
         } else if (isPublished) {
             statusClass = 'status-ended';
-            statusText = 'সমাপ্ত';
+            statusText = 'Ended';
         } else if (startTime && endTime) {
             if (now < startTime) {
                 statusClass = 'status-upcoming';
-                statusText = 'আসন্ন';
+                statusText = 'Upcoming';
             } else if (now >= startTime && now <= endTime) {
                 statusClass = 'status-ongoing';
-                statusText = 'চলমান';
+                statusText = 'Ongoing';
             } else {
                 statusClass = 'status-ended';
-                statusText = 'সমাপ্ত';
+                statusText = 'Ended';
             }
         } else if (isDraft) {
             statusClass = 'status-draft';
-            statusText = 'ড্রাফট';
+            statusText = 'Draft';
         }
         
         return `
@@ -388,10 +388,10 @@ Teacher.renderUncategorizedExams = () => {
             <div class="flex items-center gap-3">
                 <i class="fas fa-file-alt ${exam.examType === 'live' ? 'live-icon' : 'exam-icon'}"></i>
                 <div>
-                    <div class="font-bold text-sm dark:text-white bengali-text">${exam.name}</div>
-                    <div class="text-xs text-slate-500 dark:text-slate-400 bengali-text">
+                    <div class="font-bold text-sm dark:text-white">${exam.name}</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400">
                         ${exam.examData.type} • ${moment(exam.examData.createdAt.toDate()).format('DD MMM, YYYY')}
-                        • <span class="${statusClass} bengali-text">${statusText}</span>
+                        • <span class="${statusClass}">${statusText}</span>
                     </div>
                 </div>
             </div>
@@ -401,23 +401,23 @@ Teacher.renderUncategorizedExams = () => {
                         <i class="fas fa-ellipsis-v text-slate-400"></i>
                     </button>
                     <div class="dot-menu-dropdown dark:bg-dark-secondary dark:border-dark-tertiary" id="menu-uncategorized-${exam.id}">
-                        <div class="menu-item view dark:text-blue-400 bengali-text" onclick="Teacher.viewPaper('${exam.id}')">
+                        <div class="menu-item view dark:text-blue-400" onclick="Teacher.viewPaper('${exam.id}')">
                             <i class="fas fa-eye"></i>
-                            দেখুন
+                            View
                         </div>
-                        <div class="menu-item edit dark:text-blue-400 bengali-text" onclick="Teacher.editExam('${exam.id}')">
+                        <div class="menu-item edit dark:text-blue-400" onclick="Teacher.editExam('${exam.id}')">
                             <i class="fas fa-edit"></i>
-                            সম্পাদনা
+                            Edit
                         </div>
                         ${exam.examType === 'live' && exam.examData.isDraft ? `
-                        <div class="menu-item take-exam dark:text-emerald-400 bengali-text" onclick="Teacher.takeExamNow('${exam.id}')">
+                        <div class="menu-item take-exam dark:text-emerald-400" onclick="Teacher.takeExamNow('${exam.id}')">
                             <i class="fas fa-play"></i>
-                            এখনই নিন
+                            Take Exam
                         </div>
                         ` : ''}
-                        <div class="menu-item delete dark:text-red-400 bengali-text" onclick="Teacher.deleteExam('${exam.id}')">
+                        <div class="menu-item delete dark:text-red-400" onclick="Teacher.deleteExam('${exam.id}')">
                             <i class="fas fa-trash"></i>
-                            মুছে ফেলুন
+                            Delete
                         </div>
                     </div>
                 </div>
@@ -428,15 +428,15 @@ Teacher.renderUncategorizedExams = () => {
 
 Teacher.createSubject = async (type) => {
     const { value: subjectName } = await Swal.fire({
-        title: `নতুন ${type === 'live' ? 'লাইভ' : 'মক'} বিষয় তৈরি`,
+        title: `Create New ${type === 'live' ? 'Live' : 'Mock'} Subject`,
         input: 'text',
-        inputLabel: 'বিষয়ের নাম',
-        inputPlaceholder: 'বিষয়ের নাম লিখুন',
+        inputLabel: 'Subject Name',
+        inputPlaceholder: 'Enter subject name',
         showCancelButton: true,
         inputValidator: (value) => {
-            if (!value) return 'বিষয়ের নাম দিতে হবে!';
+            if (!value) return 'You need to enter a subject name!';
             if (folderStructure[type].some(s => s.name === value)) {
-                return 'এই বিষয়টি ইতিমধ্যে বিদ্যমান!';
+                return 'Subject already exists!';
             }
         }
     });
@@ -457,7 +457,7 @@ Teacher.createSubject = async (type) => {
         
         Teacher.renderFolderTree();
         
-        Swal.fire('সফল', 'বিষয় সফলভাবে তৈরি হয়েছে', 'success');
+        Swal.fire('Success', 'Subject created successfully', 'success');
     }
 };
 
@@ -466,15 +466,15 @@ Teacher.addChapterToSubject = async function(subjectId, type) {
     if (!subject) return;
     
     const { value: chapterName } = await Swal.fire({
-        title: `${subject.name} এ অধ্যায় যোগ করুন`,
+        title: `Add Chapter to ${subject.name}`,
         input: 'text',
-        inputLabel: 'অধ্যায়ের নাম',
-        inputPlaceholder: 'অধ্যায়ের নাম লিখুন',
+        inputLabel: 'Chapter Name',
+        inputPlaceholder: 'Enter chapter name',
         showCancelButton: true,
         inputValidator: (value) => {
-            if (!value) return 'অধ্যায়ের নাম দিতে হবে!';
+            if (!value) return 'You need to enter a chapter name!';
             if (subject.children.some(c => c.name === value)) {
-                return 'এই অধ্যায়টি ইতিমধ্যে বিদ্যমান!';
+                return 'Chapter already exists!';
             }
         }
     });
@@ -495,7 +495,7 @@ Teacher.addChapterToSubject = async function(subjectId, type) {
         
         Teacher.renderFolderTree();
         
-        Swal.fire('সফল', 'অধ্যায় সফলভাবে যোগ করা হয়েছে', 'success');
+        Swal.fire('Success', 'Chapter added successfully', 'success');
     }
 };
 
@@ -520,13 +520,13 @@ Teacher.addExamToChapter = function(subjectId, chapterId, type) {
 
 Teacher.renameItem = async function(itemType, itemId, currentName) {
     const { value: newName } = await Swal.fire({
-        title: `${itemType} পুনঃনামকরণ`,
+        title: `Rename ${itemType}`,
         input: 'text',
-        inputLabel: 'নতুন নাম',
+        inputLabel: 'New Name',
         inputValue: currentName,
         showCancelButton: true,
         inputValidator: (value) => {
-            if (!value) return 'নতুন নাম দিতে হবে!';
+            if (!value) return 'You need to enter a new name!';
         }
     });
     
@@ -557,7 +557,7 @@ Teacher.renameItem = async function(itemType, itemId, currentName) {
         if (found) {
             await saveFolderStructureToFirebase();
             
-            Swal.fire('সফল', `${itemType} এর নাম পরিবর্তন করে ${newName} রাখা হয়েছে`, 'success');
+            Swal.fire('Success', `${itemType} renamed to ${newName}`, 'success');
             Teacher.foldersView();
         }
     }
@@ -565,12 +565,12 @@ Teacher.renameItem = async function(itemType, itemId, currentName) {
 
 Teacher.deleteSubject = async function(subjectId, type) {
     const result = await Swal.fire({
-        title: 'বিষয় মুছে ফেলবেন?',
-        text: "এটি এই বিষয়ের অধীনস্থ সকল অধ্যায় এবং পরীক্ষা মুছে ফেলবে!",
+        title: 'Delete Subject?',
+        text: "This will delete all chapters and exams under this subject!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'সবকিছু মুছে ফেলুন'
+        confirmButtonText: 'Delete Everything'
     });
     
     if (result.isConfirmed) {
@@ -581,19 +581,19 @@ Teacher.deleteSubject = async function(subjectId, type) {
             await saveFolderStructureToFirebase();
             
             Teacher.renderFolderTree();
-            Swal.fire('মুছে ফেলা হয়েছে!', 'বিষয় এবং এর সকল বিষয়বস্তু মুছে ফেলা হয়েছে।', 'success');
+            Swal.fire('Deleted!', 'Subject and all contents deleted.', 'success');
         }
     }
 };
 
 Teacher.deleteChapter = async function(chapterId, type) {
     const result = await Swal.fire({
-        title: 'অধ্যায় মুছে ফেলবেন?',
-        text: "এটি এই অধ্যায়ের অধীনস্থ সকল পরীক্ষা মুছে ফেলবে!",
+        title: 'Delete Chapter?',
+        text: "This will delete all exams under this chapter!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'সবকিছু মুছে ফেলুন'
+        confirmButtonText: 'Delete Everything'
     });
     
     if (result.isConfirmed) {
@@ -605,7 +605,7 @@ Teacher.deleteChapter = async function(chapterId, type) {
                 await saveFolderStructureToFirebase();
                 
                 Teacher.renderFolderTree();
-                Swal.fire('মুছে ফেলা হয়েছে!', 'অধ্যায় এবং সকল পরীক্ষা মুছে ফেলা হয়েছে।', 'success');
+                Swal.fire('Deleted!', 'Chapter and all exams deleted.', 'success');
                 break;
             }
         }
@@ -650,7 +650,7 @@ Teacher.editExam = async (examId) => {
         
         const actionContainer = document.querySelector('.flex.gap-2.mt-4') || document.querySelector('button[onclick*="createExam"]');
         if(actionContainer) {
-            actionContainer.outerHTML = `<button onclick="Teacher.updateExistingExam('${examId}')" class="bg-indigo-600 text-white w-full py-4 rounded-xl font-bold shadow hover:bg-indigo-700 transition bengali-text">পরীক্ষা আপডেট করুন</button>`;
+            actionContainer.outerHTML = `<button onclick="Teacher.updateExistingExam('${examId}')" class="bg-indigo-600 text-white w-full py-4 rounded-xl font-bold shadow hover:bg-indigo-700 transition">Update Exam Details</button>`;
         }
         
         setTimeout(() => {
@@ -663,18 +663,18 @@ Teacher.editExam = async (examId) => {
 
 Teacher.deleteExam = async (examId) => {
     const result = await Swal.fire({
-        title: 'পরীক্ষা মুছে ফেলবেন?',
-        text: "এটি পরীক্ষা এবং সংশ্লিষ্ট সকল প্রচেষ্টা মুছে ফেলবে!",
+        title: 'Delete Exam?',
+        text: "This will delete the exam and all associated attempts!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'সবকিছু মুছে ফেলুন'
+        confirmButtonText: 'Delete Everything'
     });
 
     if (result.isConfirmed) {
         try {
             Swal.fire({
-                title: 'মুছে ফেলা হচ্ছে...',
+                title: 'Deleting...',
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
@@ -701,10 +701,10 @@ Teacher.deleteExam = async (examId) => {
 
             delete ExamCache[examId];
 
-            Swal.fire('মুছে ফেলা হয়েছে!', 'পরীক্ষা সর্বত্র থেকে মুছে ফেলা হয়েছে।', 'success');
+            Swal.fire('Deleted!', 'Exam deleted from everywhere.', 'success');
             Teacher.foldersView();
         } catch (error) {
-            Swal.fire('ত্রুটি', 'মুছে ফেলতে ব্যর্থ: ' + error.message, 'error');
+            Swal.fire('Error', 'Failed to delete: ' + error.message, 'error');
         }
     }
 };
@@ -718,28 +718,28 @@ Teacher.takeExamNow = async (examId) => {
     const hasRank = !rankSnap.empty;
     
     const { value: formValues } = await Swal.fire({
-        title: 'পরীক্ষার সময়সূচী নির্ধারণ',
+        title: 'Schedule Exam',
         html: `
         <div class="text-left">
-            <label class="text-xs font-bold bengali-text">শুরুর সময়</label>
+            <label class="text-xs font-bold">Start Time</label>
             <input id="sw-st" type="datetime-local" class="swal2-input">
-            <label class="text-xs font-bold bengali-text">শেষ সময়</label>
+            <label class="text-xs font-bold">End Time</label>
             <input id="sw-et" type="datetime-local" class="swal2-input">
             ${hasRank ? `
             <div class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                <p class="text-xs font-bold mb-2 bengali-text">র‍্যাংক তালিকা অপশন:</p>
-                <label class="flex items-center gap-2 text-xs mb-2 bengali-text">
+                <p class="text-xs font-bold mb-2">Rank List Option:</p>
+                <label class="flex items-center gap-2 text-xs mb-2">
                     <input type="radio" name="rank-opt" value="merge" checked>
-                    বিদ্যমান র‍্যাংকিংয়ে যুক্ত করুন
+                    Merge with existing ranking
                 </label>
-                <label class="flex items-center gap-2 text-xs bengali-text">
+                <label class="flex items-center gap-2 text-xs">
                     <input type="radio" name="rank-opt" value="new">
-                    আগের সব র‍্যাংক মুছে নতুন করুন
+                    Clear previous ranks and start new
                 </label>
             </div>` : ''}
         </div>`,
         showCancelButton: true,
-        confirmButtonText: 'নিশ্চিত করুন ও লাইভ করুন',
+        confirmButtonText: 'Confirm & Go Live',
         preConfirm: () => {
             const rankOpt = document.querySelector('input[name="rank-opt"]:checked')?.value || 'new';
             return [
@@ -753,7 +753,7 @@ Teacher.takeExamNow = async (examId) => {
     if (formValues) {
         const [startTime, endTime, rankOpt] = formValues;
         if (!startTime || !endTime) {
-            Swal.fire('ত্রুটি', 'সময় আবশ্যক', 'error');
+            Swal.fire('Error', 'Time required', 'error');
             return;
         }
         
@@ -781,11 +781,11 @@ Teacher.takeExamNow = async (examId) => {
                 endTime: endTime
             });
             
-            Swal.fire('সফল', 'পরীক্ষা এখন লাইভ', 'success').then(() => {
+            Swal.fire('Success', 'Exam is now LIVE', 'success').then(() => {
                 Teacher.foldersView();
             });
         } catch (e) {
-            Swal.fire('ত্রুটি', e.message, 'error');
+            Swal.fire('Error', e.message, 'error');
         }
     }
 };
@@ -798,11 +798,11 @@ Teacher.viewPaper = async (examId) => {
     
     let html = `
         <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary max-w-3xl mx-auto">
-            <h3 class="text-xl font-bold mb-4 text-center dark:text-white bengali-text">${exam.title}</h3>
-            <div class="text-sm text-slate-500 dark:text-slate-400 mb-6 text-center bengali-text">
+            <h3 class="text-xl font-bold mb-4 text-center dark:text-white">${exam.title}</h3>
+            <div class="text-sm text-slate-500 dark:text-slate-400 mb-6 text-center">
                 ${exam.subject ? exam.subject : ''} ${exam.chapter ? '• ' + exam.chapter : ''}
-                ${exam.isDraft ? '<span class="text-amber-600 ml-2 bengali-text">• ড্রাফট</span>' : ''}
-                ${exam.cancelled ? '<span class="text-red-600 ml-2 bengali-text">• বাতিল</span>' : ''}
+                ${exam.isDraft ? '<span class="text-amber-600 ml-2">• Draft</span>' : ''}
+                ${exam.cancelled ? '<span class="text-red-600 ml-2">• Cancelled</span>' : ''}
             </div>
     `;
     
@@ -812,8 +812,8 @@ Teacher.viewPaper = async (examId) => {
         html += `
             <div class="mb-6 p-4 border rounded-lg bg-slate-50 dark:bg-black dark:border-dark-tertiary">
                 <div class="flex justify-between items-start mb-3">
-                    <span class="font-bold text-indigo-600 dark:text-indigo-400 bengali-text">প্রশ্ন ${index + 1}</span>
-                    ${q.previousYear && q.showPreviousYearInQuestion ? `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 px-2 py-1 rounded bengali-text">${q.previousYear}</span>` : ''}
+                    <span class="font-bold text-indigo-600 dark:text-indigo-400">Q${index + 1}</span>
+                    ${q.previousYear && q.showPreviousYearInQuestion ? `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300 px-2 py-1 rounded">${q.previousYear}</span>` : ''}
                 </div>
                 <p class="font-medium mb-3 dark:text-white">${questionHTML}</p>
                 <div class="space-y-2 mb-3">
@@ -823,7 +823,7 @@ Teacher.viewPaper = async (examId) => {
                         
                         return `
                             <div class="p-2 rounded border ${isCorrect ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-200 dark:border-emerald-700' : 'bg-white dark:bg-dark-secondary border-slate-200 dark:border-dark-tertiary'}">
-                                <span class="font-bold ${isCorrect ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'} bengali-text">${String.fromCharCode(65 + optIndex)}.</span>
+                                <span class="font-bold ${isCorrect ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}">${String.fromCharCode(65 + optIndex)}.</span>
                                 <span class="${isCorrect ? 'font-bold text-emerald-700 dark:text-emerald-300' : 'dark:text-slate-300'}">${optionText}</span>
                                 ${isCorrect ? '<i class="fas fa-check float-right text-emerald-600 dark:text-emerald-400"></i>' : ''}
                             </div>
@@ -832,14 +832,14 @@ Teacher.viewPaper = async (examId) => {
                 </div>
                 ${q.previousYear && !q.showPreviousYearInQuestion ? `
                     <div class="mt-3 p-3 bg-amber-50 dark:bg-amber-900 rounded border border-amber-200 dark:border-amber-800">
-                        <span class="font-bold text-amber-700 dark:text-amber-300 text-sm bengali-text">পূর্ববর্তী বছর:</span>
-                        <p class="text-sm mt-1 dark:text-amber-200 bengali-text">${q.previousYear}</p>
+                        <span class="font-bold text-amber-700 dark:text-amber-300 text-sm">Previous Year:</span>
+                        <p class="text-sm mt-1 dark:text-amber-200">${q.previousYear}</p>
                     </div>
                 ` : ''}
                 ${q.expl && q.expl.trim() !== "" ? `
                     <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-800">
-                        <span class="font-bold text-blue-700 dark:text-blue-300 text-sm bengali-text">ব্যাখ্যা:</span>
-                        <p class="text-sm mt-1 dark:text-blue-200 bengali-text">${window.MathHelper.renderExamContent(q.expl)}</p>
+                        <span class="font-bold text-blue-700 dark:text-blue-300 text-sm">Explanation:</span>
+                        <p class="text-sm mt-1 dark:text-blue-200">${window.MathHelper.renderExamContent(q.expl)}</p>
                     </div>
                 ` : ''}
             </div>
@@ -850,8 +850,8 @@ Teacher.viewPaper = async (examId) => {
     
     document.getElementById('app-container').innerHTML = `
         <div class="pb-6">
-            <button onclick="Teacher.foldersView()" class="mb-4 text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 bengali-text">
-                <i class="fas fa-arrow-left"></i> লাইব্রেরিতে ফিরুন
+            <button onclick="Teacher.foldersView()" class="mb-4 text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                <i class="fas fa-arrow-left"></i> Back to Library
             </button>
             ${html}
         </div>
