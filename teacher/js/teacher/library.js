@@ -1,5 +1,6 @@
 // js/teacher/library.js
 // লাইব্রেরি ব্যবস্থাপনা (ফোল্ডার ট্রি, সাবজেক্ট, চ্যাপ্টার, পরীক্ষা দেখা/এডিট/ডিলিট)
+// আপডেটেড: viewPaper ফাংশনে MathHelper ও loadMathJax ব্যবহার করা হয়েছে
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -806,12 +807,7 @@ Teacher.viewPaper = async (examId) => {
     `;
     
     questions.forEach((q, index) => {
-        let questionHTML = q.q;
-        if (q.q.includes('\\') || q.q.includes('^') || q.q.includes('_')) {
-            questionHTML = `<span class="math-render bengali-text">\\(${q.q}\\)</span>`;
-        } else {
-            questionHTML = `<span class="bengali-text">${q.q}</span>`;
-        }
+        const questionHTML = window.MathHelper.renderExamContent(q.q);
         
         html += `
             <div class="mb-6 p-4 border rounded-lg bg-slate-50 dark:bg-black dark:border-dark-tertiary">
@@ -823,13 +819,7 @@ Teacher.viewPaper = async (examId) => {
                 <div class="space-y-2 mb-3">
                     ${q.options.map((option, optIndex) => {
                         const isCorrect = optIndex === q.correct;
-                        
-                        let optionText = option;
-                        if (option.includes('\\') || option.includes('^') || option.includes('_')) {
-                            optionText = `<span class="math-render bengali-text">\\(${option}\\)</span>`;
-                        } else {
-                            optionText = `<span class="bengali-text">${option}</span>`;
-                        }
+                        const optionText = window.MathHelper.renderExamContent(option);
                         
                         return `
                             <div class="p-2 rounded border ${isCorrect ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-200 dark:border-emerald-700' : 'bg-white dark:bg-dark-secondary border-slate-200 dark:border-dark-tertiary'}">
@@ -849,7 +839,7 @@ Teacher.viewPaper = async (examId) => {
                 ${q.expl && q.expl.trim() !== "" ? `
                     <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-800">
                         <span class="font-bold text-blue-700 dark:text-blue-300 text-sm bengali-text">ব্যাখ্যা:</span>
-                        <p class="text-sm mt-1 dark:text-blue-200 bengali-text">${q.expl}</p>
+                        <p class="text-sm mt-1 dark:text-blue-200 bengali-text">${window.MathHelper.renderExamContent(q.expl)}</p>
                     </div>
                 ` : ''}
             </div>
@@ -867,5 +857,5 @@ Teacher.viewPaper = async (examId) => {
         </div>
     `;
     
-    MathJax.typesetPromise();
+    window.loadMathJax(null, document.getElementById('app-container'));
 };
