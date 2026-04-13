@@ -1,5 +1,5 @@
 // js/teacher/exam-create.js
-// পরীক্ষা তৈরি সংক্রান্ত সমস্ত ফিচার
+// পরীক্ষা তৈরি সংক্রান্ত সমস্ত ফিচার (MathHelper সহ)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -405,10 +405,12 @@ Teacher.updateQuestionsList = () => {
     
     questionsList.innerHTML = `
         <h3 class="font-bold text-lg mb-2 dark:text-white bengali-text">প্রশ্ন তালিকা (${Teacher.questions.length})</h3>
-        ${Teacher.questions.map((q, index) => `
+        ${Teacher.questions.map((q, index) => {
+            const questionPreview = window.MathHelper.renderExamContent(q.q.substring(0, 100) + (q.q.length > 100 ? '...' : ''));
+            return `
             <div class="question-list-item dark:bg-black dark:border-dark-tertiary">
                 <div class="flex justify-between items-start mb-2">
-                    <div class="question-text truncate dark:text-white bengali-text">${index + 1}. ${q.q.substring(0, 100)}${q.q.length > 100 ? '...' : ''}</div>
+                    <div class="question-text truncate dark:text-white">${index + 1}. ${questionPreview}</div>
                     <div class="flex gap-2">
                         <button onclick="Teacher.editQuestion(${index})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">
                             <i class="fas fa-edit"></i>
@@ -419,17 +421,18 @@ Teacher.updateQuestionsList = () => {
                     </div>
                 </div>
                 <div class="options dark:text-slate-300 bengali-text">
-                    A. ${q.options[0].substring(0, 50)}${q.options[0].length > 50 ? '...' : ''}<br>
-                    B. ${q.options[1].substring(0, 50)}${q.options[1].length > 50 ? '...' : ''}<br>
-                    C. ${q.options[2].substring(0, 50)}${q.options[2].length > 50 ? '...' : ''}<br>
-                    D. ${q.options[3].substring(0, 50)}${q.options[3].length > 50 ? '...' : ''}
+                    A. ${window.MathHelper.renderExamContent(q.options[0].substring(0, 50) + (q.options[0].length > 50 ? '...' : ''))}<br>
+                    B. ${window.MathHelper.renderExamContent(q.options[1].substring(0, 50) + (q.options[1].length > 50 ? '...' : ''))}<br>
+                    C. ${window.MathHelper.renderExamContent(q.options[2].substring(0, 50) + (q.options[2].length > 50 ? '...' : ''))}<br>
+                    D. ${window.MathHelper.renderExamContent(q.options[3].substring(0, 50) + (q.options[3].length > 50 ? '...' : ''))}
                 </div>
                 <div class="correct-answer dark:text-emerald-400 bengali-text">
                     সঠিক: ${String.fromCharCode(65 + q.correct)}
                 </div>
             </div>
-        `).join('')}
+        `}).join('')}
     `;
+    window.loadMathJax(null, questionsList);
 };
 
 Teacher.editQuestion = (index) => {
