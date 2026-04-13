@@ -1,0 +1,112 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #020617; /* Deep dark background */
+    font-family: 'Inter', sans-serif;
+}
+
+.card-container {
+    width: 320px;
+    height: 450px;
+    perspective: 1500px;
+}
+
+.card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+/* JavaScript toggle এর মাধ্যমে এই ক্লাসটি কাজ করবে */
+.card.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+/* Front Side */
+.card-front img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay-text {
+    position: absolute;
+    bottom: 25px;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+/* Back Side */
+.card-back {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #f8fafc;
+    transform: rotateY(180deg);
+    padding: 30px;
+    text-align: center;
+}
+
+.card-back h2 {
+    color: #38bdf8;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.tagline {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 25px;
+}
+
+.info-list {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    width: 100%;
+}
+
+.info-list p {
+    margin: 10px 0;
+    font-size: 0.95rem;
+}
+
+.info-list strong {
+    color: #38bdf8;
+}
+
+.back-footer {
+    margin-top: auto;
+    font-size: 0.75rem;
+    opacity: 0.5;
+}
