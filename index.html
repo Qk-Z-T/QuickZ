@@ -1,1 +1,319 @@
+<!DOCTYPE html>
+<html lang="bn" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>QuickZ · শিক্ষক ও শিক্ষার্থী পোর্টাল</title>
+    
+    <!-- Real PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QuickZ">
+    
+    <!-- Fallback Icon -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    
+    <!-- Tailwind CSS (CDN) with Dark Mode Config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {} }
+        }
+    </script>
+    
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Hind Siliguri', 'Outfit', sans-serif;
+            background: #fafcff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .dark body { background: #0f172a; }
+        .bengali { font-family: 'Hind Siliguri', sans-serif; }
+        .en { font-family: 'Outfit', sans-serif; }
+        
+        /* Portal Card Styles */
+        .portal-card {
+            transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s, background-color 0.3s;
+            will-change: transform;
+            border: 1px solid rgba(203, 213, 225, 0.4);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0,0,0,0.02);
+        }
+        .dark .portal-card {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(71, 85, 105, 0.4);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+        }
+        .portal-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 28px 40px -12px rgba(79, 70, 229, 0.15), 0 8px 18px -6px rgba(0,0,0,0.05);
+            border-color: rgba(129, 140, 248, 0.5);
+        }
+        
+        /* Feature Card Styles */
+        .feature-card {
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px -5px rgba(0,0,0,0.02);
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -12px rgba(79, 70, 229, 0.2);
+        }
+        
+        .badge-soft {
+            background: #eef2ff;
+            color: #4f46e5;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+        }
+        .dark .badge-soft { background: rgba(79, 70, 229, 0.2); color: #818cf8; }
+        .dark .badge-emerald { background: rgba(16, 185, 129, 0.2) !important; color: #34d399 !important; }
+        
+        html { scroll-behavior: smooth; }
+        .footer-note { opacity: 0.7; transition: opacity 0.2s; }
+        .footer-note:hover { opacity: 1; }
+        
+        #install-prompt-btn { transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        #install-prompt-btn:hover { transform: scale(1.02); }
+        @media (display-mode: standalone) { #install-container { display: none !important; } }
+        
+        #theme-toggle { transition: transform 0.3s; }
+        #theme-toggle:active { transform: scale(0.9); }
 
+        /* --- Flip Card Styles --- */
+        .card-container {
+            perspective: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 320px;
+            height: 400px;
+        }
+        .card-flip {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .card-flip.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .card-front {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dark .card-front { background: linear-gradient(135deg, #312e81 0%, #4c1d95 100%); }
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .overlay-text {
+            position: absolute;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+            z-index: 2;
+        }
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(203, 213, 225, 0.4);
+        }
+        .dark .card-back { background: #1e293b; border-color: #334155; }
+    </style>
+</head>
+<body class="text-slate-700 dark:text-slate-300">
+
+<div class="w-full max-w-6xl mx-auto relative pt-4">
+    
+    <button id="theme-toggle" class="absolute top-0 right-0 p-3 w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-amber-400 hover:scale-105 transition-all z-50">
+        <i class="fas fa-moon text-xl" id="theme-icon"></i>
+    </button>
+    
+    <div class="text-center mb-8 md:mb-12 mt-6">
+        <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight en"><span class="text-slate-800 dark:text-white">Quick</span><span class="text-emerald-500">Z</span></h1>
+        <div class="h-1 w-20 bg-gradient-to-r from-indigo-400 to-emerald-400 rounded-full mx-auto mt-3 opacity-50"></div>
+    </div>
+
+    <div id="install-container" class="flex justify-center mb-8 hidden">
+        <button id="install-prompt-btn" class="bg-indigo-600 border border-indigo-700 text-white px-6 py-3 rounded-full text-sm font-semibold shadow-lg hover:bg-indigo-700 flex items-center gap-2 bengali"><i class="fas fa-download"></i> অ্যাপ হিসেবে ইনস্টল করুন</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-12">
+        <a href="./student.html" target="_self" class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
+            <div class="absolute -top-6 -right-6 w-32 h-32 bg-indigo-100/40 dark:bg-indigo-900/20 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-50/30 dark:bg-indigo-900/10 rounded-full blur-3xl"></div>
+            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-indigo-100 dark:border-slate-700 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6 group-hover:scale-105 transition-transform"><i class="fas fa-graduation-cap text-2xl"></i></div>
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">শিক্ষার্থী <span class="badge-soft text-xs bengali">প্রবেশ</span></h2>
+            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">লাইভ পরীক্ষা, মক টেস্ট, র‍্যাংকিং, বিস্তারিত ফলাফল ও অগ্রগতি — সবকিছু এক জায়গায়।</p>
+            <div class="relative z-10 mt-auto flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold group-hover:gap-3 transition-all"><span class="bengali text-base">শিক্ষার্থী পোর্টাল খুলুন</span><i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i></div>
+        </a>
+        <a href="./teacher.html" target="_self" class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
+            <div class="absolute -top-6 -left-6 w-32 h-32 bg-emerald-100/40 dark:bg-emerald-900/20 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-emerald-50/30 dark:bg-emerald-900/10 rounded-full blur-3xl"></div>
+            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-emerald-100 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-105 transition-transform"><i class="fas fa-chalkboard-teacher text-2xl"></i></div>
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">শিক্ষক <span class="badge-soft badge-emerald bg-emerald-50 text-emerald-700 bengali">প্রবেশ</span></h2>
+            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">কোর্স তৈরি, লাইভ পরীক্ষা, প্রশ্নব্যাংক, শিক্ষার্থী ব্যবস্থাপনা ও সম্পূর্ণ অ্যানালিটিক্স।</p>
+            <div class="relative z-10 mt-auto flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold group-hover:gap-3 transition-all"><span class="bengali text-base">শিক্ষক পোর্টাল খুলুন</span><i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i></div>
+        </a>
+    </div>
+
+    <div class="text-center max-w-3xl mx-auto mb-16"><p class="text-slate-600 dark:text-slate-400 text-lg md:text-xl bengali font-medium leading-relaxed">শিক্ষক ও শিক্ষার্থীদের জন্য তৈরি আধুনিক পরীক্ষা ব্যবস্থাপনা প্লাটফর্ম। <br class="hidden sm:block">আপনার ভূমিকা নির্বাচন করে শুরু করুন।</p></div>
+
+    <div class="space-y-16">
+        <!-- Student Features... -->
+        <!-- Teacher Features... -->
+    </div>
+
+    <!-- DEVELOPER FLIP CARD SECTION -->
+    <div class="mt-20 pt-12 border-t border-slate-200 dark:border-slate-800 w-full flex flex-col items-center">
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-bold text-slate-800 dark:text-white en tracking-wide">Developed By</h3>
+            <div class="h-1 w-12 bg-indigo-500 rounded-full mx-auto mt-2 opacity-50"></div>
+        </div>
+        
+        <div class="card-container">
+            <div class="card-flip" onclick="this.classList.toggle('is-flipped')">
+                <div class="card-face card-front">
+                    <div class="absolute inset-0 flex items-center justify-center text-slate-400 dark:text-slate-500"><i class="fas fa-user-astronaut text-7xl opacity-50"></i></div>
+                    <img src="./tamim.png" alt="Tamim Hossain" onerror="this.style.display='none'">
+                    <div class="overlay-text en">Tap to Reveal</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 shadow-sm"><i class="fas fa-laptop-code text-2xl"></i></div>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white en mb-1">Tamim Hossain</h2>
+                    <p class="text-sm font-medium text-indigo-500 dark:text-indigo-400 mb-5 en">Web Developer & Science Enthusiast</p>
+                    <div class="w-full space-y-3 text-sm text-slate-600 dark:text-slate-400 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl mb-4 en border border-slate-100 dark:border-slate-700">
+                        <p><strong class="text-slate-800 dark:text-slate-200"><i class="fas fa-code text-indigo-500 w-5"></i> Dev:</strong> React, JS, HTML/CSS</p>
+                        <p><strong class="text-slate-800 dark:text-slate-200"><i class="fas fa-brain text-amber-500 w-5"></i> Vibe:</strong> Physics, Chess, Football</p>
+                    </div>
+                    <div class="text-xs text-slate-400 dark:text-slate-500 mt-auto flex items-center gap-1 cursor-pointer en font-medium"><i class="fas fa-undo"></i> Click to Flip Back</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-16 text-center text-sm text-slate-400 dark:text-slate-500 footer-note bengali mb-8">© ২০২৫ QuickZ · শিক্ষার ডিজিটাল রূপান্তর</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Theme logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                htmlElement.classList.toggle('dark');
+                if (htmlElement.classList.contains('dark')) {
+                    localStorage.theme = 'dark';
+                    if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    localStorage.theme = 'light';
+                    if (themeIcon) themeIcon.classList.replace('fa-sun', 'fa-moon');
+                }
+            });
+        }
+
+        // PWA logic
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    console.log('✅ Service Worker Pro Registered');
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('🔄 New update downloaded.');
+                            }
+                        };
+                    };
+                }).catch(err => console.error('SW Error:', err));
+            });
+        }
+
+        // Install Prompt
+        let deferredPrompt;
+        const installContainer = document.getElementById('install-container');
+        const installBtn = document.getElementById('install-prompt-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installContainer) installContainer.classList.remove('hidden');
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                if (installContainer) installContainer.classList.add('hidden');
+            });
+        }
+
+        window.addEventListener('appinstalled', () => {
+            if (installContainer) installContainer.classList.add('hidden');
+        });
+    });
+</script>
+
+</body>
+</html>
