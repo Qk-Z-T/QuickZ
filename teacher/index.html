@@ -8,11 +8,33 @@
     <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- SolaimanLipi Font (Maateen CDN) -->
+    <link rel="stylesheet" href="https://fonts.maateen.me/solaiman-lipi/font.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.maateen.me/solaiman-lipi/font.css"></noscript>
+    <!-- Outfit font for English logo only -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     
+    <!-- MathJax configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                packages: ['base', 'ams', 'noerrors', 'noundefined']
+            },
+            svg: { fontCache: 'global' },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/teacher.css">
     
@@ -24,13 +46,13 @@
                 extend: {
                     fontFamily: {
                         'en': ['Outfit', 'sans-serif'],
-                        'bn': ['Hind Siliguri', 'sans-serif']
+                        'bn': ['SolaimanLipi', 'sans-serif']
                     },
                     colors: {
                         dark: {
-                            primary: '#0a0a0a',
-                            secondary: '#111111',
-                            tertiary: '#222222'
+                            primary: '#1a1f2e',
+                            secondary: '#242938',
+                            tertiary: '#2d3347'
                         }
                     }
                 }
