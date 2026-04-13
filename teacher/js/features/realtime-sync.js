@@ -1,5 +1,6 @@
 // js/features/realtime-sync.js
 // রিয়েল-টাইম সিঙ্ক এবং ফোল্ডার স্ট্রাকচার ম্যানেজমেন্ট
+// আপডেট: হোম পেজের জন্য ব্যাকগ্রাউন্ড ক্যাশ আপডেট (UI রি-রেন্ডার হয় না)
 
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
@@ -11,23 +12,34 @@ let unsubscribes = window.unsubscribes;
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
 
-// UI আপডেট হেল্পার
+// UI আপডেট হেল্পার (AppState.currentPage ব্যবহার করে নির্ভুল চেক)
 function updateUIRendering() {
-    const container = document.getElementById('app-container');
-    if (!container) return;
+    const page = AppState.currentPage;
+    const Teacher = window.Teacher;
     
-    if (container.innerHTML.includes('লাইব্রেরি ব্যবস্থাপনা')) {
+    if (!Teacher) {
+        console.warn('Teacher object not available yet');
+        return;
+    }
+    
+    console.log('UI update triggered for page:', page);
+    
+    // হোম পেজের জন্য বিশেষ আচরণ: UI রি-রেন্ডার না করে শুধু ক্যাশ আপডেট করো
+    if (page === 'home') {
+        if (typeof Teacher.updateHomeCacheFromRealtime === 'function') {
+            Teacher.updateHomeCacheFromRealtime();
+        }
+        return; // UI রেন্ডার স্কিপ করো
+    }
+    
+    // অন্যান্য পেজের জন্য UI আপডেট
+    if (page === 'folders') {
         if (typeof Teacher.renderFolderTree === 'function') Teacher.renderFolderTree();
         if (typeof Teacher.renderUncategorizedExams === 'function') Teacher.renderUncategorizedExams();
-    }
-    if (container.innerHTML.includes('লাইভ পরীক্ষার র‍্যাংকিং')) {
+    } else if (page === 'rank') {
         if (typeof Teacher.rankView === 'function') Teacher.rankView();
-    }
-    if (container.innerHTML.includes('লাইভ পরীক্ষা ব্যবস্থাপনা')) {
-        if (typeof Teacher.liveExamManagementView === 'function') Teacher.liveExamManagementView();
-    }
-    if (container.innerHTML.includes('ড্যাশবোর্ড হোম')) {
-        if (typeof Teacher.homeView === 'function') Teacher.homeView();
+    } else if (page === 'management') {
+        // কিছু ক্ষেত্রে liveExamManagementView কল হতে পারে, তবে সেটি পেজের উপর নির্ভর করে
     }
 }
 
@@ -39,13 +51,18 @@ export async function saveFolderStructureToFirebase() {
             ...folderStructure,
             updatedAt: new Date()
         }, { merge: true });
+        console.log('Folder structure saved');
     } catch (error) {
         console.error("Folder Sync Error:", error);
     }
 }
 
 export function initRealTimeSync() {
-    if (!AppState.selectedGroup || !AppState.currentUser) return;
+    console.log('initRealTimeSync called, selectedGroup:', AppState.selectedGroup);
+    if (!AppState.selectedGroup || !AppState.currentUser) {
+        console.warn('No selected group or user, skipping realtime sync');
+        return;
+    }
     
     clearListeners();
     
@@ -57,7 +74,10 @@ export function initRealTimeSync() {
             folderStructure = { live: [], mock: [], uncategorized: [] };
         }
         window.folderStructure = folderStructure;
+        console.log('Folder structure updated:', folderStructure);
         updateUIRendering();
+    }, (error) => {
+        console.error('Folder snapshot error:', error);
     });
     unsubscribes.push(unsubFolders);
     
@@ -71,7 +91,10 @@ export function initRealTimeSync() {
             ExamCache[d.id] = { id: d.id, ...d.data() };
         });
         window.ExamCache = ExamCache;
+        console.log('Exams cache updated, count:', Object.keys(ExamCache).length);
         updateUIRendering();
+    }, (error) => {
+        console.error('Exams snapshot error:', error);
     });
     unsubscribes.push(unsubExams);
 }
@@ -80,9 +103,10 @@ export function clearListeners() {
     unsubscribes.forEach(u => u());
     unsubscribes = [];
     window.unsubscribes = unsubscribes;
+    console.log('All listeners cleared');
 }
 
-// গ্লোবাল এক্সপোজ (যাতে অন্য ফাইল পায়)
+// গ্লোবাল এক্সপোজ
 window.saveFolderStructureToFirebase = saveFolderStructureToFirebase;
 window.initRealTimeSync = initRealTimeSync;
 window.clearListeners = clearListeners;
