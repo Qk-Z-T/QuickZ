@@ -1,1 +1,241 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>QuickZ | Student Portal</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SolaimanLipi Font with swap -->
+    <link rel="stylesheet" href="https://fonts.maateen.me/solaiman-lipi/font.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.maateen.me/solaiman-lipi/font.css"></noscript>
+    
+    <!-- Chart.js for Analysis -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    
+    <!-- MathJax configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                packages: ['base', 'ams', 'noerrors', 'noundefined']
+            },
+            svg: { fontCache: 'global' },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-50">
 
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center">
+        <div class="splash-logo">
+            <span class="quick">Quick</span><span class="z">Z</span>
+        </div>
+        <div class="splash-subtitle">The ultimate exam platform</div>
+        <div class="splash-loading">
+            <div class="loader" style="width: 32px; height: 32px; border-width: 3px;"></div>
+        </div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center p-6 hidden">
+        <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl mb-4 shadow-xl">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+        <h1 class="text-3xl font-bold mb-6 font-en quickz-logo">
+            <span class="quick">Quick</span><span class="z">Z</span>
+        </h1>
+        
+        <div id="form-student" class="w-full max-w-sm space-y-3">
+            <input type="email" id="s-email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="Email">
+            <div class="relative">
+                <input type="password" id="s-pass" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="Password">
+                <i class="fas fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer p-2" onclick="AuthUI.togglePass('s-pass', this)"></i>
+            </div>
+            <button onclick="Auth.studentLogin()" id="student-login-btn" class="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg login-btn">
+                <span class="btn-text">Login</span>
+                <div class="loader-container hidden">
+                    <div class="loader" style="width: 20px; height: 20px; border-width: 2px; border-top-color: white;"></div>
+                    <div class="loader-text">Logging in...</div>
+                </div>
+            </button>
+            <p class="text-center text-sm text-slate-500 mt-2">No account? <button onclick="AuthUI.showSignupForm()" class="text-indigo-500 font-bold">Sign Up</button></p>
+        </div>
+    </div>
+
+    <!-- Signup Form Modal -->
+    <div id="signup-modal" class="group-code-modal hidden">
+        <div class="group-code-content">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl mb-3 mx-auto">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2 class="text-xl font-bold">Create Account</h2>
+                <p class="text-sm text-slate-500 mt-1">Enter your email and password</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Email Address <span class="required">*</span></label>
+                    <input type="email" id="signup-email" class="form-input" placeholder="Enter your email">
+                </div>
+                
+                <div>
+                    <label class="form-label">Password <span class="required">*</span></label>
+                    <div class="relative">
+                        <input type="password" id="signup-password" class="form-input w-full" placeholder="Create a password">
+                        <i class="fas fa-eye absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer" onclick="AuthUI.togglePass('signup-password', this)"></i>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="form-label">Confirm Password <span class="required">*</span></label>
+                    <div class="relative">
+                        <input type="password" id="signup-confirm" class="form-input w-full" placeholder="Confirm password">
+                        <i class="fas fa-eye absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer" onclick="AuthUI.togglePass('signup-confirm', this)"></i>
+                    </div>
+                </div>
+                
+                <button onclick="Auth.studentSignup()" class="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-3 rounded-xl font-bold mt-2">
+                    Create Account
+                </button>
+                
+                <button onclick="AuthUI.closeSignupForm()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold">
+                    Back to Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Code Modal -->
+    <div id="group-code-modal" class="group-code-modal hidden">
+        <div class="group-code-content">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl mb-3 mx-auto">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h2 class="text-xl font-bold">কোর্স কোড দিন</h2>
+                <p class="text-sm text-slate-500 mt-1">আপনাকে একটি কোর্স কোড দিতে হবে পরীক্ষা দেখতে</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">কোর্স কোড <span class="required">*</span></label>
+                    <input type="text" id="group-code-input" class="form-input" placeholder="কোর্স কোড লিখুন">
+                    <p class="text-xs text-slate-500 mt-1">আপনার শিক্ষকের কাছ থেকে কোর্স কোড নিন</p>
+                </div>
+                
+                <div class="alert-message alert-info">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    পরীক্ষা, র‍্যাংক ও ফলাফল দেখতে অবশ্যই একটি বৈধ কোর্স কোড দিতে হবে।
+                </div>
+                
+                <button onclick="Student.saveGroupCode()" class="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-3 rounded-xl font-bold">
+                    সংরক্ষণ করুন ও চালিয়ে যান
+                </button>
+                
+                <button onclick="Student.hideGroupCodeModal()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold">
+                    পরে দিন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Members Modal -->
+    <div id="group-members-modal" class="group-members-modal hidden">
+        <div class="group-members-content">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-xl font-bold" id="group-members-title">কোর্স সদস্য</h2>
+                    <p class="text-sm text-slate-500 mt-1" id="group-members-subtitle">লোড হচ্ছে...</p>
+                </div>
+                <button onclick="Student.hideGroupMembersModal()" class="text-slate-500 hover:text-slate-700 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="group-members-list" class="space-y-3"></div>
+            
+            <div class="mt-6 pt-6 border-t border-slate-200">
+                <button onclick="Student.hideGroupMembersModal()" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold">
+                    বন্ধ করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <main id="app-container" class="flex-1 overflow-y-auto hidden"></main>
+    
+    <!-- Review Panel Button -->
+    <button id="review-panel-btn" class="review-panel-btn hidden">
+        <i class="fas fa-list-ol"></i>
+    </button>
+    
+    <!-- Review Panel -->
+    <div id="review-panel" class="review-panel">
+        <div class="review-panel-title">প্রশ্নসমূহ</div>
+        <div id="question-numbers" class="question-numbers"></div>
+    </div>
+
+    <!-- Mobile Drawer Menu -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleMobileDrawer()"></div>
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="flex justify-between items-center mb-6">
+            <div class="text-xl font-bold quickz-logo">
+                <span class="quick">Quick</span><span class="z">Z</span>
+            </div>
+            <button onclick="toggleMobileDrawer()" class="text-2xl" style="color:var(--text-primary);">&times;</button>
+        </div>
+        <div class="drawer-item" onclick="Router.student('dashboard'); toggleMobileDrawer()">
+            <i class="fas fa-home"></i> হোম
+        </div>
+        <div class="drawer-item" onclick="Router.student('rank'); toggleMobileDrawer()">
+            <i class="fas fa-trophy"></i> র‍্যাংক
+        </div>
+        <div class="drawer-item" onclick="Router.student('results'); toggleMobileDrawer()">
+            <i class="fas fa-clipboard-list"></i> ফলাফল
+        </div>
+        <div class="drawer-item" onclick="Router.student('analysis'); toggleMobileDrawer()">
+            <i class="fas fa-chart-pie"></i> অগ্রগতি
+        </div>
+        <div class="drawer-item" onclick="Router.student('notices'); toggleMobileDrawer()">
+            <i class="fas fa-bell"></i> নোটিস
+        </div>
+        <div class="drawer-item" onclick="Router.student('management'); toggleMobileDrawer()">
+            <i class="fas fa-cogs"></i> ম্যানেজমেন্ট
+        </div>
+        <div class="drawer-item" onclick="ThemeManager.openThemeModal(); toggleMobileDrawer()">
+            <i class="fas fa-palette"></i> থিম পরিবর্তন
+        </div>
+    </div>
+
+    <!-- Online Toast -->
+    <div id="online-toast" class="online-toast-bar">
+        <span><i class="fas fa-wifi mr-2"></i> ইন্টারনেট সংযোগ ফিরে এসেছে — ডেটা সিঙ্ক হচ্ছে...</span>
+        <button class="online-toast-close" onclick="document.getElementById('online-toast').classList.remove('show')">&times;</button>
+    </div>
+
+    <!-- Offline Toast -->
+    <div id="offline-toast" class="offline-toast">
+        <span><i class="fas fa-wifi-slash mr-2"></i> ইন্টারনেট সংযোগ বিচ্ছিন্ন</span>
+        <button class="toast-close" onclick="document.getElementById('offline-toast').classList.remove('show')">&times;</button>
+    </div>
+
+    <!-- Main Application Scripts (modular) -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
