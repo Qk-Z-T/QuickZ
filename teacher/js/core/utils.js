@@ -1,3 +1,6 @@
+// js/core/utils.js
+// ইউটিলিটি ফাংশন
+
 import { AppState } from './state.js';
 
 export function autoResizeTextarea(textarea) {
@@ -8,17 +11,45 @@ export function autoResizeTextarea(textarea) {
 export function toggleDarkMode() {
     AppState.darkMode = !AppState.darkMode;
     if (AppState.darkMode) {
-        document.documentElement.classList.add('dark');
+        document.documentElement.classList.add('theme-dark');
         localStorage.setItem('darkMode', 'true');
     } else {
-        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.remove('theme-dark');
         localStorage.setItem('darkMode', 'false');
     }
-    // Re-render math overlays if needed (will be handled by MathEditor)
+    // রি-রেন্ডার ওভারলে
     if (window.MathEditor && typeof window.MathEditor.updateAllOverlays === 'function') {
         window.MathEditor.updateAllOverlays();
     }
 }
 
+// ডায়নামিক MathJax লোডার (স্টুডেন্ট প্যানেল থেকে গৃহীত)
+export function loadMathJax(callback, targetElement) {
+    setTimeout(() => {
+        if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+            if (window.MathJax.typesetClear) {
+                window.MathJax.typesetClear();
+            }
+            MathJax.typesetPromise(targetElement ? [targetElement] : undefined)
+                .then(() => { if (callback) callback(); })
+                .catch(err => console.warn('MathJax error', err));
+            return;
+        }
+        if (!document.getElementById('mathjax-script')) {
+            const script = document.createElement('script');
+            script.id = 'mathjax-script';
+            script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js';
+            script.async = true;
+            script.onload = () => {
+                MathJax.typesetPromise(targetElement ? [targetElement] : undefined)
+                    .then(() => { if (callback) callback(); })
+                    .catch(err => console.warn('MathJax error', err));
+            };
+            document.head.appendChild(script);
+        }
+    }, 50);
+}
+
 // Make toggleDarkMode globally available for inline onclick
 window.toggleDarkMode = toggleDarkMode;
+window.loadMathJax = loadMathJax;
