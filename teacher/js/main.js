@@ -1,6 +1,6 @@
 // js/main.js
 // প্রধান এন্ট্রি পয়েন্ট - সমস্ত মডিউল ইম্পোর্ট ও অ্যাসেম্বল
-// ব্যাক বাটন হ্যান্ডলিং সহ
+// ব্যাক বাটন হ্যান্ডলিং, থিম ও ফাইনাল টাচ সহ
 
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
@@ -8,7 +8,7 @@ import { MathEditor } from './features/math-editor.js';
 import { Router } from './router.js';
 import { Teacher } from './teacher/teacher-core.js';
 import { initRealTimeSync, clearListeners } from './features/realtime-sync.js';
-import { autoResizeTextarea, toggleDarkMode } from './core/utils.js';
+import { autoResizeTextarea, toggleDarkMode, loadMathJax } from './core/utils.js';
 
 // ফিচার মডিউল ইম্পোর্ট (সাইড-ইফেক্টের জন্য - এরা Teacher অবজেক্টে মেথড যোগ করে)
 import './teacher/dashboard.js';
@@ -27,8 +27,11 @@ window.Router = Router;
 window.Teacher = Teacher;
 window.autoResizeTextarea = autoResizeTextarea;
 window.toggleDarkMode = toggleDarkMode;
+window.loadMathJax = loadMathJax;
 window.clearListeners = clearListeners;
 window.initRealTimeSync = initRealTimeSync;
+
+// MathHelper ইতিমধ্যে math-editor.js এ গ্লোবালি সেট করা আছে
 
 // গ্লোবাল ভেরিয়েবল ইনিশিয়ালাইজ
 window.ExamCache = {};
@@ -37,17 +40,17 @@ window.folderStructure = { live: [], mock: [], uncategorized: [] };
 window.currentFocusedTextarea = null;
 window.questionMode = 'manual';
 
-// ডার্ক মোড ইনিশিয়ালাইজ
+// ডার্ক মোড ইনিশিয়ালাইজ (থিম সিস্টেম)
 if (localStorage.getItem('darkMode') === 'true') {
-    document.documentElement.classList.add('dark');
+    document.documentElement.classList.add('theme-dark');
     AppState.darkMode = true;
 } else {
-    document.documentElement.classList.add('light-mode');
+    document.documentElement.classList.remove('theme-dark');
+    AppState.darkMode = false;
 }
 
 // ---------- ব্যাক বাটন হ্যান্ডলিং ----------
 window.addEventListener('popstate', (event) => {
-    // হিস্ট্রি ব্যাক করলে Router দিয়ে পেজ ম্যানেজ করবো
     Router.handlePopState(event);
 });
 
