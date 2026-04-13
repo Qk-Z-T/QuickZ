@@ -1,6 +1,6 @@
 // js/features/realtime-sync.js
 // রিয়েল-টাইম সিঙ্ক এবং ফোল্ডার স্ট্রাকচার ম্যানেজমেন্ট
-// আপডেট: হোম পেজের জন্য ব্যাকগ্রাউন্ড ক্যাশ আপডেট (UI রি-রেন্ডার হয় না)
+// আপডেট: হোম পেজ সহ সব পেজ সরাসরি UI রি-রেন্ডার হবে (ক্যাশ স্কিপ নেই)
 
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
@@ -12,7 +12,7 @@ let unsubscribes = window.unsubscribes;
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
 
-// UI আপডেট হেল্পার (AppState.currentPage ব্যবহার করে নির্ভুল চেক)
+// UI আপডেট হেল্পার (সব পেজ সরাসরি রি-রেন্ডার)
 function updateUIRendering() {
     const page = AppState.currentPage;
     const Teacher = window.Teacher;
@@ -24,22 +24,16 @@ function updateUIRendering() {
     
     console.log('UI update triggered for page:', page);
     
-    // হোম পেজের জন্য বিশেষ আচরণ: UI রি-রেন্ডার না করে শুধু ক্যাশ আপডেট করো
+    // পেজ অনুযায়ী UI রেন্ডার
     if (page === 'home') {
-        if (typeof Teacher.updateHomeCacheFromRealtime === 'function') {
-            Teacher.updateHomeCacheFromRealtime();
-        }
-        return; // UI রেন্ডার স্কিপ করো
-    }
-    
-    // অন্যান্য পেজের জন্য UI আপডেট
-    if (page === 'folders') {
+        if (typeof Teacher.homeView === 'function') Teacher.homeView();
+    } else if (page === 'folders') {
         if (typeof Teacher.renderFolderTree === 'function') Teacher.renderFolderTree();
         if (typeof Teacher.renderUncategorizedExams === 'function') Teacher.renderUncategorizedExams();
     } else if (page === 'rank') {
         if (typeof Teacher.rankView === 'function') Teacher.rankView();
     } else if (page === 'management') {
-        // কিছু ক্ষেত্রে liveExamManagementView কল হতে পারে, তবে সেটি পেজের উপর নির্ভর করে
+        if (typeof Teacher.liveExamManagementView === 'function') Teacher.liveExamManagementView();
     }
 }
 
