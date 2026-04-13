@@ -1,12 +1,25 @@
 // js/main.js
+// প্রধান এন্ট্রি পয়েন্ট - সমস্ত মডিউল ইম্পোর্ট ও অ্যাসেম্বল
+
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
 import { MathEditor } from './features/math-editor.js';
 import { Router } from './router.js';
-import { Teacher, initRealTimeSync, clearListeners } from './teacher-core.js';
+import { Teacher } from './teacher/teacher-core.js';
+import { initRealTimeSync, clearListeners } from './features/realtime-sync.js';
 import { autoResizeTextarea, toggleDarkMode } from './core/utils.js';
 
-// গ্লোবাল ভেরিয়েবল সেট
+// ফিচার মডিউল ইম্পোর্ট (সাইড-ইফেক্টের জন্য - এরা Teacher অবজেক্টে মেথড যোগ করে)
+import './teacher/dashboard.js';
+import './teacher/exam-create.js';
+import './teacher/library.js';
+import './teacher/rankings.js';
+import './teacher/management.js';
+import './teacher/notice-poll.js';
+import './teacher/groups.js';
+import './teacher/profile.js';
+
+// গ্লোবাল এক্সপোজ
 window.AppState = AppState;
 window.MathEditor = MathEditor;
 window.Router = Router;
@@ -16,15 +29,24 @@ window.toggleDarkMode = toggleDarkMode;
 window.clearListeners = clearListeners;
 window.initRealTimeSync = initRealTimeSync;
 
-// স্প্ল্যাশ স্ক্রিন লজিক
+// গ্লোবাল ভেরিয়েবল ইনিশিয়ালাইজ
+window.ExamCache = {};
+window.unsubscribes = [];
+window.folderStructure = { live: [], mock: [], uncategorized: [] };
+window.currentFocusedTextarea = null;
+window.questionMode = 'manual';
+
+// ডার্ক মোড ইনিশিয়ালাইজ
+if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    AppState.darkMode = true;
+} else {
+    document.documentElement.classList.add('light-mode');
+}
+
+// স্প্ল্যাশ স্ক্রিন ও অথেনটিকেশন
 window.addEventListener('load', () => {
     const hasTeacherSession = localStorage.getItem('teacher_sess');
-    
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.add('light-mode');
-    }
     
     if (hasTeacherSession) {
         setTimeout(() => {
