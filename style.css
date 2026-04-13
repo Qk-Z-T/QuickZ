@@ -9,7 +9,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #020617; /* ডার্ক থিম */
+    background: #020617; /* Deep dark background */
     font-family: 'Inter', sans-serif;
 }
 
@@ -24,10 +24,11 @@ body {
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
 }
 
+/* JavaScript toggle এর মাধ্যমে এই ক্লাসটি কাজ করবে */
 .card.is-flipped {
     transform: rotateY(180deg);
 }
@@ -43,19 +44,39 @@ body {
     justify-content: center;
     align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     overflow: hidden;
 }
 
-/* Front Side (তথ্য) */
-.card-front {
+/* Front Side */
+.card-front img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay-text {
+    position: absolute;
+    bottom: 25px;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+/* Back Side */
+.card-back {
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: #f8fafc;
+    transform: rotateY(180deg);
     padding: 30px;
     text-align: center;
 }
 
-.card-front h2 {
+.card-back h2 {
     color: #38bdf8;
     font-size: 1.8rem;
     margin-bottom: 5px;
@@ -84,34 +105,8 @@ body {
     color: #38bdf8;
 }
 
-.hint {
+.back-footer {
     margin-top: auto;
-    font-size: 0.8rem;
-    background: #38bdf8;
-    color: #000;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-}
-
-/* Back Side (ছবি) */
-.card-back {
-    transform: rotateY(180deg);
-}
-
-.card-back img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.overlay-text {
-    position: absolute;
-    bottom: 20px;
-    color: white;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    padding: 8px 15px;
-    border-radius: 10px;
     font-size: 0.75rem;
+    opacity: 0.5;
 }
