@@ -1,5 +1,5 @@
 // js/core/utils.js
-// ইউটিলিটি ফাংশন
+// ইউটিলিটি ফাংশন (থিম টগল ফিক্স সহ)
 
 import { AppState } from './state.js';
 
@@ -17,7 +17,7 @@ export function toggleDarkMode() {
         document.documentElement.classList.remove('theme-dark');
         localStorage.setItem('darkMode', 'false');
     }
-    // রি-রেন্ডার ওভারলে
+    // রি-রেন্ডার ওভারলে (যদি থাকে)
     if (window.MathEditor && typeof window.MathEditor.updateAllOverlays === 'function') {
         window.MathEditor.updateAllOverlays();
     }
@@ -50,6 +50,6 @@ export function loadMathJax(callback, targetElement) {
     }, 50);
 }
 
-// Make toggleDarkMode globally available for inline onclick
+// Make functions globally available
 window.toggleDarkMode = toggleDarkMode;
 window.loadMathJax = loadMathJax;
