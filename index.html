@@ -192,10 +192,154 @@
         <div class="flex flex-col items-center"><div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-3 shadow-sm border border-emerald-100 dark:border-slate-700"><i class="fas fa-bolt"></i></div><h5 class="font-bold bengali text-slate-800 dark:text-white">রিয়েল-টাইম সিঙ্ক</h5><p class="text-sm text-slate-500 dark:text-slate-400 bengali mt-1">পরীক্ষা ও ফলাফল মুহূর্তেই আপডেট হয়</p></div>
         <div class="flex flex-col items-center"><div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-slate-800 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-3 shadow-sm border border-amber-100 dark:border-slate-700"><i class="fas fa-mobile-alt"></i></div><h5 class="font-bold bengali text-slate-800 dark:text-white">মোবাইল ফ্রেন্ডলি</h5><p class="text-sm text-slate-500 dark:text-slate-400 bengali mt-1">স্মার্টফোন ও ট্যাবলেটে সমান কার্যকর</p></div>
     </div>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamim's Flip Card</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="card-container">
+        <div class="card" onclick="this.classList.toggle('is-flipped')">
+            <div class="card-face card-front">
+                <img src="tamim.png" alt="Tamim Hossain Emon">
+                <div class="overlay-text">Tap to Reveal</div>
+            </div>
+            
+            <div class="card-face card-back">
+                <h2>Tamim Hossain</h2>
+                <p class="tagline">Web Developer & Science Enthusiast</p>
+                <div class="info-list">
+                    <p><strong>Dev:</strong> React, JS, HTML/CSS</p>
+                    <p><strong>Vibe:</strong> Physics, Chess, Football</p>
+                </div>
+                <div class="back-footer">Click to Flip Back</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #020617; /* Deep dark background */
+    font-family: 'Inter', sans-serif;
+}
+
+.card-container {
+    width: 320px;
+    height: 450px;
+    perspective: 1500px;
+}
+
+.card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+/* JavaScript toggle এর মাধ্যমে এই ক্লাসটি কাজ করবে */
+.card.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+/* Front Side */
+.card-front img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay-text {
+    position: absolute;
+    bottom: 25px;
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+/* Back Side */
+.card-back {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #f8fafc;
+    transform: rotateY(180deg);
+    padding: 30px;
+    text-align: center;
+}
+
+.card-back h2 {
+    color: #38bdf8;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.tagline {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 25px;
+}
+
+.info-list {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    width: 100%;
+}
+
+.info-list p {
+    margin: 10px 0;
+    font-size: 0.95rem;
+}
+
+.info-list strong {
+    color: #38bdf8;
+}
+
+.back-footer {
+    margin-top: auto;
+    font-size: 0.75rem;
+    opacity: 0.5;
+}
+
 
     <!-- FOOTER -->
     <div class="mt-16 text-center text-sm text-slate-400 dark:text-slate-500 footer-note bengali mb-8">
-        © ২০২৫ QuickZ · শিক্ষার ডিজিটাল রূপান্তর
+        Created by Tamim Hossen Emon
     </div>
 </div>
 
