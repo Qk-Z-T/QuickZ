@@ -1,5 +1,6 @@
 // js/main.js
 // প্রধান এন্ট্রি পয়েন্ট - সমস্ত মডিউল ইম্পোর্ট ও অ্যাসেম্বল
+// ব্যাক বাটন হ্যান্ডলিং সহ
 
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
@@ -43,6 +44,12 @@ if (localStorage.getItem('darkMode') === 'true') {
 } else {
     document.documentElement.classList.add('light-mode');
 }
+
+// ---------- ব্যাক বাটন হ্যান্ডলিং ----------
+window.addEventListener('popstate', (event) => {
+    // হিস্ট্রি ব্যাক করলে Router দিয়ে পেজ ম্যানেজ করবো
+    Router.handlePopState(event);
+});
 
 // স্প্ল্যাশ স্ক্রিন ও অথেনটিকেশন
 window.addEventListener('load', () => {
