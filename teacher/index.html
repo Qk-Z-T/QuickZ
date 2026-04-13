@@ -1,1 +1,337 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickZ | Teacher Panel</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/teacher.css">
+    
+    <!-- Tailwind Dark Mode Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'en': ['Outfit', 'sans-serif'],
+                        'bn': ['Hind Siliguri', 'sans-serif']
+                    },
+                    colors: {
+                        dark: {
+                            primary: '#0a0a0a',
+                            secondary: '#111111',
+                            tertiary: '#222222'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-slate-800 dark:text-gray-100">
 
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="splash-logo">
+            <span class="splash-quick">Quick</span>
+            <span class="splash-z">Z</span>
+        </div>
+        <div class="splash-subtitle">The ultimate exam platform</div>
+        <div class="splash-loader"></div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+        <!-- Left side - branding -->
+        <div class="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #7c3aed 100%);">
+            <div style="text-align:center;color:white;">
+                <div style="width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h1 style="font-family:'Outfit',sans-serif;font-weight:800;font-size:42px;margin-bottom:8px;">Quick<span style="color:#a5f3fc;">Z</span></h1>
+                <p style="font-size:16px;opacity:0.85;margin-bottom:32px;">The Ultimate Exam Platform</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:320px;margin:0 auto;">
+                    <div style="background:rgba(255,255,255,0.15);border-radius:16px;padding:16px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);">
+                        <i class="fas fa-book" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+                        <div style="font-weight:700;font-size:13px;">Course Management</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.15);border-radius:16px;padding:16px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);">
+                        <i class="fas fa-broadcast-tower" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+                        <div style="font-weight:700;font-size:13px;">Live Exams</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.15);border-radius:16px;padding:16px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);">
+                        <i class="fas fa-trophy" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+                        <div style="font-weight:700;font-size:13px;">Rankings</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.15);border-radius:16px;padding:16px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);">
+                        <i class="fas fa-chart-bar" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+                        <div style="font-weight:700;font-size:13px;">Analytics</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right side - login form -->
+        <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-12">
+            <div style="width:100%;max-width:380px;">
+                <!-- Mobile logo -->
+                <div class="lg:hidden text-center mb-8">
+                    <div style="width:64px;height:64px;background:linear-gradient(135deg,#10b981,#059669);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;color:white;margin:0 auto 12px;">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h1 style="font-family:'Outfit',sans-serif;font-weight:800;font-size:28px;color:white;">Quick<span style="color:#10b981;">Z</span></h1>
+                </div>
+                
+                <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:36px;backdrop-filter:blur(20px);">
+                    <h2 style="color:white;font-weight:700;font-size:22px;margin-bottom:4px;font-family:'Outfit',sans-serif;">Teacher Login</h2>
+                    <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-bottom:28px;">Sign in to your teacher account</p>
+                    
+                    <div style="display:flex;flex-direction:column;gap:14px;">
+                        <div>
+                            <label style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Email Address</label>
+                            <input type="email" id="t-email" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;outline:none;color:white;font-size:14px;box-sizing:border-box;transition:border-color 0.2s;" placeholder="teacher@example.com"
+                                onfocus="this.style.borderColor='rgba(99,102,241,0.8)'"
+                                onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+                        </div>
+                        <div>
+                            <label style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Password</label>
+                            <div style="position:relative;">
+                                <input type="password" id="t-pass" style="width:100%;padding:12px 44px 12px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;outline:none;color:white;font-size:14px;box-sizing:border-box;transition:border-color 0.2s;" placeholder="••••••••"
+                                    onfocus="this.style.borderColor='rgba(99,102,241,0.8)'"
+                                    onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+                                <i class="fas fa-eye" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.4);cursor:pointer;font-size:14px;" onclick="AuthUI.togglePass('t-pass', this)"></i>
+                            </div>
+                        </div>
+                        <button onclick="Auth.teacherLogin()" id="teacher-login-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;transition:opacity 0.2s;margin-top:4px;position:relative;overflow:hidden;" class="login-btn"
+                            onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                            <span class="btn-text">Sign In</span>
+                            <div class="loader-container">
+                                <div class="loader" style="width: 20px; height: 20px; border-width: 2px; border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <p style="color:rgba(255,255,255,0.3);font-size:11px;text-align:center;margin-top:20px;">QuickZ Teacher Panel &copy; 2024</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="mobile-overlay" onclick="Teacher.closeMobileSidebar()"></div>
+
+    <!-- Website Layout Wrapper -->
+    <div id="website-layout" class="hidden" style="min-height:100vh;">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="main-sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                <span class="sidebar-logo-text">Quick<span style="color:#10b981">Z</span></span>
+            </div>
+            
+            <!-- Group Selector in sidebar -->
+            <div class="sidebar-group-section">
+                <div class="sidebar-group-label">Active Course</div>
+                <div class="group-switcher" id="group-switcher-container" style="position:relative;">
+                    <button class="group-switcher-btn w-full" style="width:100%;justify-content:space-between;" onclick="Teacher.toggleGroupSwitcher()">
+                        <span style="display:flex;align-items:center;gap:6px;"><i class="fas fa-book text-xs"></i><span id="current-group-name" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;">Select Course</span></span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div class="group-switcher-dropdown dark:bg-dark-secondary dark:border-dark-tertiary" id="group-switcher-dropdown" style="min-width:210px;"></div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="sidebar-nav">
+                <div class="sidebar-group-label" style="padding:0 4px;margin-bottom:8px;">Navigation</div>
+                <div class="sidebar-nav-item nav-item" id="nav-home" onclick="Router.teacher('home')">
+                    <i class="fas fa-home"></i>
+                    <span>Homepage</span>
+                </div>
+                <div class="sidebar-nav-item nav-item" id="nav-create" onclick="Router.teacher('create')">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Create Exam</span>
+                </div>
+                <div class="sidebar-nav-item nav-item" id="nav-rank" onclick="Router.teacher('rank')">
+                    <i class="fas fa-trophy"></i>
+                    <span>Rankings</span>
+                </div>
+                <div class="sidebar-nav-item nav-item" id="nav-folders" onclick="Router.teacher('folders')">
+                    <i class="fas fa-book-open"></i>
+                    <span>Library</span>
+                </div>
+                <div class="sidebar-nav-item nav-item" id="nav-management" onclick="Router.teacher('management')">
+                    <i class="fas fa-tasks"></i>
+                    <span>Management</span>
+                </div>
+            </nav>
+            
+            <!-- Bottom actions -->
+            <div class="sidebar-bottom">
+                <div class="sidebar-nav-item" onclick="toggleDarkMode(); Teacher.closeMobileSidebar()">
+                    <i class="fas fa-moon"></i><span>Dark Mode</span>
+                </div>
+                <div class="sidebar-nav-item" onclick="Teacher.viewProfile(); Teacher.closeMobileSidebar()">
+                    <i class="fas fa-user"></i><span>My Profile</span>
+                </div>
+                <div class="sidebar-nav-item" onclick="Teacher.changePassword(); Teacher.closeMobileSidebar()">
+                    <i class="fas fa-key"></i><span>Change Password</span>
+                </div>
+                <div class="sidebar-nav-item" style="color:#ef4444;" onclick="Auth.confirmLogout(); Teacher.closeMobileSidebar()">
+                    <i class="fas fa-power-off"></i><span>Logout</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="main-content-area">
+            <!-- Top Bar -->
+            <div class="top-bar" id="teacher-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="mobile-menu-btn" style="display:none;background:transparent;border:none;font-size:20px;color:#64748b;cursor:pointer;padding:4px;" onclick="Teacher.toggleMobileSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="top-bar-title" id="page-title">Teacher <span style="color:#4f46e5">Panel</span></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="font-size:12px;color:#64748b;" class="dark:text-slate-400 bengali-text" id="top-bar-user-name"></div>
+                    <div onclick="Teacher.viewProfile()" class="cursor-pointer hover:scale-105 transition-transform" style="width:34px;height:34px;background:linear-gradient(135deg,#10b981,#059669);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- App Content -->
+            <main id="app-container" class="page-content hidden"></main>
+        </div>
+    </div>
+
+    <!-- Legacy nav (hidden, kept for JS compatibility) -->
+    <nav id="teacher-nav" class="hidden"></nav>
+
+    <!-- Floating Math Button -->
+    <button id="floating-math-btn" class="floating-math-btn hidden">
+        <i class="fas fa-square-root-alt"></i>
+    </button>
+    
+    <!-- Math Symbols Panel -->
+    <div id="math-symbols-panel" class="math-symbols-panel">
+        <button class="math-panel-close" onclick="MathEditor.closePanel()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="symbol-group">
+            <div class="symbol-group-title">Basic Operations</div>
+            <div class="symbol-buttons">
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('+')">+</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('-')">-</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\times')">×</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\div')">÷</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('=')">=</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\neq')">≠</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\approx')">≈</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\pm')">±</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\mp')">∓</button>
+            </div>
+        </div>
+        
+        <div class="symbol-group">
+            <div class="symbol-group-title">Fractions & Roots</div>
+            <div class="symbol-buttons">
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\frac{}{}')">½</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\sqrt{}')">√</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\sqrt[]{}')">ⁿ√</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('^{}')">x²</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('_{}')">x₁</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\frac{d}{dx}')">d/dx</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\int')">∫</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\int_{}^{}')">∫ₐᵇ</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\sum')">∑</button>
+            </div>
+        </div>
+        
+        <div class="symbol-group">
+            <div class="symbol-group-title">Greek Letters</div>
+            <div class="symbol-buttons">
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\alpha')">α</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\beta')">β</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\gamma')">γ</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\pi')">π</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\theta')">θ</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\phi')">φ</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\omega')">ω</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\Delta')">Δ</button>
+            </div>
+        </div>
+        
+        <div class="symbol-group">
+            <div class="symbol-group-title">Arrows</div>
+            <div class="symbol-buttons">
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\to')">→</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\rightarrow')">→</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\leftarrow')">←</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\uparrow')">↑</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\downarrow')">↓</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\leftrightarrow')">↔</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\Rightarrow')">⇒</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\Leftrightarrow')">⇔</button>
+            </div>
+        </div>
+        
+        <div class="symbol-group">
+            <div class="symbol-group-title">Vectors & Sets</div>
+            <div class="symbol-buttons">
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\vec{}')">v⃗</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\hat{}')">â</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\in')">∈</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\subset')">⊂</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\cup')">∪</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\cap')">∩</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\emptyset')">∅</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\forall')">∀</button>
+            </div>
+        </div>
+        
+        <div class="symbol-group">
+            <div class="symbol-group-title">Relations & Absolute</div>
+            <div class="symbol-buttons">
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\leq')">≤</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\geq')">≥</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\ll')">≪</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\gg')">≫</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\sim')">∼</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\cong')">≅</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\propto')">∝</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\infty')">∞</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\lvert \\rvert')">|x|</button>
+            </div>
+        </div>
+        
+        <div class="symbol-group">
+            <div class="symbol-group-title">Advanced</div>
+            <div class="symbol-buttons">
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\lim')">lim</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\lim_{x \\to }')">lim x→</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\oint')">∮</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\nabla')">∇</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\partial')">∂</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\therefore')">∴</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\because')">∵</button>
+                <button class="symbol-btn" onclick="MathEditor.insertAtCursor('\\angle')">∠</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript Entry -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
