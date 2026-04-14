@@ -1,5 +1,5 @@
 // teacher/js/main.js
-// প্রধান এন্ট্রি পয়েন্ট - Firebase Auth Observer সহ পূর্ণাঙ্গ সংস্করণ
+// প্রধান এন্ট্রি পয়েন্ট - Firebase Auth Observer সহ পূর্ণাঙ্গ সংস্করণ (স্প্ল্যাশ ফিক্সসহ)
 
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
@@ -68,28 +68,46 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 const auth = getAuth();
 
 onAuthStateChanged(auth, async (user) => {
+    console.log('🔥 Auth state changed. User:', user ? user.email : 'No user');
+    
+    // UI এলিমেন্ট রেফারেন্স
+    const splash = document.getElementById('splash-screen');
+    const layout = document.getElementById('website-layout');
+    const authScreen = document.getElementById('auth-screen');
+    
     if (user) {
         AppState.user = user;
         try {
+            console.log('⏳ Loading teacher profile...');
             await Auth.loadTeacherProfile(user.uid);
+            console.log('✅ Profile loaded');
             initRealTimeSync();
             Router.teacher('home');
         } catch (err) {
-            console.error('Profile load error:', err);
+            console.error('❌ Profile load error:', err);
             Router.teacher('home');
         }
+        
+        // লগইন অবস্থায় লেআউট দেখান, অথ স্ক্রিন লুকান
+        if (authScreen) authScreen.classList.add('hidden');
+        if (layout) layout.classList.remove('hidden');
     } else {
+        console.log('👤 No user, showing login screen');
         AppState.user = null;
         Router.teacher('login');
+        
+        // লগইন স্ক্রিন দেখান, লেআউট লুকান
+        if (layout) layout.classList.add('hidden');
+        if (authScreen) authScreen.classList.remove('hidden');
     }
     
     // স্প্ল্যাশ স্ক্রিন হাইড
-    const splash = document.getElementById('splash-screen');
     if (splash) {
         splash.classList.add('splash-hidden');
         setTimeout(() => {
             splash.style.display = 'none';
         }, 500);
+        console.log('🎬 Splash hidden');
     }
 });
 
@@ -104,12 +122,29 @@ if (TeacherOffline) {
     }
 }
 
-// ---------- ব্যাকআপ: ৩ সেকেন্ড পরেও স্প্ল্যাশ হাইড না হলে জোর করে হাইড ----------
+// ---------- ব্যাকআপ: ৩ সেকেন্ড পরেও স্প্ল্যাশ হাইড না হলে জোর করে হাইড এবং লগইন স্ক্রিন দেখান ----------
 setTimeout(() => {
     const splash = document.getElementById('splash-screen');
+    const layout = document.getElementById('website-layout');
+    const authScreen = document.getElementById('auth-screen');
+    
     if (splash && !splash.classList.contains('splash-hidden')) {
+        console.warn('⚠️ Fallback: hiding splash after timeout');
         splash.classList.add('splash-hidden');
         setTimeout(() => splash.style.display = 'none', 300);
+        
+        // যদি এখনো ইউজার নির্ধারিত না হয়, তাহলে লগইন স্ক্রিন দেখিয়ে দিই
+        if (!AppState.user) {
+            if (layout) layout.classList.add('hidden');
+            if (authScreen) authScreen.classList.remove('hidden');
+            console.warn('⚠️ Fallback: showing auth screen because user is not logged in');
+        } else {
+            // ইউজার থাকলেও যদি লেআউট হিডেন থাকে, তবে দেখাই
+            if (layout && layout.classList.contains('hidden')) {
+                layout.classList.remove('hidden');
+            }
+            if (authScreen) authScreen.classList.add('hidden');
+        }
     }
 }, 3000);
 
@@ -134,5 +169,3 @@ document.addEventListener('click', function(e) {
         document.querySelectorAll('.student-dot-menu-dropdown').forEach(d => d.classList.remove('show'));
     }
 });
-
-// দ্রষ্টব্য: পূর্বের window load ইভেন্ট বাদ দেওয়া হয়েছে কারণ auth observer ই সব সামলাচ্ছে।
