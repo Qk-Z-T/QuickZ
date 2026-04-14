@@ -1,6 +1,5 @@
 // js/features/realtime-sync.js
-// রিয়েল-টাইম সিঙ্ক এবং ফোল্ডার স্ট্রাকচার ম্যানেজমেন্ট
-// আপডেট: হোম পেজ সহ সব পেজ সরাসরি UI রি-রেন্ডার হবে (ক্যাশ স্কিপ নেই)
+// রিয়েল-টাইম সিঙ্ক এবং ফোল্ডার স্ট্রাকচার ম্যানেজমেন্ট (Fixed Version)
 
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
@@ -18,22 +17,39 @@ function updateUIRendering() {
     const Teacher = window.Teacher;
     
     if (!Teacher) {
-        console.warn('Teacher object not available yet');
+        console.warn('⚠️ Teacher object not available for UI update');
         return;
     }
     
-    console.log('UI update triggered for page:', page);
+    console.log(`🔄 UI update triggered for page: ${page}`);
     
-    // পেজ অনুযায়ী UI রেন্ডার
-    if (page === 'home') {
-        if (typeof Teacher.homeView === 'function') Teacher.homeView();
-    } else if (page === 'folders') {
-        if (typeof Teacher.renderFolderTree === 'function') Teacher.renderFolderTree();
-        if (typeof Teacher.renderUncategorizedExams === 'function') Teacher.renderUncategorizedExams();
-    } else if (page === 'rank') {
-        if (typeof Teacher.rankView === 'function') Teacher.rankView();
-    } else if (page === 'management') {
-        if (typeof Teacher.liveExamManagementView === 'function') Teacher.liveExamManagementView();
+    try {
+        switch (page) {
+            case 'home':
+                if (typeof Teacher.homeView === 'function') Teacher.homeView();
+                break;
+            case 'folders':
+                if (typeof Teacher.renderFolderTree === 'function') Teacher.renderFolderTree();
+                if (typeof Teacher.renderUncategorizedExams === 'function') Teacher.renderUncategorizedExams();
+                break;
+            case 'rank':
+                if (typeof Teacher.rankView === 'function') Teacher.rankView();
+                break;
+            case 'management':
+                if (typeof Teacher.liveExamManagementView === 'function') Teacher.liveExamManagementView();
+                break;
+            case 'create':
+                // create পেজ সাধারণত রিফ্রেশ হয় না, প্রয়োজন হলে যোগ করা যেতে পারে
+                console.log('Create page – no auto-refresh needed');
+                break;
+            default:
+                console.warn(`❓ Unknown page "${page}" for UI update, redirecting to home`);
+                if (typeof Router !== 'undefined' && Router.teacher) {
+                    Router.teacher('home');
+                }
+        }
+    } catch (error) {
+        console.error('❌ UI update error:', error);
     }
 }
 
@@ -45,16 +61,16 @@ export async function saveFolderStructureToFirebase() {
             ...folderStructure,
             updatedAt: new Date()
         }, { merge: true });
-        console.log('Folder structure saved');
+        console.log('✅ Folder structure saved to Firestore');
     } catch (error) {
-        console.error("Folder Sync Error:", error);
+        console.error("❌ Folder Sync Error:", error);
     }
 }
 
 export function initRealTimeSync() {
-    console.log('initRealTimeSync called, selectedGroup:', AppState.selectedGroup);
+    console.log('🚀 initRealTimeSync called, selectedGroup:', AppState.selectedGroup?.name);
     if (!AppState.selectedGroup || !AppState.currentUser) {
-        console.warn('No selected group or user, skipping realtime sync');
+        console.warn('⚠️ No selected group or user, skipping realtime sync');
         return;
     }
     
@@ -68,10 +84,12 @@ export function initRealTimeSync() {
             folderStructure = { live: [], mock: [], uncategorized: [] };
         }
         window.folderStructure = folderStructure;
-        console.log('Folder structure updated:', folderStructure);
+        // লোকাল স্টোরেজে ক্যাশ (অফলাইন সাপোর্ট)
+        localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+        console.log('📁 Folder structure updated (live:', folderStructure.live?.length, 'mock:', folderStructure.mock?.length, ')');
         updateUIRendering();
     }, (error) => {
-        console.error('Folder snapshot error:', error);
+        console.error('❌ Folder snapshot error:', error);
     });
     unsubscribes.push(unsubFolders);
     
@@ -85,10 +103,10 @@ export function initRealTimeSync() {
             ExamCache[d.id] = { id: d.id, ...d.data() };
         });
         window.ExamCache = ExamCache;
-        console.log('Exams cache updated, count:', Object.keys(ExamCache).length);
+        console.log('📋 Exams cache updated, count:', Object.keys(ExamCache).length);
         updateUIRendering();
     }, (error) => {
-        console.error('Exams snapshot error:', error);
+        console.error('❌ Exams snapshot error:', error);
     });
     unsubscribes.push(unsubExams);
 }
@@ -97,7 +115,7 @@ export function clearListeners() {
     unsubscribes.forEach(u => u());
     unsubscribes = [];
     window.unsubscribes = unsubscribes;
-    console.log('All listeners cleared');
+    console.log('🧹 All Firestore listeners cleared');
 }
 
 // গ্লোবাল এক্সপোজ
