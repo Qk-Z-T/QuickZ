@@ -2,15 +2,14 @@
 window.__CONTRIBUTORS__ = window.__CONTRIBUTORS__ || [];
 window.__CONTRIBUTORS__.push({
     name: "Tamim Hossain",
-    title: "Web Developer & Science Enthusiast",
+    Bio: "Student,not developer",
     image: "../assets/images/tamim.png",
     fallbackIcon: "fa-user-astronaut",
     details: [
-        { icon: "fa-code", label: "Dev", value: "React, JS, HTML/CSS" },
-        { icon: "fa-brain", label: "Vibe", value: "Physics, Chess, Football" }
+        { icon: "fa-code", label: "College", value: "Govt. Keshab Chandra College" },
+        { icon: "fa-brain", label: "Vibe", value: "Music, Chess, Football" }
     ],
     social: {
-        github: "https://github.com/tamim",
-        linkedin: "https://linkedin.com/in/tamim"
+        facebook: "https://www.facebook.com/tamimhossen2213"   // ← শুধু ফেসবুক
     }
 });
