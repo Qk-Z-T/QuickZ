@@ -2,11 +2,11 @@
 window.__CONTRIBUTORS__ = window.__CONTRIBUTORS__ || [];
 window.__CONTRIBUTORS__.push({
     name: "Tamim Hossain",
-    Bio: "Student,not developer",
+    title: "Student,not developer",
     image: "../assets/images/tamim.png",
     fallbackIcon: "fa-user-astronaut",
     details: [
-        { icon: "fa-code", label: "College", value: "Govt. Keshab Chandra College" },
+        { icon: "fa-school", label: "College", value: "Govt. Keshab Chandra College" },
         { icon: "fa-brain", label: "Vibe", value: "Music, Chess, Football" }
     ],
     social: {
