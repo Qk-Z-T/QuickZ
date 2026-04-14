@@ -10,6 +10,7 @@ import {
     collection, query, where, getDocs, doc, getDoc, updateDoc, deleteDoc, writeBatch 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { saveFolderStructureToFirebase, initRealTimeSync } from '../features/realtime-sync.js';
+import { TeacherOffline } from '../offline.js';  // <-- নতুন ইম্পোর্ট
 
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
@@ -36,10 +37,40 @@ Teacher.foldersView = () => {
         </div>
     </div>`;
     
-    initRealTimeSync();
+    // অফলাইন মোডে লোকাল স্টোরেজ থেকে ফোল্ডার স্ট্রাকচার লোড
+    const loadOfflineFolderStructure = () => {
+        const cached = localStorage.getItem('offlineFolderStructure_' + AppState.selectedGroup.id);
+        if (cached) {
+            try {
+                folderStructure = JSON.parse(cached);
+                return true;
+            } catch(e) {
+                console.warn('Failed to parse offline folder structure');
+            }
+        }
+        return false;
+    };
     
     const refreshFolderData = async () => {
         try {
+            if (!navigator.onLine) {
+                const hasCached = loadOfflineFolderStructure();
+                if (!hasCached) {
+                    document.getElementById('app-container').innerHTML = `
+                    <div class="pb-6 text-center p-10">
+                        <i class="fas fa-wifi-slash text-4xl mb-3 opacity-30"></i>
+                        <p class="text-slate-500">অফলাইনে লাইব্রেরি ডেটা পাওয়া যায়নি।</p>
+                        <p class="text-sm mt-2">ইন্টারনেট সংযোগ দিন।</p>
+                        <button onclick="Teacher.foldersView()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg">রিলোড</button>
+                    </div>`;
+                    return;
+                }
+                // অফলাইন UI রেন্ডার
+                renderLibraryUI();
+                return;
+            }
+            
+            // অনলাইন থেকে ফেচ
             const folderDocRef = doc(db, "folderStructures", `${AppState.currentUser.id}_${AppState.selectedGroup.id}`);
             const docSnap = await getDoc(folderDocRef);
             if (docSnap.exists()) {
@@ -48,68 +79,80 @@ Teacher.foldersView = () => {
                 folderStructure = { live: [], mock: [], uncategorized: [] };
             }
             
-            document.getElementById('app-container').innerHTML = `
-            <div class="pb-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold font-en text-slate-800 dark:text-white">Library Management</h2>
-                </div>
-                
-                <div class="flex flex-wrap gap-3 mb-6">
-                    <button onclick="Teacher.createSubject('live')" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
-                        <i class="fas fa-plus"></i> Live Subject
-                    </button>
-                    <button onclick="Teacher.createSubject('mock')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
-                        <i class="fas fa-plus"></i> Mock Subject
-                    </button>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
-                                <i class="fas fa-broadcast-tower live-icon"></i>
-                                Live Exams
-                            </h3>
-                            <span class="text-xs bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 px-2 py-1 rounded font-bold">
-                                ${folderStructure.live.reduce((acc, s) => acc + s.exams.length, 0)} Exams
-                            </span>
-                        </div>
-                        <div id="live-folder-tree" class="folder-tree space-y-1"></div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
-                                <i class="fas fa-book-reader mock-icon"></i>
-                                Mock Exams
-                            </h3>
-                            <span class="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 px-2 py-1 rounded font-bold">
-                                ${folderStructure.mock.reduce((acc, s) => acc + s.exams.length, 0)} Exams
-                            </span>
-                        </div>
-                        <div id="mock-folder-tree" class="folder-tree space-y-1"></div>
-                    </div>
-                </div>
-                
-                <div class="mt-6 bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
-                            <i class="fas fa-question-circle text-slate-400"></i>
-                            Uncategorized Exams
-                        </h3>
-                        <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-1 rounded font-bold">
-                            ${folderStructure.uncategorized.length} Exams
-                        </span>
-                    </div>
-                    <div id="uncategorized-exams" class="space-y-2"></div>
-                </div>
-            </div>`;
+            // লোকাল স্টোরেজে ক্যাশ করুন
+            localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
             
-            Teacher.renderFolderTree();
-            Teacher.renderUncategorizedExams();
+            renderLibraryUI();
         } catch (error) {
             console.error('Error refreshing folder data:', error);
+            // অনলাইনে এরর হলে ক্যাশ ব্যবহারের চেষ্টা
+            if (loadOfflineFolderStructure()) {
+                renderLibraryUI();
+                TeacherOffline.showToast('সার্ভার সংযোগ বিঘ্নিত, ক্যাশকৃত ডেটা দেখানো হচ্ছে।', 'warning');
+            }
         }
+    };
+    
+    const renderLibraryUI = () => {
+        document.getElementById('app-container').innerHTML = `
+        <div class="pb-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold font-en text-slate-800 dark:text-white">Library Management</h2>
+            </div>
+            
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button onclick="Teacher.createSubject('live')" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Live Subject
+                </button>
+                <button onclick="Teacher.createSubject('mock')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Mock Subject
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
+                            <i class="fas fa-broadcast-tower live-icon"></i>
+                            Live Exams
+                        </h3>
+                        <span class="text-xs bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 px-2 py-1 rounded font-bold">
+                            ${folderStructure.live.reduce((acc, s) => acc + s.exams.length, 0)} Exams
+                        </span>
+                    </div>
+                    <div id="live-folder-tree" class="folder-tree space-y-1"></div>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
+                            <i class="fas fa-book-reader mock-icon"></i>
+                            Mock Exams
+                        </h3>
+                        <span class="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 px-2 py-1 rounded font-bold">
+                            ${folderStructure.mock.reduce((acc, s) => acc + s.exams.length, 0)} Exams
+                        </span>
+                    </div>
+                    <div id="mock-folder-tree" class="folder-tree space-y-1"></div>
+                </div>
+            </div>
+            
+            <div class="mt-6 bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-lg flex items-center gap-2 dark:text-white">
+                        <i class="fas fa-question-circle text-slate-400"></i>
+                        Uncategorized Exams
+                    </h3>
+                    <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-1 rounded font-bold">
+                        ${folderStructure.uncategorized.length} Exams
+                    </span>
+                </div>
+                <div id="uncategorized-exams" class="space-y-2"></div>
+            </div>
+        </div>`;
+        
+        Teacher.renderFolderTree();
+        Teacher.renderUncategorizedExams();
     };
     
     refreshFolderData();
@@ -451,9 +494,22 @@ Teacher.createSubject = async (type) => {
             exams: []
         };
         
+        // অফলাইন চেক
+        if (!navigator.onLine) {
+            // সিঙ্ক কিউতে জমা
+            await TeacherOffline.saveSubjectOffline({ ...newSubject, operation: 'add', type });
+            // লোকাল স্টেট আপডেট
+            folderStructure[type].push(newSubject);
+            localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+            Teacher.renderFolderTree();
+            Swal.fire('অফলাইন', 'বিষয়টি স্থানীয়ভাবে যোগ করা হয়েছে, অনলাইনে এলে সিঙ্ক হবে।', 'info');
+            return;
+        }
+        
         folderStructure[type].push(newSubject);
         
         await saveFolderStructureToFirebase();
+        localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
         
         Teacher.renderFolderTree();
         
@@ -489,9 +545,19 @@ Teacher.addChapterToSubject = async function(subjectId, type) {
             exams: []
         };
         
+        if (!navigator.onLine) {
+            await TeacherOffline.saveChapterOffline({ ...newChapter, operation: 'add', type, subjectId });
+            subject.children.push(newChapter);
+            localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+            Teacher.renderFolderTree();
+            Swal.fire('অফলাইন', 'অধ্যায়টি স্থানীয়ভাবে যোগ করা হয়েছে, অনলাইনে এলে সিঙ্ক হবে।', 'info');
+            return;
+        }
+        
         subject.children.push(newChapter);
         
         await saveFolderStructureToFirebase();
+        localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
         
         Teacher.renderFolderTree();
         
@@ -532,12 +598,15 @@ Teacher.renameItem = async function(itemType, itemId, currentName) {
     
     if (newName && newName !== currentName) {
         let found = false;
+        let targetType = '';
+        let parentId = null;
         
         for (const type of ['live', 'mock']) {
             if (itemType === 'subject') {
                 const subject = folderStructure[type].find(s => s.id === itemId);
                 if (subject) {
                     subject.name = newName;
+                    targetType = type;
                     found = true;
                     break;
                 }
@@ -546,6 +615,8 @@ Teacher.renameItem = async function(itemType, itemId, currentName) {
                     const chapter = subject.children.find(c => c.id === itemId);
                     if (chapter) {
                         chapter.name = newName;
+                        targetType = type;
+                        parentId = subject.id;
                         found = true;
                         break;
                     }
@@ -555,7 +626,18 @@ Teacher.renameItem = async function(itemType, itemId, currentName) {
         }
         
         if (found) {
+            if (!navigator.onLine) {
+                await TeacherOffline.saveRenameOperation({
+                    itemType, itemId, newName, targetType, parentId
+                });
+                localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+                Swal.fire('অফলাইন', 'নাম পরিবর্তন স্থানীয়ভাবে সংরক্ষিত হয়েছে।', 'info');
+                Teacher.foldersView();
+                return;
+            }
+            
             await saveFolderStructureToFirebase();
+            localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
             
             Swal.fire('Success', `${itemType} renamed to ${newName}`, 'success');
             Teacher.foldersView();
@@ -576,9 +658,21 @@ Teacher.deleteSubject = async function(subjectId, type) {
     if (result.isConfirmed) {
         const subjectIndex = folderStructure[type].findIndex(s => s.id === subjectId);
         if (subjectIndex !== -1) {
+            if (!navigator.onLine) {
+                await TeacherOffline.saveDeleteOperation({
+                    itemType: 'subject', itemId: subjectId, type
+                });
+                folderStructure[type].splice(subjectIndex, 1);
+                localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+                Teacher.renderFolderTree();
+                Swal.fire('অফলাইন', 'বিষয়টি স্থানীয়ভাবে মুছে ফেলা হয়েছে।', 'info');
+                return;
+            }
+            
             folderStructure[type].splice(subjectIndex, 1);
             
             await saveFolderStructureToFirebase();
+            localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
             
             Teacher.renderFolderTree();
             Swal.fire('Deleted!', 'Subject and all contents deleted.', 'success');
@@ -600,9 +694,21 @@ Teacher.deleteChapter = async function(chapterId, type) {
         for (const subject of folderStructure[type]) {
             const chapterIndex = subject.children.findIndex(c => c.id === chapterId);
             if (chapterIndex !== -1) {
+                if (!navigator.onLine) {
+                    await TeacherOffline.saveDeleteOperation({
+                        itemType: 'chapter', itemId: chapterId, type, subjectId: subject.id
+                    });
+                    subject.children.splice(chapterIndex, 1);
+                    localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+                    Teacher.renderFolderTree();
+                    Swal.fire('অফলাইন', 'অধ্যায়টি স্থানীয়ভাবে মুছে ফেলা হয়েছে।', 'info');
+                    return;
+                }
+                
                 subject.children.splice(chapterIndex, 1);
                 
                 await saveFolderStructureToFirebase();
+                localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
                 
                 Teacher.renderFolderTree();
                 Swal.fire('Deleted!', 'Chapter and all exams deleted.', 'success');
@@ -673,6 +779,27 @@ Teacher.deleteExam = async (examId) => {
 
     if (result.isConfirmed) {
         try {
+            if (!navigator.onLine) {
+                await TeacherOffline.saveDeleteOperation({
+                    itemType: 'exam', itemId: examId
+                });
+                // লোকাল স্টেট থেকে মুছে ফেলা
+                for (const type of ['live', 'mock']) {
+                    folderStructure[type].forEach(sub => {
+                        sub.children.forEach(chap => {
+                            chap.exams = chap.exams.filter(e => e.id !== examId);
+                        });
+                    });
+                }
+                folderStructure.uncategorized = (folderStructure.uncategorized || []).filter(e => e.id !== examId);
+                delete ExamCache[examId];
+                localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+                
+                Swal.fire('অফলাইন', 'পরীক্ষাটি স্থানীয়ভাবে মুছে ফেলা হয়েছে।', 'info');
+                Teacher.foldersView();
+                return;
+            }
+            
             Swal.fire({
                 title: 'Deleting...',
                 allowOutsideClick: false,
@@ -698,6 +825,7 @@ Teacher.deleteExam = async (examId) => {
             folderStructure.uncategorized = (folderStructure.uncategorized || []).filter(e => e.id !== examId);
 
             await saveFolderStructureToFirebase();
+            localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
 
             delete ExamCache[examId];
 
