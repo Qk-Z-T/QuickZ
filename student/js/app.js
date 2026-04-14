@@ -56,6 +56,88 @@ onAuthStateChanged(auth, async (u) => {
     }
     
     try {
+        // ১. সর্বপ্রথম Firebase থেকে সর্বশেষ ডেটা আনার চেষ্টা করব
+        const userDocRef = doc(db, "students", u.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        
+        let userData = null;
+        if (userDocSnap.exists()) {
+            userData = userDocSnap.data();
+            // Firebase ডেটাকে লোকাল ক্যাশে আপডেট করে দিই
+            localStorage.setItem('userProfile', JSON.stringify(userData));
+        } else {
+            // যদি ডকুমেন্ট না থাকে, তাহলে ক্যাশে পড়ে দেখি (নতুন অ্যাকাউন্টের জন্য)
+            const cached = localStorage.getItem('userProfile');
+            if (cached) {
+                userData = JSON.parse(cached);
+            } else {
+                // একেবারে নতুন ইউজার — ডকুমেন্ট তৈরি
+                userData = {
+                    uid: u.uid,
+                    email: u.email,
+                    name: "",
+                    phone: "",
+                    fatherPhone: "",
+                    motherPhone: "",
+                    schoolName: "",
+                    collegeName: "",
+                    teacherCodes: [],
+                    groupCode: "",
+                    joinedGroups: [],
+                    profileCompleted: false,
+                    blocked: false,
+                    disabled: false,
+                    joined: new Date()
+                };
+                await setDoc(userDocRef, userData);
+                localStorage.setItem('userProfile', JSON.stringify(userData));
+            }
+        }
+        
+        // ২. ব্লক চেক
+        if (userData.blocked) {
+            await signOut(auth);
+            Swal.fire('ব্লক', 'আপনার অ্যাকাউন্ট ব্লক করা আছে।', 'error');
+            AuthUI.showAuthScreen();
+            document.getElementById('splash-screen').classList.add('hidden');
+            return;
+        }
+        
+        // ৩. AppState আপডেট
+        AppState.user = u;
+        AppState.userDisabled = userData.disabled || false;
+        AppState.profileCompleted = userData.profileCompleted || false;
+        AppState.userProfile = userData;
+        AppState.teacherCodes = userData.teacherCodes || [];
+        AppState.activeTeacherCode = AppState.teacherCodes.find(tc => tc.active)?.code || null;
+        AppState.joinedGroups = userData.joinedGroups || [];
+        
+        // ৪. activeGroupId রিস্টোর
+        const storedGroupId = localStorage.getItem('activeGroupId');
+        if (storedGroupId && AppState.joinedGroups.find(g => g.groupId === storedGroupId)) {
+            AppState.activeGroupId = storedGroupId;
+        } else if (AppState.joinedGroups.length > 0) {
+            AppState.activeGroupId = AppState.joinedGroups[0].groupId;
+            localStorage.setItem('activeGroupId', AppState.activeGroupId);
+        } else {
+            AppState.activeGroupId = null;
+        }
+        
+        // ৫. শিক্ষকের নাম লোড
+        if (AppState.teacherCodes.length > 0) {
+            await Student.loadTeacherNames();
+        }
+        
+        // ৬. সঠিক স্ক্রিন দেখানো
+        if (!AppState.profileCompleted) {
+            Router.showProfileForm();
+        } else {
+            Router.initStudent();
+        }
+        
+    } catch (error) {
+        console.error('Auth state error:', error);
+        // কোনো কারণে ব্যর্থ হলে ক্যাশে থেকে পড়ার চেষ্টা
         const cached = localStorage.getItem('userProfile');
         if (cached) {
             const userData = JSON.parse(cached);
@@ -75,73 +157,15 @@ onAuthStateChanged(auth, async (u) => {
                     AppState.activeGroupId = AppState.joinedGroups[0].groupId;
                     localStorage.setItem('activeGroupId', AppState.activeGroupId);
                 }
-
+                
                 if (AppState.teacherCodes.length > 0) await Student.loadTeacherNames();
-
+                
                 if (!AppState.profileCompleted) Router.showProfileForm();
                 else Router.initStudent();
-                
                 document.getElementById('splash-screen').classList.add('hidden');
                 return;
             }
         }
-        
-        const s = await getDoc(doc(db, "students", u.uid));
-        if(s.exists()) {
-            const userData = s.data();
-            if(userData.blocked) {
-                await signOut(auth);
-                Swal.fire('ব্লক', 'আপনার অ্যাকাউন্ট ব্লক করা আছে।', 'error');
-                AuthUI.showAuthScreen();
-            } else {
-                AppState.user = u;
-                AppState.userDisabled = userData.disabled || false;
-                AppState.profileCompleted = userData.profileCompleted || false;
-                AppState.userProfile = userData;
-                AppState.teacherCodes = userData.teacherCodes || [];
-                AppState.activeTeacherCode = AppState.teacherCodes.find(tc => tc.active)?.code || null;
-                AppState.joinedGroups = userData.joinedGroups || [];
-                
-                localStorage.setItem('userProfile', JSON.stringify(userData));
-                localStorage.setItem('userLoggedIn', 'true');
-                
-                const storedGroupId = localStorage.getItem('activeGroupId');
-                if (storedGroupId && AppState.joinedGroups.find(g => g.groupId === storedGroupId)) {
-                    AppState.activeGroupId = storedGroupId;
-                } else if (AppState.joinedGroups.length > 0) {
-                    AppState.activeGroupId = AppState.joinedGroups[0].groupId;
-                    localStorage.setItem('activeGroupId', AppState.activeGroupId);
-                }
-
-                if (AppState.teacherCodes.length > 0) await Student.loadTeacherNames();
-
-                if (!AppState.profileCompleted) Router.showProfileForm();
-                else Router.initStudent();
-            }
-        } else {
-            await setDoc(doc(db, "students", u.uid), {
-                uid: u.uid,
-                email: u.email,
-                name: "",
-                phone: "",
-                fatherPhone: "",
-                motherPhone: "",
-                schoolName: "",
-                collegeName: "",
-                teacherCodes: [],
-                groupCode: "",
-                joinedGroups: [],
-                profileCompleted: false,
-                blocked: false,
-                disabled: false,
-                joined: new Date()
-            });
-            
-            AppState.profileCompleted = false;
-            Router.showProfileForm();
-        }
-    } catch (error) {
-        console.error(error);
         AuthUI.showAuthScreen();
     }
     
@@ -153,7 +177,7 @@ window.addEventListener('load', () => {
     ThemeManager.loadTheme();
     setTimeout(() => OfflineManager.init(), 1000);
     setTimeout(() => {
-        if (document.getElementById('splash-screen').classList.contains('hidden') === false) {
+        if (!document.getElementById('splash-screen').classList.contains('hidden')) {
             document.getElementById('splash-screen').classList.add('hidden');
             AuthUI.showAuthScreen();
         }
