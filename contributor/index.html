@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="bn" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Contributors</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            overflow-x: hidden; /* প্রিভেন্ট সাইড স্ক্রল */
+        }
+        /* স্ক্রিন ফিট করার জন্য কন্টেইনার অ্যাডজাস্টমেন্ট */
+        .page-wrapper {
+            min-height: 100dvh; 
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+    <link rel="stylesheet" href="contributor.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+
+<div class="page-wrapper max-w-6xl mx-auto px-4 py-6 md:py-10">
+    
+    <div class="flex justify-between items-center mb-8 md:mb-12">
+        <a href="../index.html" class="flex items-center justify-center w-11 h-11 bg-white dark:bg-slate-800 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-indigo-600 transition-all active:scale-90">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        
+        <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight">
+            Contributors
+        </h1>
+        
+        <div class="w-11"></div>
+    </div>
+    
+    <div class="flex-grow">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-items-center" id="contributor-grid">
+            </div>
+    </div>
+    
+    <div class="mt-auto pt-10 pb-4 text-center">
+        <p class="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase">
+            Every contribution matters
+        </p>
+    </div>
+</div>
+
+<script src="contributor.js"></script>
+</body>
+</html>
