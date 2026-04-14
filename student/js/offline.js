@@ -1,6 +1,4 @@
-// js/offline.js
-// Offline manager module
-
+// student/js/offline.js
 import { db } from './config.js';
 import { AppState, ExamCache } from './state.js';
 
@@ -17,23 +15,20 @@ import {
 export const OfflineManager = {
     init: () => {
         window.addEventListener('online', async () => {
-            document.getElementById('offline-toast').classList.remove('show');
+            document.getElementById('offline-toast')?.classList.remove('show');
             const onlineToast = document.getElementById('online-toast');
             if (onlineToast) {
                 onlineToast.classList.add('show');
-                // ২ সেকেন্ড পর অটো-হাইড (FIX 2)
-                setTimeout(() => {
-                    onlineToast.classList.remove('show');
-                }, 2000);
+                setTimeout(() => onlineToast.classList.remove('show'), 2000);
             }
             await OfflineManager.syncPendingAttempts();
             if (AppState.activeGroupId) await OfflineManager.cacheAllExams();
         });
         window.addEventListener('offline', () => {
-            document.getElementById('offline-toast').classList.add('show');
+            document.getElementById('offline-toast')?.classList.add('show');
         });
         if (!navigator.onLine) {
-            document.getElementById('offline-toast').classList.add('show');
+            document.getElementById('offline-toast')?.classList.add('show');
         }
         if (navigator.onLine) {
             OfflineManager.syncPendingAttempts();
@@ -49,9 +44,12 @@ export const OfflineManager = {
             ));
             const examCache = {};
             snap.forEach(d => { examCache[d.id] = { id: d.id, ...d.data() }; });
+            // IndexedDB-তে সংরক্ষণ (db.js ব্যবহার করে)
+            if (window.DB) {
+                await DB.saveData(DB.STORES.EXAMS, Object.values(examCache));
+            }
             localStorage.setItem('offlineExamCache_' + AppState.activeGroupId, JSON.stringify(examCache));
             localStorage.setItem('offlineExamCacheTime_' + AppState.activeGroupId, Date.now().toString());
-            if (!ExamCache) window.ExamCache = {};
             Object.assign(ExamCache, examCache);
         } catch(e) {
             console.warn('Cache failed', e);
@@ -79,6 +77,17 @@ export const OfflineManager = {
         else pending.push(offlineData);
         localStorage.setItem('pendingSyncAttempts', JSON.stringify(pending));
         localStorage.removeItem('currentExamProgress');
+        
+        // এছাড়াও IndexedDB সিঙ্ক কিউতে যোগ করা (db.js)
+        if (window.DB) {
+            DB.addToSyncQueue({
+                collection: 'attempts',
+                operation: 'add',
+                payload: submissionData,
+                docId: attemptId,
+                timestamp: Date.now()
+            }).catch(console.warn);
+        }
     },
     
     syncPendingAttempts: async () => {
