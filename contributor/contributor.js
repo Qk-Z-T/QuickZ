@@ -41,25 +41,33 @@ function generateContributorCards() {
             </p>
         `).join('');
         
-        // সোশ্যাল লিংক
+        // শুধু Facebook সোশ্যাল লিংক
         const socialHtml = `
-            <div class="flex gap-3 mt-4">
-                ${contributor.social?.github ? `<a href="${contributor.social.github}" target="_blank" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"><i class="fab fa-github text-xl"></i></a>` : ''}
-                ${contributor.social?.linkedin ? `<a href="${contributor.social.linkedin}" target="_blank" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"><i class="fab fa-linkedin text-xl"></i></a>` : ''}
-                ${contributor.social?.twitter ? `<a href="${contributor.social.twitter}" target="_blank" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"><i class="fab fa-twitter text-xl"></i></a>` : ''}
-                ${contributor.social?.website ? `<a href="${contributor.social.website}" target="_blank" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"><i class="fas fa-globe text-xl"></i></a>` : ''}
+            <div class="flex justify-center gap-3 mt-4">
+                ${contributor.social?.facebook ? `
+                    <a href="${contributor.social.facebook}" target="_blank" 
+                       class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                ` : ''}
             </div>
         `;
         
+        // ডিফল্টভাবে is-flipped ক্লাস যোগ করা (তথ্য দেখাবে)
         cardWrapper.innerHTML = `
-            <div class="card-flip" onclick="this.classList.toggle('is-flipped')">
+            <div class="card-flip is-flipped" onclick="this.classList.toggle('is-flipped')">
+                <!-- সামনের অংশ (ছবি) -->
                 <div class="card-face card-front">
                     <div class="absolute inset-0 flex items-center justify-center text-slate-400 dark:text-slate-500">
                         <i class="fas ${contributor.fallbackIcon || 'fa-user-circle'} text-7xl opacity-50"></i>
                     </div>
                     ${imgHtml}
-                    <div class="overlay-text en">Tap to Reveal</div>
+                    <!-- ছবির উপর ওভারলে টেক্সট (এখন আর "Tap to Reveal" নয়, বরং ফিরে যাওয়ার নির্দেশনা) -->
+                    <div class="overlay-text en">
+                        <i class="fas fa-undo mr-1"></i> তথ্য দেখুন
+                    </div>
                 </div>
+                <!-- পিছনের অংশ (তথ্য) -->
                 <div class="card-face card-back">
                     <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 shadow-sm">
                         <i class="fas fa-laptop-code text-2xl"></i>
@@ -70,8 +78,9 @@ function generateContributorCards() {
                         ${detailsHtml}
                     </div>
                     ${socialHtml}
-                    <div class="text-xs text-slate-400 dark:text-slate-500 mt-2 flex items-center gap-1 cursor-pointer en font-medium" onclick="event.stopPropagation(); this.closest('.card-flip').classList.toggle('is-flipped')">
-                        <i class="fas fa-undo"></i> Click to Flip Back
+                    <!-- ফ্লিপ হিন্ট -->
+                    <div class="flip-hint en" onclick="event.stopPropagation(); this.closest('.card-flip').classList.toggle('is-flipped')">
+                        <i class="fas fa-sync-alt mr-1"></i> ছবি দেখতে ক্লিক করুন
                     </div>
                 </div>
             </div>
@@ -81,7 +90,7 @@ function generateContributorCards() {
     });
 }
 
-// থিম টগল (আগের মতোই)
+// থিম টগল (আগের মতোই, ডার্ক মোডে ফ্লিপ ইস্যু সমাধান করা হয়েছে CSS-এ)
 function initThemeToggle() {
     const themeToggleBtn = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
@@ -115,6 +124,7 @@ function initThemeToggle() {
         }
     }
 
+    // প্রারম্ভিক থিম সেট
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         disableTransitions();
         htmlElement.classList.add('dark');
@@ -136,6 +146,7 @@ function initThemeToggle() {
         );
 
         if (!isDark) {
+            // Light → Dark
             themeOverlay.classList.remove('hidden');
             themeOverlay.style.clipPath = `circle(0px at ${x}px ${y}px)`;
             requestAnimationFrame(() => {
@@ -158,6 +169,7 @@ function initThemeToggle() {
                 });
             }, animDuration);
         } else {
+            // Dark → Light
             disableTransitions();
             htmlElement.classList.remove('dark');
             localStorage.theme = 'light';
@@ -186,4 +198,3 @@ document.addEventListener('DOMContentLoaded', () => {
     generateContributorCards();
     initThemeToggle();
 });
-            
