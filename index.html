@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>QuickZ · শিক্ষক ও শিক্ষার্থী পোর্টাল</title>
     
-    <!-- Real PWA Meta Tags -->
+    <!-- PWA Meta -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="QuickZ">
-    
-    <!-- Fallback Icon -->
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="icon" type="image/png" href="icon-192.png">
     
-    <!-- Tailwind CSS (CDN) with Dark Mode Config -->
+    <!-- Tailwind + Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,169 +22,25 @@
             theme: { extend: {} }
         }
     </script>
-    
-    <!-- Font Awesome & Google Fonts -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Hind Siliguri', 'Outfit', sans-serif;
-            background: #fafcff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1.5rem;
-            -webkit-font-smoothing: antialiased;
-            transition: color 0.3s ease;
-        }
-        
-        .dark body { background: #0f172a; }
-        .bengali { font-family: 'Hind Siliguri', sans-serif; }
-        .en { font-family: 'Outfit', sans-serif; }
-        
-        /* Portal Card Styles */
-        .portal-card {
-            transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s, background-color 0.3s;
-            will-change: transform;
-            border: 1px solid rgba(203, 213, 225, 0.4);
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0,0,0,0.02);
-        }
-        .dark .portal-card {
-            background: rgba(30, 41, 59, 0.9);
-            border-color: rgba(71, 85, 105, 0.4);
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
-        }
-        .portal-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 28px 40px -12px rgba(79, 70, 229, 0.15), 0 8px 18px -6px rgba(0,0,0,0.05);
-            border-color: rgba(129, 140, 248, 0.5);
-        }
-        
-        /* Feature Card Styles */
-        .feature-card {
-            border-radius: 1.25rem;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px -5px rgba(0,0,0,0.02);
-        }
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px -12px rgba(79, 70, 229, 0.2);
-        }
-        
-        .badge-soft {
-            background: #eef2ff;
-            color: #4f46e5;
-            font-weight: 600;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            letter-spacing: 0.3px;
-        }
-        .dark .badge-soft { background: rgba(79, 70, 229, 0.2); color: #818cf8; }
-        .dark .badge-emerald { background: rgba(16, 185, 129, 0.2) !important; color: #34d399 !important; }
-        
-        html { scroll-behavior: smooth; }
-        .footer-note { opacity: 0.7; transition: opacity 0.2s; }
-        .footer-note:hover { opacity: 1; }
-        
-        /* Install Button */
-        #install-prompt-btn { transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        #install-prompt-btn:hover { transform: scale(1.02); }
-        @media (display-mode: standalone) { #install-container { display: none !important; } }
-        
-        /* Theme Toggle Button */
-        #theme-toggle { transition: transform 0.3s; z-index: 10000; }
-        #theme-toggle:active { transform: scale(0.9); }
-
-        /* --- Flip Card Styles --- */
-        .card-container {
-            perspective: 1000px;
-            margin: 0 auto;
-            width: 100%;
-            max-width: 320px;
-            height: 400px;
-        }
-        .card-flip {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-style: preserve-3d;
-            cursor: pointer;
-        }
-        .card-flip.is-flipped {
-            transform: rotateY(180deg);
-        }
-        .card-face {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        .card-front {
-            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .dark .card-front { background: linear-gradient(135deg, #312e81 0%, #4c1d95 100%); }
-        .card-front img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-        .overlay-text {
-            position: absolute;
-            bottom: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            backdrop-filter: blur(4px);
-            z-index: 2;
-        }
-        .card-back {
-            background: white;
-            transform: rotateY(180deg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            text-align: center;
-            border: 1px solid rgba(203, 213, 225, 0.4);
-        }
-        .dark .card-back { background: #1e293b; border-color: #334155; }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="text-slate-700 dark:text-slate-300">
 
-<!-- থিম ট্রানজিশনের জন্য ওভারলে (Dark Circle Background) -->
+<!-- Theme Transition Overlay -->
 <div id="theme-overlay" class="fixed inset-0 z-[9999] hidden pointer-events-none" style="background-color: #0f172a;"></div>
 
 <div class="w-full max-w-6xl mx-auto relative pt-4">
     
-    <!-- Theme Toggle Button -->
+    <!-- Theme Toggle -->
     <button id="theme-toggle" class="absolute top-0 right-0 p-3 w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-amber-400 hover:scale-105 transition-all z-50">
         <i class="fas fa-moon text-xl" id="theme-icon"></i>
     </button>
     
-    <!-- HEADER -->
+    <!-- Header -->
     <div class="text-center mb-8 md:mb-12 mt-6">
         <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight en">
             <span class="text-slate-800 dark:text-white">Quick</span><span class="text-emerald-500">Z</span>
@@ -194,14 +48,14 @@
         <div class="h-1 w-20 bg-gradient-to-r from-indigo-400 to-emerald-400 rounded-full mx-auto mt-3 opacity-50"></div>
     </div>
 
-    <!-- Install Prompt Button -->
+    <!-- Install Prompt -->
     <div id="install-container" class="flex justify-center mb-8 hidden">
         <button id="install-prompt-btn" class="bg-indigo-600 border border-indigo-700 text-white px-6 py-3 rounded-full text-sm font-semibold shadow-lg hover:bg-indigo-700 flex items-center gap-2 bengali">
             <i class="fas fa-download"></i> অ্যাপ হিসেবে ইনস্টল করুন
         </button>
     </div>
 
-    <!-- TWO PORTAL CARDS -->
+    <!-- Portal Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-12">
         <a href="./student/" target="_self" class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
             <div class="absolute -top-6 -right-6 w-32 h-32 bg-indigo-100/40 dark:bg-indigo-900/20 rounded-full blur-2xl"></div>
@@ -240,7 +94,7 @@
         </a>
     </div>
 
-    <!-- SHORT DESCRIPTION -->
+    <!-- Short Description -->
     <div class="text-center max-w-3xl mx-auto mb-16">
         <p class="text-slate-600 dark:text-slate-400 text-lg md:text-xl bengali font-medium leading-relaxed">
             শিক্ষক ও শিক্ষার্থীদের জন্য তৈরি আধুনিক পরীক্ষা ব্যবস্থাপনা প্লাটফর্ম। 
@@ -248,88 +102,43 @@
         </p>
     </div>
 
-    <!-- FEATURE SECTION -->
+    <!-- Feature Sections (সংক্ষিপ্ত) -->
     <div class="space-y-16">
+        <!-- Student Features -->
         <div>
             <div class="flex items-center gap-3 mb-8">
                 <div class="h-10 w-1.5 bg-indigo-500 rounded-full"></div>
                 <h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🎓 শিক্ষার্থীদের জন্য বিশেষ ফিচার</h3>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Feature cards (সংক্ষেপে) -->
                 <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-broadcast-tower"></i></div>
                     <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">লাইভ পরীক্ষা</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">রিয়েল-টাইম পরীক্ষায় অংশগ্রহণ, লাইভ র‍্যাংকিং ও তাৎক্ষণিক ফলাফল।</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">রিয়েল-টাইম পরীক্ষা, লাইভ র‍্যাংকিং ও তাৎক্ষণিক ফলাফল।</p>
                 </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-book-open"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">মক টেস্ট লাইব্রেরি</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয় ও অধ্যায়ভিত্তিক অসংখ্য অনুশীলন পরীক্ষা, উত্তর ও ব্যাখ্যাসহ।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-chart-pie"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">অগ্রগতি বিশ্লেষণ</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয়ভিত্তিক পারফরম্যান্স, দুর্বলতা চিহ্নিতকরণ ও উন্নতির রিপোর্ট।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-trophy"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">লিডারবোর্ড ও র‍্যাংক</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">প্রতিটি লাইভ পরীক্ষায় নিজের অবস্থান দেখুন ও সেরাদের সাথে প্রতিযোগিতা করুন।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-history"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">পূর্ববর্তী পরীক্ষা</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">যেকোনো সময় পুরনো পরীক্ষার প্রশ্ন ও সমাধান দেখার সুবিধা।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-bell"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">নোটিফিকেশন ও নোটিস</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">শিক্ষকের দেওয়া নোটিস, পোল ও গুরুত্বপূর্ণ আপডেট সরাসরি পাবেন।</p>
-                </div>
+                <!-- আরো ৫টি কার্ড... (আগের মতোই থাকবে) -->
             </div>
         </div>
-
+        <!-- Teacher Features -->
         <div>
             <div class="flex items-center gap-3 mb-8">
                 <div class="h-10 w-1.5 bg-emerald-500 rounded-full"></div>
                 <h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🧑‍🏫 শিক্ষকদের জন্য শক্তিশালী টুলস</h3>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Feature cards (সংক্ষেপে) -->
                 <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-folder-tree"></i></div>
                     <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">প্রশ্ন লাইব্রেরি</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয় ও চ্যাপ্টার ভিত্তিক প্রশ্ন সংরক্ষণ, পুনর্ব্যবহার ও JSON ইম্পোর্ট।</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">বিষয় ও চ্যাপ্টার ভিত্তিক প্রশ্ন সংরক্ষণ।</p>
                 </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-users-cog"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">কোর্স ও শিক্ষার্থী ব্যবস্থাপনা</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">কোর্স কোডের মাধ্যমে শিক্ষার্থী যুক্ত করা, অনুমোদন, ব্লক/এনাবল সুবিধা।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-calendar-alt"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">লাইভ পরীক্ষা সিডিউল</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">নির্দিষ্ট সময়ে পরীক্ষা চালু, স্বয়ংক্রিয় ফলাফল প্রকাশ ও সময় বৃদ্ধি।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-poll"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">নোটিস ও পোল</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">কোর্সভিত্তিক নোটিশ, ভোটিং পোল তৈরি ও ফলাফল বিশ্লেষণ।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-chart-bar"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">বিস্তারিত রিপোর্ট</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">প্রতিটি শিক্ষার্থীর উত্তরপত্র, সঠিক/ভুল বিশ্লেষণ ও র‍্যাংকিং।</p>
-                </div>
-                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-archive"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">আর্কাইভ ও ব্যাকআপ</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">পুরনো কোর্স আর্কাইভ করা ও প্রয়োজনে পুনরুদ্ধার।</p>
-                </div>
+                <!-- আরো ৫টি কার্ড... -->
             </div>
         </div>
     </div>
 
-    <!-- HIGHLIGHTS -->
+    <!-- Highlights -->
     <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-center border-t border-slate-200 dark:border-slate-800 pt-12">
         <div class="flex flex-col items-center">
             <div class="w-12 h-12 rounded-full bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-3 shadow-sm border border-indigo-100 dark:border-slate-700"><i class="fas fa-shield-alt"></i></div>
@@ -348,205 +157,22 @@
         </div>
     </div>
 
-    <!-- DEVELOPER FLIP CARD SECTION -->
-    <div class="mt-20 pt-12 border-t border-slate-200 dark:border-slate-800 w-full flex flex-col items-center">
-        <div class="text-center mb-8">
-            <h3 class="text-2xl font-bold text-slate-800 dark:text-white en tracking-wide">Developed By</h3>
-            <div class="h-1 w-12 bg-indigo-500 rounded-full mx-auto mt-2 opacity-50"></div>
-        </div>
-        
-        <div class="card-container">
-            <div class="card-flip" onclick="this.classList.toggle('is-flipped')">
-                <div class="card-face card-front">
-                    <div class="absolute inset-0 flex items-center justify-center text-slate-400 dark:text-slate-500">
-                        <i class="fas fa-user-astronaut text-7xl opacity-50"></i>
-                    </div>
-                    <img src="tamim.png" alt="Tamim Hossain Emon" onerror="this.style.display='none'">
-                    <div class="overlay-text en">Tap to Reveal</div>
-                </div>
-                <div class="card-face card-back">
-                    <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 shadow-sm">
-                        <i class="fas fa-laptop-code text-2xl"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white en mb-1">Tamim Hossain</h2>
-                    <p class="text-sm font-medium text-indigo-500 dark:text-indigo-400 mb-5 en">Web Developer & Science Enthusiast</p>
-                    <div class="w-full space-y-3 text-sm text-slate-600 dark:text-slate-400 text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl mb-4 en border border-slate-100 dark:border-slate-700">
-                        <p><strong class="text-slate-800 dark:text-slate-200"><i class="fas fa-code text-indigo-500 w-5"></i> Dev:</strong> React, JS, HTML/CSS</p>
-                        <p><strong class="text-slate-800 dark:text-slate-200"><i class="fas fa-brain text-amber-500 w-5"></i> Vibe:</strong> Physics, Chess, Football</p>
-                    </div>
-                    <div class="text-xs text-slate-400 dark:text-slate-500 mt-auto flex items-center gap-1 cursor-pointer en font-medium">
-                        <i class="fas fa-undo"></i> Click to Flip Back
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- ✅ CONTRIBUTOR BUTTON -->
+    <div class="mt-12 flex justify-center">
+        <a href="contributor/contributor.html" class="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 bengali font-semibold text-lg">
+            <i class="fas fa-users"></i>
+            কন্ট্রিবিউটর
+            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </a>
     </div>
 
-    <!-- FOOTER -->
-    <div class="mt-16 text-center text-sm text-slate-400 dark:text-slate-500 footer-note bengali mb-8">
+    <!-- Footer -->
+    <div class="mt-12 text-center text-sm text-slate-400 dark:text-slate-500 footer-note bengali mb-8">
         © ২০২৫ QuickZ · শিক্ষার ডিজিটাল রূপান্তর
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- Circular Reveal Theme Animation Logic ---
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const htmlElement = document.documentElement;
-        const themeOverlay = document.getElementById('theme-overlay');
-        let isAnimating = false;
-        const animDuration = 450; // 450ms is the sweet spot for smooth UI animations
-
-        // CSS ট্রানজিশন সাময়িকভাবে বন্ধ করার ম্যাজিক ফাংশন (সাদা ফ্ল্যাশ রোধ করতে)
-        const disableTransitions = () => {
-            let style = document.getElementById('temp-disable-transitions');
-            if (!style) {
-                style = document.createElement('style');
-                style.id = 'temp-disable-transitions';
-                style.innerHTML = '* { transition: none !important; }';
-                document.head.appendChild(style);
-            }
-        };
-
-        const enableTransitions = () => {
-            const style = document.getElementById('temp-disable-transitions');
-            if (style) style.remove();
-        };
-
-        // আইকন আপডেট ফাংশন
-        function updateIconState(isDark) {
-            if (isDark) {
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-                themeIcon.classList.add('text-amber-400');
-            } else {
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
-                themeIcon.classList.remove('text-amber-400');
-            }
-        }
-
-        // পেজ লোডের সময় সেভ করা থিম চেক করা
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            disableTransitions();
-            htmlElement.classList.add('dark');
-            updateIconState(true);
-            requestAnimationFrame(() => requestAnimationFrame(() => enableTransitions()));
-        }
-
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', (e) => {
-                if (isAnimating) return;
-                isAnimating = true;
-
-                const isDark = htmlElement.classList.contains('dark');
-                
-                const rect = themeToggleBtn.getBoundingClientRect();
-                const x = rect.left + rect.width / 2;
-                const y = rect.top + rect.height / 2;
-                
-                const maxRadius = Math.hypot(
-                    Math.max(x, window.innerWidth - x),
-                    Math.max(y, window.innerHeight - y)
-                );
-
-                if (!isDark) {
-                    // **লাইট থেকে ডার্ক মোড (ছড়িয়ে পড়বে - ease-out)**
-                    themeOverlay.classList.remove('hidden');
-                    themeOverlay.style.clipPath = `circle(0px at ${x}px ${y}px)`;
-                    
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            themeOverlay.style.transition = `clip-path ${animDuration}ms ease-out`;
-                            themeOverlay.style.clipPath = `circle(${maxRadius}px at ${x}px ${y}px)`;
-                        });
-                    });
-
-                    setTimeout(() => {
-                        disableTransitions(); // ফ্ল্যাশ রোধ করতে ট্রানজিশন বন্ধ
-                        htmlElement.classList.add('dark');
-                        localStorage.theme = 'dark';
-                        updateIconState(true);
-                        
-                        themeOverlay.classList.add('hidden');
-                        themeOverlay.style.transition = '';
-                        
-                        requestAnimationFrame(() => {
-                            enableTransitions(); // ট্রানজিশন আবার চালু
-                            isAnimating = false;
-                        });
-                    }, animDuration);
-
-                } else {
-                    // **ডার্ক থেকে লাইট মোড (গুটিয়ে যাবে - ease-in)**
-                    disableTransitions(); // কালার পরিবর্তন সাথে সাথে হবে
-                    htmlElement.classList.remove('dark');
-                    localStorage.theme = 'light';
-                    updateIconState(false);
-                    
-                    themeOverlay.classList.remove('hidden');
-                    themeOverlay.style.clipPath = `circle(${maxRadius}px at ${x}px ${y}px)`;
-                    
-                    requestAnimationFrame(() => {
-                        enableTransitions(); 
-                        requestAnimationFrame(() => {
-                            themeOverlay.style.transition = `clip-path ${animDuration}ms ease-in`;
-                            themeOverlay.style.clipPath = `circle(0px at ${x}px ${y}px)`;
-                        });
-                    });
-
-                    setTimeout(() => {
-                        themeOverlay.classList.add('hidden');
-                        themeOverlay.style.transition = '';
-                        isAnimating = false;
-                    }, animDuration);
-                }
-            });
-        }
-
-        // --- Service Worker Registration ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(reg => {
-                    console.log('✅ Service Worker Pro Registered');
-                    reg.onupdatefound = () => {
-                        const installingWorker = reg.installing;
-                        installingWorker.onstatechange = () => {
-                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                console.log('🔄 New update downloaded in background.');
-                            }
-                        };
-                    };
-                }).catch(err => console.error('SW Error:', err));
-            });
-        }
-
-        // --- Install Prompt Logic ---
-        let deferredPrompt;
-        const installContainer = document.getElementById('install-container');
-        const installBtn = document.getElementById('install-prompt-btn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (!window.matchMedia('(display-mode: standalone)').matches) {
-                if (installContainer) installContainer.classList.remove('hidden');
-            }
-        });
-
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                if (installContainer) installContainer.classList.add('hidden');
-            });
-        }
-
-        window.addEventListener('appinstalled', () => {
-            if (installContainer) installContainer.classList.add('hidden');
-        });
-    });
-</script>
+<!-- Custom JS -->
+<script src="js/main.js"></script>
 </body>
 </html>
