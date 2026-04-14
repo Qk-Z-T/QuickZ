@@ -4,40 +4,32 @@
 body {
     font-family: 'Hind Siliguri', 'Outfit', sans-serif;
     background: #fafcff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1.5rem;
     -webkit-font-smoothing: antialiased;
-    transition: color 0.3s ease;
 }
 
 .dark body { background: #0f172a; }
 
-/* Font Utilities */
 .bengali { font-family: 'Hind Siliguri', sans-serif; }
 .en { font-family: 'Outfit', sans-serif; }
 
 /* Portal Card Styles */
 .portal-card {
-    transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s, background-color 0.3s;
-    will-change: transform;
-    border: 1px solid rgba(203, 213, 225, 0.4);
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0,0,0,0.02);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: white;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .dark .portal-card {
-    background: rgba(30, 41, 59, 0.9);
-    border-color: rgba(71, 85, 105, 0.4);
-    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+    background: #1e293b;
+    border-color: rgba(51, 65, 85, 0.8);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .portal-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 28px 40px -12px rgba(79, 70, 229, 0.15), 0 8px 18px -6px rgba(0,0,0,0.05);
-    border-color: rgba(129, 140, 248, 0.5);
+    transform: translateY(-8px);
+    box-shadow: 0 25px 40px -12px rgba(79, 70, 229, 0.15);
+    border-color: rgba(79, 70, 229, 0.4);
 }
 
 /* Feature Card Styles */
@@ -45,12 +37,11 @@ body {
     border-radius: 1.25rem;
     padding: 1.5rem;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 15px -5px rgba(0,0,0,0.02);
 }
 
 .feature-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px -12px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 12px 20px -8px rgba(0,0,0,0.05);
 }
 
 /* Badge Styles */
@@ -58,16 +49,11 @@ body {
     background: #eef2ff;
     color: #4f46e5;
     font-weight: 600;
-    font-size: 0.75rem;
     padding: 0.25rem 0.75rem;
     border-radius: 999px;
-    letter-spacing: 0.3px;
 }
 
-.dark .badge-soft { 
-    background: rgba(79, 70, 229, 0.2); 
-    color: #818cf8; 
-}
+.dark .badge-soft { background: rgba(79, 70, 229, 0.2); color: #818cf8; }
 
 .dark .badge-emerald { 
     background: rgba(16, 185, 129, 0.2) !important; 
@@ -76,30 +62,5 @@ body {
 
 /* Misc Utilities */
 html { scroll-behavior: smooth; }
-
-.footer-note { 
-    opacity: 0.7; 
-    transition: opacity 0.2s; 
-}
-
-.footer-note:hover { opacity: 1; }
-
-/* Install Button */
-#install-prompt-btn { 
-    transition: all 0.2s; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-}
-
-#install-prompt-btn:hover { transform: scale(1.02); }
-
-@media (display-mode: standalone) { 
-    #install-container { display: none !important; } 
-}
-
-/* Theme Toggle Button */
-#theme-toggle { 
-    transition: transform 0.3s; 
-    z-index: 10000; 
-}
-
+#theme-toggle { transition: transform 0.3s; }
 #theme-toggle:active { transform: scale(0.9); }
