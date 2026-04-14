@@ -20,6 +20,9 @@ import './teacher/notice-poll.js';
 import './teacher/groups.js';
 import './teacher/profile.js';
 
+// ---------- অফলাইন ম্যানেজার ইম্পোর্ট ----------
+import { TeacherOffline } from './offline.js';
+
 // গ্লোবাল এক্সপোজ
 window.AppState = AppState;
 window.MathEditor = MathEditor;
@@ -54,25 +57,46 @@ window.addEventListener('popstate', (event) => {
     Router.handlePopState(event);
 });
 
+// ---------- অফলাইন ম্যানেজার ইনিশিয়ালাইজ (নিরাপদভাবে) ----------
+try {
+    if (typeof TeacherOffline !== 'undefined') {
+        TeacherOffline.init();
+        // Teacher অবজেক্টে সিঙ্ক ট্রিগার ফাংশন সংযুক্ত
+        Teacher.syncPending = () => TeacherOffline.syncPending();
+        console.log('✅ TeacherOffline initialized');
+    } else {
+        console.warn('⚠️ TeacherOffline module not loaded');
+    }
+} catch (e) {
+    console.error('❌ Failed to initialize TeacherOffline:', e);
+}
+
 // স্প্ল্যাশ স্ক্রিন ও অথেনটিকেশন
 window.addEventListener('load', () => {
     const hasTeacherSession = localStorage.getItem('teacher_sess');
     
     if (hasTeacherSession) {
         setTimeout(() => {
-            document.getElementById('splash-screen').classList.add('splash-hidden');
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.display = 'none';
-                Auth.reloadTeacherSession();
-            }, 500);
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                splash.classList.add('splash-hidden');
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    Auth.reloadTeacherSession();
+                }, 500);
+            }
         }, 1000);
     } else {
         setTimeout(() => {
-            document.getElementById('splash-screen').classList.add('splash-hidden');
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.display = 'none';
-                document.getElementById('auth-screen').classList.add('show');
-            }, 500);
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                splash.classList.add('splash-hidden');
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    const authScreen = document.getElementById('auth-screen');
+                    if (authScreen) authScreen.classList.add('show');
+                }, 500);
+            }
         }, 1500);
     }
 });
@@ -83,14 +107,16 @@ document.addEventListener('click', function(e) {
         document.querySelectorAll('.dot-menu-dropdown').forEach(d => d.classList.remove('show'));
     }
     if (!e.target.closest('#math-symbols-panel') && !e.target.closest('#floating-math-btn')) {
-        document.getElementById('math-symbols-panel').classList.remove('show');
+        const panel = document.getElementById('math-symbols-panel');
+        if (panel) panel.classList.remove('show');
     }
     if (!e.target.closest('.hamburger-menu')) {
         const hm = document.getElementById('hamburger-menu');
         if (hm) hm.classList.remove('show');
     }
     if (!e.target.closest('.group-switcher')) {
-        document.getElementById('group-switcher-dropdown').classList.remove('show');
+        const dropdown = document.getElementById('group-switcher-dropdown');
+        if (dropdown) dropdown.classList.remove('show');
     }
     if (!e.target.closest('.student-three-dot-menu')) {
         document.querySelectorAll('.student-dot-menu-dropdown').forEach(d => d.classList.remove('show'));
