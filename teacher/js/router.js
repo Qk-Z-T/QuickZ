@@ -1,5 +1,5 @@
 // js/router.js
-// Routing and page navigation
+// Routing and page navigation (Fixed Version)
 
 import { AppState } from './core/state.js';
 import { db } from './config/firebase.js';
@@ -11,25 +11,33 @@ const validPages = ['home', 'create', 'rank', 'folders', 'management'];
 
 export const Router = {
     initTeacher: () => {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('auth-screen').classList.remove('show');
-        document.getElementById('website-layout').classList.remove('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
-        document.getElementById('teacher-nav').classList.remove('hidden');
-        document.getElementById('teacher-header').classList.remove('hidden');
-        
-        Teacher.loadGroupsForSwitcher();
-        
-        if (!AppState.selectedGroup) {
-            Teacher.selectGroupView('home');
-        } else {
-            AppState.currentPage = 'home';
-            window.history.replaceState({ page: 'home' }, '', `#home`);
-            Router.teacher('home');
+        console.log('🔧 Router.initTeacher called');
+        try {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('show');
+            document.getElementById('website-layout').classList.remove('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('teacher-nav').classList.remove('hidden');
+            document.getElementById('teacher-header').classList.remove('hidden');
+            
+            Teacher.loadGroupsForSwitcher();
+            
+            if (!AppState.selectedGroup) {
+                console.log('📁 No group selected, showing group selection');
+                Teacher.selectGroupView('home');
+            } else {
+                AppState.currentPage = 'home';
+                window.history.replaceState({ page: 'home' }, '', `#home`);
+                Router.teacher('home');
+            }
+        } catch (error) {
+            console.error('❌ Router.initTeacher error:', error);
+            Swal.fire('Error', 'Failed to initialize teacher panel: ' + error.message, 'error');
         }
     },
     
     showTeacherProfileForm: () => {
+        console.log('📝 Showing teacher profile form');
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('website-layout').classList.remove('hidden');
         document.getElementById('app-container').classList.remove('hidden');
@@ -88,6 +96,7 @@ export const Router = {
     
     navigateTo: (page, addToHistory = true) => {
         if (!validPages.includes(page)) return;
+        console.log(`🧭 Navigating to: ${page}`);
         if (!AppState.selectedGroup && page !== 'management') {
             Swal.fire({ title: 'Select Course', text: 'Please select a course first.', icon: 'warning' });
             Teacher.selectGroupView(page);
@@ -95,23 +104,31 @@ export const Router = {
         }
         clearListeners();
         AppState.currentPage = page;
-        Teacher.closeMobileSidebar?.();
+        if (Teacher.closeMobileSidebar) Teacher.closeMobileSidebar();
         document.querySelectorAll('.sidebar-nav-item.nav-item').forEach(el => el.classList.remove('active'));
         document.getElementById('nav-' + page)?.classList.add('active');
         
         const titles = {home: 'Dashboard Home', create: 'Create Exam', rank: 'Rankings', folders: 'Library', management: 'Management'};
-        document.getElementById('page-title').innerHTML = (titles[page] || 'Teacher') + ' <span style="color:#4f46e5">Panel</span>';
+        const titleEl = document.getElementById('page-title');
+        if (titleEl) titleEl.innerHTML = (titles[page] || 'Teacher') + ' <span style="color:#4f46e5">Panel</span>';
         
         if (page !== 'create') {
-            document.getElementById('floating-math-btn').classList.add('hidden');
-            document.getElementById('math-symbols-panel').classList.remove('show');
+            document.getElementById('floating-math-btn')?.classList.add('hidden');
+            document.getElementById('math-symbols-panel')?.classList.remove('show');
         }
         
-        if(page==='home') Teacher.homeView();
-        if(page==='create') Teacher.createView();
-        if(page==='rank') Teacher.rankView();
-        if(page==='folders') Teacher.foldersView();
-        if(page==='management') Teacher.managementView();
+        // সংশ্লিষ্ট ভিউ ফাংশন কল
+        try {
+            if(page==='home' && typeof Teacher.homeView === 'function') Teacher.homeView();
+            else if(page==='create' && typeof Teacher.createView === 'function') Teacher.createView();
+            else if(page==='rank' && typeof Teacher.rankView === 'function') Teacher.rankView();
+            else if(page==='folders' && typeof Teacher.foldersView === 'function') Teacher.foldersView();
+            else if(page==='management' && typeof Teacher.managementView === 'function') Teacher.managementView();
+            else throw new Error(`View function for ${page} not found`);
+        } catch (error) {
+            console.error(`❌ Error rendering ${page}:`, error);
+            Swal.fire('Error', `Failed to load ${page}: ${error.message}`, 'error');
+        }
         
         if (addToHistory) window.history.pushState({ page }, '', `#${page}`);
     },
