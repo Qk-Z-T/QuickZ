@@ -64,3 +64,6 @@ body {
 html { scroll-behavior: smooth; }
 #theme-toggle { transition: transform 0.3s; }
 #theme-toggle:active { transform: scale(0.9); }
+#online-indicator {
+    transition: opacity 0.5s ease;
+}
