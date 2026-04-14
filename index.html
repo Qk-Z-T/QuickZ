@@ -24,29 +24,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* অতিরিক্ত স্ক্রিন ফিটিং এনশিওর করার জন্য */
-        body {
-            overflow-x: hidden;
-            width: 100%;
-        }
-        .main-wrapper {
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-        }
-    </style>
 </head>
-<body class="text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900">
+<body class="text-slate-700 dark:text-slate-300">
 
 <div id="theme-overlay" class="fixed inset-0 z-[9999] hidden pointer-events-none" style="background-color: #0f172a;"></div>
 
-<div class="main-wrapper w-full max-w-6xl mx-auto relative pt-4 px-4 sm:px-6 lg:px-8">
+<div class="w-full max-w-6xl mx-auto relative pt-4 px-4 sm:px-6">
     
     <button id="theme-toggle" class="absolute top-0 right-4 p-3 w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-amber-400 hover:scale-105 transition-all z-50">
         <i class="fas fa-moon text-xl" id="theme-icon"></i>
     </button>
     
-    <div class="text-center mb-8 md:mb-12 mt-12 md:mt-6">
+    <div class="text-center mb-8 md:mb-12 mt-6">
         <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight en">
             <span class="text-slate-800 dark:text-white">Quick</span><span class="text-emerald-500">Z</span>
         </h1>
@@ -59,16 +48,16 @@
         </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-12">
-        <a href="./student/" target="_self" class="portal-card group rounded-3xl p-6 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-12">
+        <a href="./student/" target="_self" class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
             <div class="absolute -top-6 -right-6 w-32 h-32 bg-indigo-100/40 dark:bg-indigo-900/20 rounded-full blur-2xl"></div>
-            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-700 shadow-md border border-indigo-100 dark:border-slate-600 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6 group-hover:scale-105 transition-transform">
+            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-indigo-100 dark:border-slate-700 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6 group-hover:scale-105 transition-transform">
                 <i class="fas fa-graduation-cap text-2xl"></i>
             </div>
-            <h2 class="relative z-10 text-2xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
-                শিক্ষার্থী <span class="badge-soft text-xs bengali bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded">প্রবেশ</span>
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                শিক্ষার্থী <span class="badge-soft text-xs bengali">প্রবেশ</span>
             </h2>
-            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-sm md:text-lg mb-5 bengali leading-relaxed">
+            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">
                 লাইভ পরীক্ষা, মক টেস্ট, র‍্যাংকিং, বিস্তারিত ফলাফল ও অগ্রগতি — সবকিছু এক জায়গায়।
             </p>
             <div class="relative z-10 mt-auto flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold group-hover:gap-3 transition-all">
@@ -77,15 +66,15 @@
             </div>
         </a>
 
-        <a href="./teacher/" target="_self" class="portal-card group rounded-3xl p-6 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+        <a href="./teacher/" target="_self" class="portal-card group rounded-3xl p-8 md:p-10 flex flex-col items-start text-left no-underline relative overflow-hidden">
             <div class="absolute -top-6 -left-6 w-32 h-32 bg-emerald-100/40 dark:bg-emerald-900/20 rounded-full blur-2xl"></div>
-            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-700 shadow-md border border-emerald-100 dark:border-slate-600 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-105 transition-transform">
+            <div class="relative z-10 w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-emerald-100 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-105 transition-transform">
                 <i class="fas fa-chalkboard-teacher text-2xl"></i>
             </div>
-            <h2 class="relative z-10 text-2xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
-                শিক্ষক <span class="badge-soft badge-emerald bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs px-2 py-1 rounded bengali">প্রবেশ</span>
+            <h2 class="relative z-10 text-3xl md:text-4xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                শিক্ষক <span class="badge-soft badge-emerald bg-emerald-50 text-emerald-700 bengali">প্রবেশ</span>
             </h2>
-            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-sm md:text-lg mb-5 bengali leading-relaxed">
+            <p class="relative z-10 text-slate-600 dark:text-slate-400 text-base md:text-lg mb-5 bengali leading-relaxed">
                 কোর্স তৈরি, লাইভ পরীক্ষা, প্রশ্নব্যাংক, শিক্ষার্থী ব্যবস্থাপনা ও সম্পূর্ণ অ্যানালিটিক্স।
             </p>
             <div class="relative z-10 mt-auto flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold group-hover:gap-3 transition-all">
@@ -95,87 +84,113 @@
         </a>
     </div>
 
-    <div class="text-center max-w-3xl mx-auto mb-16 px-2">
-        <p class="text-slate-600 dark:text-slate-400 text-base md:text-xl bengali font-medium leading-relaxed">
-            শিক্ষক ও শিক্ষার্থীদের জন্য তৈরি আধুনিক পরীক্ষা ব্যবস্থাপনা প্লাটফর্ম। 
-            <br class="hidden sm:block">আপনার ভূমিকা নির্বাচন করে শুরু করুন।
-        </p>
-    </div>
-
     <div class="space-y-16">
         <div>
             <div class="flex items-center gap-3 mb-8">
-                <div class="h-8 md:h-10 w-1.5 bg-indigo-500 rounded-full"></div>
-                <h3 class="text-xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🎓 শিক্ষার্থীদের জন্য বিশেষ ফিচার</h3>
+                <div class="h-10 w-1.5 bg-indigo-500 rounded-full"></div>
+                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🎓 শিক্ষার্থীদের জন্য বিশেষ ফিচার</h3>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="feature-card p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-broadcast-tower"></i></div>
                     <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">লাইভ পরীক্ষা</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">রিয়েল-টাইম পরীক্ষায় অংশগ্রহণ, লাইভ র‍্যাংকিং ও তাৎক্ষণিক ফলাফল।</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">রিয়েল-টাইম পরীক্ষা, লাইভ র‍্যাংকিং ও তাৎক্ষণিক ফলাফল।</p>
                 </div>
-                <div class="feature-card p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-book-open"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">মক টেস্ট লাইব্রেরি</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয় ও অধ্যায়ভিত্তিক অনুশীলন পরীক্ষা, উত্তর ও ব্যাখ্যাসহ।</p>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">মক টেস্ট</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">অধ্যায়ভিত্তিক অসংখ্য প্র্যাকটিস সেট ও ব্যাখ্যা।</p>
                 </div>
-                <div class="feature-card p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-chart-pie"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">অগ্রগতি বিশ্লেষণ</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয়ভিত্তিক পারফরম্যান্স, দুর্বলতা চিহ্নিতকরণ ও উন্নতির রিপোর্ট।</p>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">অগ্রগতি রিপোর্ট</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">নিজের পারফরম্যান্স বিশ্লেষণ ও দুর্বলতা চিহ্নিতকরণ।</p>
+                </div>
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-trophy"></i></div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">লিডারবোর্ড</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">সেরাদের তালিকায় নিজের অবস্থান যাচাই।</p>
+                </div>
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-history"></i></div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">পরীক্ষা আর্কাইভ</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">পুরানো সব পরীক্ষার উত্তরপত্র যেকোনো সময় দেখার সুবিধা।</p>
+                </div>
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div class="text-indigo-600 dark:text-indigo-400 text-2xl mb-3"><i class="fas fa-bell"></i></div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">তাতক্ষণিক নোটিশ</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">ক্লাস বা পরীক্ষার রুটিন পরিবর্তন হলে সাথে সাথে নোটিফিকেশন।</p>
                 </div>
             </div>
         </div>
 
         <div>
             <div class="flex items-center gap-3 mb-8">
-                <div class="h-8 md:h-10 w-1.5 bg-emerald-500 rounded-full"></div>
-                <h3 class="text-xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🧑‍🏫 শিক্ষকদের জন্য শক্তিশালী টুলস</h3>
+                <div class="h-10 w-1.5 bg-emerald-500 rounded-full"></div>
+                <h3 class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white bengali">🧑‍🏫 শিক্ষকদের জন্য শক্তিশালী টুলস</h3>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                 <div class="feature-card p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-folder-tree"></i></div>
                     <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">প্রশ্ন লাইব্রেরি</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">বিষয় ও চ্যাপ্টার ভিত্তিক প্রশ্ন সংরক্ষণ, পুনর্ব্যবহার ও JSON ইম্পোর্ট।</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">বিষয় ও চ্যাপ্টার ভিত্তিক প্রশ্ন সংরক্ষণ ও অটো-র‍্যান্ডমাইজেশন।</p>
                 </div>
-                <div class="feature-card p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-users-cog"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">কোর্স ব্যবস্থাপনা</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">কোর্স কোডের মাধ্যমে শিক্ষার্থী যুক্ত করা ও অনুমোদন সুবিধা।</p>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">শিক্ষার্থী ম্যানেজমেন্ট</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">ব্যাচ ভিত্তিক শিক্ষার্থী যোগ করা ও ফলাফল ট্র্যাকিং।</p>
                 </div>
-                <div class="feature-card p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-calendar-alt"></i></div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">শিডিউল মেকার</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">নির্দিষ্ট সময়ে স্বয়ংক্রিয় পরীক্ষা শুরু ও শেষ করার সুবিধা।</p>
+                </div>
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-poll"></i></div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">পোল ও ভোটিং</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">শিক্ষার্থীদের মতামত নিতে ক্লাসরুম পোল তৈরির সুবিধা।</p>
+                </div>
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-chart-bar"></i></div>
-                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">বিস্তারিত রিপোর্ট</h4>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali leading-relaxed">প্রতিটি শিক্ষার্থীর উত্তরপত্র, সঠিক/ভুল বিশ্লেষণ ও র‍্যাংকিং।</p>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">অ্যানালিটিক্স</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">পুরো ব্যাচের গড় ফলাফল ও পারফরম্যান্স গ্রাফ।</p>
+                </div>
+                <div class="feature-card bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div class="text-emerald-600 dark:text-emerald-400 text-2xl mb-3"><i class="fas fa-archive"></i></div>
+                    <h4 class="font-bold text-lg mb-2 text-slate-800 dark:text-white bengali">ডেটা আর্কাইভ</h4>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm bengali">সব কোর্সের তথ্য ব্যাকআপ ও আর্কাইভ রাখার সুবিধা।</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-center border-t border-slate-200 dark:border-slate-800 pt-12 pb-10">
+    <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-center border-t border-slate-200 dark:border-slate-800 pt-12">
         <div class="flex flex-col items-center">
             <div class="w-12 h-12 rounded-full bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-3 shadow-sm border border-indigo-100 dark:border-slate-700"><i class="fas fa-shield-alt"></i></div>
             <h5 class="font-bold bengali text-slate-800 dark:text-white">নিরাপদ ও গোপনীয়</h5>
+            <p class="text-sm text-slate-500 dark:text-slate-400 bengali mt-1">শিক্ষার্থীর তথ্য সম্পূর্ণ সুরক্ষিত</p>
         </div>
         <div class="flex flex-col items-center">
             <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-3 shadow-sm border border-emerald-100 dark:border-slate-700"><i class="fas fa-bolt"></i></div>
             <h5 class="font-bold bengali text-slate-800 dark:text-white">রিয়েল-টাইম সিঙ্ক</h5>
+            <p class="text-sm text-slate-500 dark:text-slate-400 bengali mt-1">পরীক্ষা ও ফলাফল মুহূর্তেই আপডেট হয়</p>
         </div>
         <div class="flex flex-col items-center">
             <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-slate-800 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-3 shadow-sm border border-amber-100 dark:border-slate-700"><i class="fas fa-mobile-alt"></i></div>
             <h5 class="font-bold bengali text-slate-800 dark:text-white">মোবাইল ফ্রেন্ডলি</h5>
+            <p class="text-sm text-slate-500 dark:text-slate-400 bengali mt-1">স্মার্টফোন ও ট্যাবলেটে সমান কার্যকর</p>
         </div>
     </div>
 
-    <div class="mt-4 flex justify-center">
-        <a href="contributor/" class="group inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 bengali font-semibold text-lg">
+    <div class="mt-12 flex justify-center">
+        <a href="contributor/" class="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 bengali font-semibold text-lg">
             <i class="fas fa-users"></i>
             কন্ট্রিবিউটর
             <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
         </a>
     </div>
 
-    <div class="mt-12 text-center text-sm text-slate-400 dark:text-slate-500 footer-note bengali mb-12">
+    <div class="mt-12 text-center text-sm text-slate-400 dark:text-slate-500 footer-note bengali mb-8">
         © ২০২৫ QuickZ · শিক্ষার ডিজিটাল রূপান্তর
     </div>
 </div>
