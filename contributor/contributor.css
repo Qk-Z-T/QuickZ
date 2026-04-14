@@ -21,6 +21,7 @@ body {
     cursor: pointer;
 }
 
+/* ডিফল্ট অবস্থায় তথ্য (পিছন) দেখানোর জন্য is-flipped ক্লাস থাকবে */
 .card-flip.is-flipped {
     transform: rotateY(180deg);
 }
@@ -34,13 +35,16 @@ body {
     border-radius: 1.5rem;
     overflow: hidden;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    pointer-events: auto; /* ক্লিক ইভেন্ট নিশ্চিত করা */
 }
 
+/* সামনের অংশ (ছবি) */
 .card-front {
     background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
     display: flex;
     align-items: center;
     justify-content: center;
+    transform: rotateY(0deg);  /* স্বাভাবিক অবস্থায় সামনে */
 }
 
 .dark .card-front {
@@ -57,6 +61,7 @@ body {
     z-index: 1;
 }
 
+/* "Tap to Reveal" টেক্সট (এখন পিছনের দিকে দেখাবে না, দরকার নেই) */
 .overlay-text {
     position: absolute;
     bottom: 20px;
@@ -70,9 +75,10 @@ body {
     z-index: 2;
 }
 
+/* পিছনের অংশ (তথ্য) */
 .card-back {
     background: white;
-    transform: rotateY(180deg);
+    transform: rotateY(180deg);  /* পিছনের অংশ উল্টো থাকবে */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -87,9 +93,23 @@ body {
     border-color: #334155;
 }
 
-/* Theme Toggle Animation */
+/* ফ্লিপ নির্দেশক টেক্সট */
+.flip-hint {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.dark .flip-hint {
+    color: #64748b;
+}
+
+/* Theme Toggle Button */
 #theme-toggle {
     transition: transform 0.3s;
+    z-index: 10000;
 }
 #theme-toggle:active {
     transform: scale(0.9);
