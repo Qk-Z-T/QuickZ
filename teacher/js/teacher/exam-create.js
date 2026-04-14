@@ -9,6 +9,7 @@ import {
     collection, addDoc, doc, updateDoc 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { saveFolderStructureToFirebase } from '../features/realtime-sync.js';
+import { TeacherOffline } from '../offline.js';  // <-- নতুন ইম্পোর্ট
 
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
@@ -571,6 +572,87 @@ Teacher.createExam = async (isDraft = false) => {
             cancelled: false
         };
         
+        // ---------- অফলাইন চেক ----------
+        if (!navigator.onLine) {
+            Swal.close();
+            // লোকাল স্টোরেজে সেভ করার আগে একটি temporary ID তৈরি করে নেওয়া (যাতে UI-তে রেফারেন্স থাকে)
+            const tempId = 'local_' + Date.now();
+            examData.localId = tempId;
+            
+            // TeacherOffline মডিউলের মাধ্যমে সেভ
+            await TeacherOffline.saveExamOffline(examData);
+            
+            // লোকাল folderStructure আপডেট (যাতে UI-তে দেখায়)
+            if (sub && chap) {
+                const folderType = type === 'live' ? 'live' : 'mock';
+                
+                let subject = folderStructure[folderType].find(s => s.name === sub);
+                if (!subject) {
+                    subject = {
+                        id: `subject-${sub}-${folderType}-${Date.now()}`,
+                        name: sub,
+                        type: 'subject',
+                        examType: folderType,
+                        children: [],
+                        exams: []
+                    };
+                    folderStructure[folderType].push(subject);
+                }
+                
+                let chapter = subject.children.find(c => c.name === chap);
+                if (!chapter) {
+                    chapter = {
+                        id: `chapter-${chap}-${subject.id}-${Date.now()}`,
+                        name: chap,
+                        type: 'chapter',
+                        parent: subject.id,
+                        children: [],
+                        exams: []
+                    };
+                    subject.children.push(chapter);
+                }
+                
+                chapter.exams.push({
+                    id: tempId,
+                    name: t,
+                    type: 'exam',
+                    examType: type,
+                    parent: chapter.id,
+                    examData: examData
+                });
+            } else {
+                if(!folderStructure.uncategorized) folderStructure.uncategorized = [];
+                folderStructure.uncategorized.push({
+                    id: tempId,
+                    name: t,
+                    examType: type,
+                    examData: examData
+                });
+            }
+            // লোকাল স্টোরেজে folderStructure সেভ (optional, offline consistency)
+            localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
+            
+            Teacher.questions = [];
+            Teacher.currentQuestion = null;
+            document.getElementById('floating-math-btn').classList.add('hidden');
+            document.getElementById('math-symbols-panel').classList.remove('show');
+            
+            Swal.fire({
+                title: 'অফলাইন মোড',
+                text: 'পরীক্ষাটি ড্রাফট হিসেবে আপনার ডিভাইসে সংরক্ষিত হয়েছে। ইন্টারনেট সংযোগ পেলে স্বয়ংক্রিয়ভাবে সিঙ্ক হবে।',
+                icon: 'info',
+                confirmButtonText: 'ঠিক আছে'
+            }).then(() => {
+                if (isDraft) {
+                    Teacher.foldersView();
+                } else {
+                    Teacher.createView();
+                }
+            });
+            return;
+        }
+        
+        // ---------- অনলাইন সেভ ----------
         const docRef = await addDoc(collection(db, "exams"), examData);
         
         if (sub) {
@@ -686,6 +768,30 @@ Teacher.updateExistingExam = async function(examId) {
             updateData.endTime = document.getElementById('net').value;
             updateData.autoPublish = autoPublish;
             updateData.resultPublished = exam.resultPublished || autoPublish;
+        }
+        
+        // অফলাইন চেক
+        if (!navigator.onLine) {
+            // আপডেট ডেটা সিঙ্ক কিউতে জমা
+            await TeacherOffline.saveExamOffline({ ...updateData, id: examId });
+            // লোকাল ক্যাশ আপডেট
+            if (ExamCache[examId]) {
+                Object.assign(ExamCache[examId], updateData);
+            }
+            Teacher.questions = [];
+            Teacher.currentQuestion = null;
+            document.getElementById('floating-math-btn').classList.add('hidden');
+            document.getElementById('math-symbols-panel').classList.remove('show');
+            
+            Swal.fire({
+                title: 'অফলাইন মোড',
+                text: 'পরীক্ষার পরিবর্তনগুলো স্থানীয়ভাবে সংরক্ষিত হয়েছে। অনলাইনে এলে স্বয়ংক্রিয়ভাবে আপডেট হবে।',
+                icon: 'info',
+                confirmButtonText: 'ঠিক আছে'
+            }).then(() => {
+                Teacher.foldersView();
+            });
+            return;
         }
         
         await updateDoc(doc(db, "exams", examId), updateData);
