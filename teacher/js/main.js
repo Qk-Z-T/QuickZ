@@ -1,6 +1,5 @@
-// js/main.js
-// প্রধান এন্ট্রি পয়েন্ট - সমস্ত মডিউল ইম্পোর্ট ও অ্যাসেম্বল
-// ব্যাক বাটন হ্যান্ডলিং, থিম ও ফাইনাল টাচ সহ
+// teacher/js/main.js
+// প্রধান এন্ট্রি পয়েন্ট - Firebase Auth Observer সহ পূর্ণাঙ্গ সংস্করণ
 
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
@@ -20,8 +19,14 @@ import './teacher/notice-poll.js';
 import './teacher/groups.js';
 import './teacher/profile.js';
 
-// ---------- অফলাইন ম্যানেজার ইম্পোর্ট ----------
-import { TeacherOffline } from './offline.js';
+// অফলাইন ম্যানেজার ইম্পোর্ট (নিরাপদে)
+let TeacherOffline = null;
+try {
+    const offlineModule = await import('./offline.js');
+    TeacherOffline = offlineModule.TeacherOffline;
+} catch (e) {
+    console.warn('⚠️ TeacherOffline module not loaded, offline features disabled.');
+}
 
 // গ্লোবাল এক্সপোজ
 window.AppState = AppState;
@@ -57,51 +62,58 @@ window.addEventListener('popstate', (event) => {
     Router.handlePopState(event);
 });
 
-// ---------- অফলাইন ম্যানেজার ইনিশিয়ালাইজ (নিরাপদভাবে) ----------
-try {
-    if (typeof TeacherOffline !== 'undefined') {
-        TeacherOffline.init();
-        // Teacher অবজেক্টে সিঙ্ক ট্রিগার ফাংশন সংযুক্ত
-        Teacher.syncPending = () => TeacherOffline.syncPending();
-        console.log('✅ TeacherOffline initialized');
-    } else {
-        console.warn('⚠️ TeacherOffline module not loaded');
-    }
-} catch (e) {
-    console.error('❌ Failed to initialize TeacherOffline:', e);
-}
+// ---------- Firebase Auth Observer ----------
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-// স্প্ল্যাশ স্ক্রিন ও অথেনটিকেশন
-window.addEventListener('load', () => {
-    const hasTeacherSession = localStorage.getItem('teacher_sess');
-    
-    if (hasTeacherSession) {
-        setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            if (splash) {
-                splash.classList.add('splash-hidden');
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    Auth.reloadTeacherSession();
-                }, 500);
-            }
-        }, 1000);
+const auth = getAuth();
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        AppState.user = user;
+        try {
+            await Auth.loadTeacherProfile(user.uid);
+            initRealTimeSync();
+            Router.teacher('home');
+        } catch (err) {
+            console.error('Profile load error:', err);
+            Router.teacher('home');
+        }
     } else {
+        AppState.user = null;
+        Router.teacher('login');
+    }
+    
+    // স্প্ল্যাশ স্ক্রিন হাইড
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.classList.add('splash-hidden');
         setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            if (splash) {
-                splash.classList.add('splash-hidden');
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    const authScreen = document.getElementById('auth-screen');
-                    if (authScreen) authScreen.classList.add('show');
-                }, 500);
-            }
-        }, 1500);
+            splash.style.display = 'none';
+        }, 500);
     }
 });
 
-// গ্লোবাল ক্লিক হ্যান্ডলার
+// ---------- অফলাইন ম্যানেজার ইনিশিয়ালাইজ ----------
+if (TeacherOffline) {
+    try {
+        TeacherOffline.init();
+        Teacher.syncPending = () => TeacherOffline.syncPending();
+        console.log('✅ TeacherOffline initialized');
+    } catch (e) {
+        console.error('❌ Offline init error:', e);
+    }
+}
+
+// ---------- ব্যাকআপ: ৩ সেকেন্ড পরেও স্প্ল্যাশ হাইড না হলে জোর করে হাইড ----------
+setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if (splash && !splash.classList.contains('splash-hidden')) {
+        splash.classList.add('splash-hidden');
+        setTimeout(() => splash.style.display = 'none', 300);
+    }
+}, 3000);
+
+// ---------- গ্লোবাল ক্লিক হ্যান্ডলার ----------
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.three-dot-menu') && !e.target.closest('.dot-menu-dropdown')) {
         document.querySelectorAll('.dot-menu-dropdown').forEach(d => d.classList.remove('show'));
@@ -122,3 +134,5 @@ document.addEventListener('click', function(e) {
         document.querySelectorAll('.student-dot-menu-dropdown').forEach(d => d.classList.remove('show'));
     }
 });
+
+// দ্রষ্টব্য: পূর্বের window load ইভেন্ট বাদ দেওয়া হয়েছে কারণ auth observer ই সব সামলাচ্ছে।
