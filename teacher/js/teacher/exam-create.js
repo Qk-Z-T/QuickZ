@@ -9,7 +9,7 @@ import {
     collection, addDoc, doc, updateDoc 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { saveFolderStructureToFirebase } from '../features/realtime-sync.js';
-import { TeacherOffline } from '../offline.js';  // <-- নতুন ইম্পোর্ট
+import { TeacherOffline } from '../offline.js';
 
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
@@ -70,8 +70,9 @@ Teacher.renderForm = function(type) {
     
     const subjects = getSubjectsForType(type);
     
+    // পরিবর্তন: max-w-4xl সরিয়ে w-full ও প্যাডিং যোগ করা হয়েছে
     document.getElementById('app-container').innerHTML = `
-    <div class="p-0 max-w-4xl">
+    <div class="p-0 w-full px-4 md:px-6">
         <div class="flex justify-between items-center mb-4">
             <button onclick="Teacher.createView()" class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
