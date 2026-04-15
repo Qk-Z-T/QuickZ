@@ -1,3 +1,4 @@
+// js/features/auth.js
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
@@ -75,11 +76,14 @@ export const Auth = {
     },
     
     finalizeTeacher: () => {
+        // ✅ ফাস্ট বুটের জন্য ফ্ল্যাগ রিসেট করুন
+        localStorage.setItem('explicit_logout', 'false'); 
+
         localStorage.setItem('teacher_sess','true'); 
         localStorage.setItem('teacher_email', AppState.currentUser.email);
         localStorage.setItem('teacher_data', JSON.stringify(AppState.currentUser));
+        
         if (!AppState.currentUser.fullName || !AppState.currentUser.phone || !AppState.currentUser.teacherCode) {
-            // Router.showTeacherProfileForm() will be available in part 2
             if (window.Router && typeof window.Router.showTeacherProfileForm === 'function') {
                 window.Router.showTeacherProfileForm();
             } else {
@@ -120,7 +124,6 @@ export const Auth = {
                     AppState.selectedGroup = JSON.parse(lastGroupId);
                 }
                 
-                // initRealTimeSync will be defined later in part 2
                 if (typeof window.initRealTimeSync === 'function') {
                     window.initRealTimeSync();
                 }
@@ -162,19 +165,34 @@ export const Auth = {
     },
     
     logout: async () => { 
-        // clearListeners will be defined in part 2
+        // ✅ নিজে লগআউট বাটনে ক্লিক করেছে তা সিস্টেমকে বুঝিয়ে দেওয়া হচ্ছে
+        localStorage.setItem('explicit_logout', 'true'); 
+
         if (typeof window.clearListeners === 'function') {
             window.clearListeners();
         }
+        
+        // সব লোকাল ডেটা ক্লিয়ার
         localStorage.removeItem('teacher_sess');
         localStorage.removeItem('teacher_email');
         localStorage.removeItem('teacher_data');
         localStorage.removeItem('selectedGroup');
         localStorage.removeItem('folderStructure');
+        
         AppState.role = null;
         AppState.currentUser = null;
         AppState.selectedGroup = null;
-        location.reload();
+        
+        // Firebase Session Clear
+        import("https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js").then(({ getAuth, signOut }) => {
+            const auth = getAuth();
+            signOut(auth).then(() => {
+                location.reload();
+            });
+        }).catch(() => {
+            // যদি অফলাইনে থাকে, তবুও রিলোড নেবে
+            location.reload();
+        });
     }
 };
 
