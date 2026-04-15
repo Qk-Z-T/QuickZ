@@ -1,6 +1,6 @@
 // teacher/js/offline.js
-import { AppState } from '../core/state.js';
-import { db } from '../config/firebase.js';
+import { AppState } from './core/state.js';
+import { db } from './config/firebase.js';
 import { 
     collection, addDoc, setDoc, doc 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
