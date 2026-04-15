@@ -16,13 +16,13 @@ export const TeacherOffline = {
 
     handleOnline() {
         this.isOnline = true;
-        this.showToast('অনলাইনে ফিরেছেন, ডাটা সিঙ্ক হচ্ছে...', 'success');
+        this.showToast('Back Online', 'success');
         this.syncPending();
     },
 
     handleOffline() {
         this.isOnline = false;
-        this.showToast('ইন্টারনেট সংযোগ বিচ্ছিন্ন।', 'warning');
+        this.showToast('No internet connection', 'warning');
     },
 
     showToast(msg, type = 'info') {
@@ -135,7 +135,7 @@ export const TeacherOffline = {
         }
         const remaining = await DB.getPendingSyncItems();
         if (remaining.length === 0) {
-            this.showToast('সব ডাটা সফলভাবে সিঙ্ক হয়েছে।', 'success');
+            this.showToast('saved to cloud successfully', 'success');
         }
     }
 };
