@@ -1,5 +1,5 @@
 // teacher/js/main.js
-// প্রধান এন্ট্রি পয়েন্ট — FIXED (splash screen + login route)
+// প্রধান এন্ট্রি পয়েন্ট — FIXED
 
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
@@ -19,14 +19,23 @@ import './teacher/notice-poll.js';
 import './teacher/groups.js';
 import './teacher/profile.js';
 
-// অফলাইন ম্যানেজার ইম্পোর্ট (নিরাপদে)
-let TeacherOffline = null;
-try {
-    const offlineModule = await import('./offline.js');
-    TeacherOffline = offlineModule.TeacherOffline;
-} catch (e) {
-    console.warn('⚠️ TeacherOffline module not loaded, offline features disabled.');
-}
+// ✅ FIX: offline.js — await ছাড়া non-blocking import
+// এটা main execution কে block করবে না
+import('./offline.js').then(m => {
+    const TeacherOffline = m?.TeacherOffline;
+    if (TeacherOffline) {
+        try {
+            TeacherOffline.init();
+            Teacher.syncPending = () => TeacherOffline.syncPending();
+            window.TeacherOffline = TeacherOffline;
+            console.log('✅ TeacherOffline initialized');
+        } catch (e) {
+            console.error('❌ Offline init error:', e);
+        }
+    }
+}).catch(e => {
+    console.warn('⚠️ TeacherOffline not loaded:', e.message);
+});
 
 // গ্লোবাল এক্সপোজ
 window.AppState = AppState;
@@ -60,14 +69,12 @@ window.addEventListener('popstate', (event) => {
     Router.handlePopState(event);
 });
 
-// ✅ FIX: splash screen হাইড করার utility function
+// splash hide utility
 function hideSplash() {
     const splash = document.getElementById('splash-screen');
     if (splash && !splash.classList.contains('splash-hidden')) {
         splash.classList.add('splash-hidden');
-        setTimeout(() => {
-            splash.style.display = 'none';
-        }, 500);
+        setTimeout(() => { splash.style.display = 'none'; }, 500);
     }
 }
 
@@ -76,44 +83,33 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 
 const auth = getAuth();
 
-// ✅ FIX: auth observer timeout — Firebase কখনো callback না দিলেও splash সরে যাবে
+// ✅ FIX: ৫ সেকেন্ডের মধ্যে Firebase সাড়া না দিলে জোর করে login দেখাও
 const authTimeout = setTimeout(() => {
-    console.warn('⚠️ Firebase auth observer timed out — forcing splash hide & login screen');
+    console.warn('⚠️ Firebase auth timeout — forcing login');
     hideSplash();
     Router.showLogin();
-}, 5000); // 5 সেকেন্ড
+}, 5000);
 
 onAuthStateChanged(auth, async (user) => {
-    clearTimeout(authTimeout); // auth response পেলে timeout বাতিল
+    clearTimeout(authTimeout);
 
     if (user) {
         AppState.user = user;
         try {
             await Auth.loadTeacherProfile(user.uid);
             initRealTimeSync();
-            Router.initTeacher(); // ✅ সরাসরি initTeacher কল
+            Router.initTeacher();
         } catch (err) {
             console.error('Profile load error:', err);
-            Router.initTeacher(); // error হলেও home-এ নিয়ে যাও
+            Router.initTeacher();
         }
     } else {
         AppState.user = null;
-        Router.showLogin(); // ✅ সরাসরি showLogin কল
+        Router.showLogin();
     }
 
-    hideSplash(); // auth resolve হলে splash সরাও
+    hideSplash();
 });
-
-// অফলাইন ম্যানেজার ইনিশিয়ালাইজ
-if (TeacherOffline) {
-    try {
-        TeacherOffline.init();
-        Teacher.syncPending = () => TeacherOffline.syncPending();
-        console.log('✅ TeacherOffline initialized');
-    } catch (e) {
-        console.error('❌ Offline init error:', e);
-    }
-}
 
 // গ্লোবাল ক্লিক হ্যান্ডলার
 document.addEventListener('click', function (e) {
