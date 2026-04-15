@@ -1,5 +1,5 @@
 // teacher/js/main.js
-// প্রধান এন্ট্রি পয়েন্ট — FIXED
+// প্রধান এন্ট্রি পয়েন্ট — FIXED for Offline and Splash Screen Issues
 
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
@@ -19,8 +19,7 @@ import './teacher/notice-poll.js';
 import './teacher/groups.js';
 import './teacher/profile.js';
 
-// ✅ FIX: offline.js — await ছাড়া non-blocking import
-// এটা main execution কে block করবে না
+// ✅ offline.js — await ছাড়া non-blocking import
 import('./offline.js').then(m => {
     const TeacherOffline = m?.TeacherOffline;
     if (TeacherOffline) {
@@ -48,10 +47,11 @@ window.loadMathJax = loadMathJax;
 window.clearListeners = clearListeners;
 window.initRealTimeSync = initRealTimeSync;
 
-// গ্লোবাল ভেরিয়েবল ইনিশিয়ালাইজ
-window.ExamCache = {};
-window.unsubscribes = [];
-window.folderStructure = { live: [], mock: [], uncategorized: [] };
+// ✅ নিরাপদ গ্লোবাল ভেরিয়েবল ইনিশিয়ালাইজ (যাতে অন্য ফাইলে ক্র্যাশ না করে)
+if (!window.ExamCache) window.ExamCache = {};
+if (!window.unsubscribes) window.unsubscribes = [];
+if (!window.folderStructure) window.folderStructure = { live: [], mock: [], uncategorized: [] };
+
 window.currentFocusedTextarea = null;
 window.questionMode = 'manual';
 
@@ -83,11 +83,21 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 
 const auth = getAuth();
 
-// ✅ FIX: ৫ সেকেন্ডের মধ্যে Firebase সাড়া না দিলে জোর করে login দেখাও
+// ✅ FIX: ৫ সেকেন্ডের মধ্যে Firebase সাড়া না দিলে ক্যাশ চেক করে অফলাইন মোডে ড্যাশবোর্ড দেখাবে
 const authTimeout = setTimeout(() => {
-    console.warn('⚠️ Firebase auth timeout — forcing login');
+    console.warn('⚠️ Firebase auth timeout — checking offline cache');
     hideSplash();
-    Router.showLogin();
+    
+    const cachedData = localStorage.getItem('teacher_data');
+    if (cachedData && !navigator.onLine) {
+        // অফলাইন থাকলে এবং ক্যাশ থাকলে সরাসরি লগিন
+        AppState.currentUser = JSON.parse(cachedData);
+        AppState.user = { uid: AppState.currentUser.id }; 
+        console.log('✅ Logged in via Offline Cache');
+        Router.initTeacher();
+    } else {
+        Router.showLogin();
+    }
 }, 5000);
 
 onAuthStateChanged(auth, async (user) => {
@@ -96,11 +106,20 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         AppState.user = user;
         try {
-            await Auth.loadTeacherProfile(user.uid);
+            // অনলাইনে থাকলে ফায়ারবেস থেকে প্রোফাইল আনবে, না থাকলে ক্যাশ থেকে
+            if (navigator.onLine) {
+                await Auth.loadTeacherProfile(user.uid);
+            } else {
+                const cachedData = localStorage.getItem('teacher_data');
+                if (cachedData) AppState.currentUser = JSON.parse(cachedData);
+            }
             initRealTimeSync();
             Router.initTeacher();
         } catch (err) {
             console.error('Profile load error:', err);
+            // এরর হলেও ক্যাশ থেকে ডাটা নিয়ে চালিয়ে নেওয়ার চেষ্টা
+            const cachedData = localStorage.getItem('teacher_data');
+            if (cachedData) AppState.currentUser = JSON.parse(cachedData);
             Router.initTeacher();
         }
     } else {
