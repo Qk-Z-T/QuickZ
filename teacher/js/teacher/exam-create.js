@@ -70,20 +70,19 @@ Teacher.renderForm = function(type) {
     
     const subjects = getSubjectsForType(type);
     
-    // পরিবর্তন: max-w-4xl সরিয়ে w-full ও প্যাডিং যোগ করা হয়েছে
     document.getElementById('app-container').innerHTML = `
-    <div class="p-0 w-full px-4 md:px-6">
+    <div class="w-full px-4 md:px-6">
         <div class="flex justify-between items-center mb-4">
             <button onclick="Teacher.createView()" class="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
             </button>
         </div>
         <h2 class="text-xl font-bold mb-4 font-en text-slate-800 dark:text-white">Create ${isLive ? 'Live Exam' : 'Practice Test'}</h2>
-        <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary space-y-4">
+        <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary w-full">
             <input id="nt" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="Exam Title">
             <input type="hidden" id="nty" value="${type}"> 
             
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                 <div class="select-container">
                     <label class="block text-sm font-bold mb-1 dark:text-white">Subject</label>
                     <select id="nsub" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" ${type === 'mock' ? 'required' : ''}>
@@ -99,7 +98,7 @@ Teacher.renderForm = function(type) {
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                 <div>
                     <label class="block text-sm font-bold mb-1 dark:text-white">Duration (Minutes)</label>
                     <input id="nd" type="number" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="e.g., 60" required>
@@ -110,7 +109,7 @@ Teacher.renderForm = function(type) {
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                 <div>
                     <label class="block text-sm font-bold mb-1 dark:text-white">Negative Mark</label>
                     <select id="nneg" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl">
@@ -123,7 +122,7 @@ Teacher.renderForm = function(type) {
             </div>
             
             ${isLive ? `
-            <div class="p-3 bg-indigo-50 dark:bg-indigo-900 rounded-xl border border-indigo-100 dark:border-indigo-800 space-y-3">
+            <div class="p-3 bg-indigo-50 dark:bg-indigo-900 rounded-xl border border-indigo-100 dark:border-indigo-800 space-y-3 mt-4">
                 <div>
                     <label class="text-sm font-bold text-indigo-800 dark:text-indigo-300">Start Time</label>
                     <input id="nst" type="datetime-local" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-lg text-sm">
@@ -140,7 +139,7 @@ Teacher.renderForm = function(type) {
                 </div>
             </div>` : ''}
             
-            <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center justify-between mb-3 mt-6">
                 <label class="text-sm font-bold text-slate-700 dark:text-white">Question Mode:</label>
                 <div class="flex items-center gap-2">
                     <button id="mode-manual" onclick="Teacher.switchQuestionMode('manual')" class="px-3 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg">Manual</button>
@@ -153,26 +152,26 @@ Teacher.renderForm = function(type) {
                 <div class="text-center p-4 text-slate-400">No questions added yet</div>
             </div>
             
-            <div id="manual-questions-container" class="space-y-4">
-                <div class="question-box dark:bg-black dark:border-dark-tertiary">
+            <div id="manual-questions-container" class="space-y-4 w-full">
+                <div class="question-box dark:bg-black dark:border-dark-tertiary w-full">
                     <h3 class="font-bold text-lg mb-3 dark:text-white" id="question-form-title">Add New Question</h3>
                     
-                    <div class="question-field-container mb-3">
+                    <div class="question-field-container mb-3 w-full">
                         <label class="block text-sm font-bold mb-1 dark:text-white">Question Text</label>
-                        <textarea id="textarea-question" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl question-textarea auto-resize" rows="3" placeholder="Enter question text..." oninput="autoResizeTextarea(this)"></textarea>
+                        <textarea id="textarea-question" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl question-textarea auto-resize box-border" rows="3" placeholder="Enter question text..." oninput="autoResizeTextarea(this)"></textarea>
                         <button type="button" class="math-preview-btn" data-target="textarea-question">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-3 w-full">
                         <label class="block text-sm font-bold mb-2 dark:text-white">Options:</label>
-                        <div class="space-y-2">
+                        <div class="space-y-2 w-full">
                             ${['A', 'B', 'C', 'D'].map((letter, index) => `
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 w-full">
                                     <span class="font-bold w-6 dark:text-white">${letter}.</span>
-                                    <div class="question-field-container flex-1">
-                                        <textarea id="option-${letter.toLowerCase()}" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded option-textarea auto-resize" rows="2" placeholder="Option ${letter}" oninput="autoResizeTextarea(this)"></textarea>
+                                    <div class="question-field-container flex-1 w-full">
+                                        <textarea id="option-${letter.toLowerCase()}" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded option-textarea auto-resize box-border" rows="2" placeholder="Option ${letter}" oninput="autoResizeTextarea(this)"></textarea>
                                         <button type="button" class="math-preview-btn" data-target="option-${letter.toLowerCase()}">
                                             <i class="fas fa-eye"></i>
                                         </button>
@@ -182,7 +181,7 @@ Teacher.renderForm = function(type) {
                         </div>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-3 w-full">
                         <label class="block text-sm font-bold mb-1 dark:text-white">Correct Answer</label>
                         <select id="correct-answer" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded">
                             <option value="">Select Correct Answer</option>
@@ -193,21 +192,21 @@ Teacher.renderForm = function(type) {
                         </select>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-3 w-full">
                         <label class="block text-sm font-bold mb-1 dark:text-white">Explanation (Optional)</label>
-                        <div class="question-field-container">
-                            <textarea id="explanation" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded explanation-textarea auto-resize" rows="2" placeholder="Add explanation for this question (optional)..." oninput="autoResizeTextarea(this)"></textarea>
+                        <div class="question-field-container w-full">
+                            <textarea id="explanation" class="w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded explanation-textarea auto-resize box-border" rows="2" placeholder="Add explanation for this question (optional)..." oninput="autoResizeTextarea(this)"></textarea>
                             <button type="button" class="math-preview-btn" data-target="explanation">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-3 w-full">
                         <label class="block text-sm font-bold mb-1 dark:text-white">Previous Year (Optional)</label>
-                        <div class="flex items-center gap-2">
-                            <input type="text" id="previous-year" class="flex-1 p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded" placeholder="e.g., 2020 HSC">
-                            <div class="flex items-center gap-2">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
+                            <input type="text" id="previous-year" class="flex-1 w-full p-2 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded" placeholder="e.g., 2020 HSC">
+                            <div class="flex items-center gap-2 whitespace-nowrap">
                                 <input type="checkbox" id="show-previous-year" class="rounded">
                                 <label for="show-previous-year" class="text-sm font-medium text-slate-700 dark:text-slate-300">
                                     Show in question
@@ -222,8 +221,8 @@ Teacher.renderForm = function(type) {
                 </div>
             </div>
             
-            <div id="json-container" class="hidden">
-                <div class="json-actions">
+            <div id="json-container" class="hidden w-full mt-4">
+                <div class="json-actions flex gap-2 mb-2">
                     <button onclick="Teacher.copyJson()" class="bg-indigo-600 text-white px-3 py-2 rounded text-sm font-bold">
                         <i class="fas fa-copy mr-1"></i> Copy JSON
                     </button>
@@ -231,15 +230,15 @@ Teacher.renderForm = function(type) {
                         <i class="fas fa-trash mr-1"></i> Clear JSON
                     </button>
                 </div>
-                <textarea id="nq" class="w-full h-40 p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl font-mono text-xs auto-resize" placeholder='Paste JSON Question Array here...' oninput="autoResizeTextarea(this)"></textarea>
+                <textarea id="nq" class="w-full h-40 p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl font-mono text-xs auto-resize box-border" placeholder='Paste JSON Question Array here...' oninput="autoResizeTextarea(this)"></textarea>
             </div>
             
             ${isLive ? `
-            <div class="flex gap-2 mt-4">
+            <div class="flex flex-col sm:flex-row gap-2 mt-6">
                 <button onclick="Teacher.createExam(false)" class="flex-1 bg-slate-800 dark:bg-dark-tertiary text-white py-4 rounded-xl font-bold shadow hover:bg-slate-900 dark:hover:bg-black transition">Publish Now</button>
                 <button onclick="Teacher.createExam(true)" class="flex-1 bg-amber-500 text-white py-4 rounded-xl font-bold shadow hover:bg-amber-600 transition">Save to Library (Draft)</button>
             </div>` : `
-            <button onclick="Teacher.createExam(false)" class="bg-slate-800 dark:bg-dark-tertiary text-white w-full py-4 rounded-xl font-bold shadow hover:bg-slate-900 dark:hover:bg-black transition">Publish Practice</button>`}
+            <button onclick="Teacher.createExam(false)" class="w-full bg-slate-800 dark:bg-dark-tertiary text-white py-4 rounded-xl font-bold shadow hover:bg-slate-900 dark:hover:bg-black transition mt-6">Publish Practice</button>`}
         </div>
     </div>`;
     
@@ -573,17 +572,13 @@ Teacher.createExam = async (isDraft = false) => {
             cancelled: false
         };
         
-        // ---------- অফলাইন চেক ----------
         if (!navigator.onLine) {
             Swal.close();
-            // লোকাল স্টোরেজে সেভ করার আগে একটি temporary ID তৈরি করে নেওয়া (যাতে UI-তে রেফারেন্স থাকে)
             const tempId = 'local_' + Date.now();
             examData.localId = tempId;
             
-            // TeacherOffline মডিউলের মাধ্যমে সেভ
             await TeacherOffline.saveExamOffline(examData);
             
-            // লোকাল folderStructure আপডেট (যাতে UI-তে দেখায়)
             if (sub && chap) {
                 const folderType = type === 'live' ? 'live' : 'mock';
                 
@@ -630,7 +625,6 @@ Teacher.createExam = async (isDraft = false) => {
                     examData: examData
                 });
             }
-            // লোকাল স্টোরেজে folderStructure সেভ (optional, offline consistency)
             localStorage.setItem('offlineFolderStructure_' + AppState.selectedGroup.id, JSON.stringify(folderStructure));
             
             Teacher.questions = [];
@@ -653,7 +647,6 @@ Teacher.createExam = async (isDraft = false) => {
             return;
         }
         
-        // ---------- অনলাইন সেভ ----------
         const docRef = await addDoc(collection(db, "exams"), examData);
         
         if (sub) {
@@ -771,11 +764,8 @@ Teacher.updateExistingExam = async function(examId) {
             updateData.resultPublished = exam.resultPublished || autoPublish;
         }
         
-        // অফলাইন চেক
         if (!navigator.onLine) {
-            // আপডেট ডেটা সিঙ্ক কিউতে জমা
             await TeacherOffline.saveExamOffline({ ...updateData, id: examId });
-            // লোকাল ক্যাশ আপডেট
             if (ExamCache[examId]) {
                 Object.assign(ExamCache[examId], updateData);
             }
