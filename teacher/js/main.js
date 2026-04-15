@@ -1,5 +1,5 @@
 // teacher/js/main.js
-// প্রধান এন্ট্রি পয়েন্ট — FIXED for Offline and Splash Screen Issues
+// ⚡ SUPER FAST BOOT & ANTI-AUTO-LOGOUT SYSTEM ⚡
 
 import { AppState } from './core/state.js';
 import { Auth } from './features/auth.js';
@@ -19,22 +19,15 @@ import './teacher/notice-poll.js';
 import './teacher/groups.js';
 import './teacher/profile.js';
 
-// ✅ offline.js — await ছাড়া non-blocking import
+// ✅ offline.js — await ছাড়া non-blocking import (যাতে স্প্ল্যাশ স্ক্রিন না আটকায়)
 import('./offline.js').then(m => {
-    const TeacherOffline = m?.TeacherOffline;
-    if (TeacherOffline) {
-        try {
-            TeacherOffline.init();
-            Teacher.syncPending = () => TeacherOffline.syncPending();
-            window.TeacherOffline = TeacherOffline;
-            console.log('✅ TeacherOffline initialized');
-        } catch (e) {
-            console.error('❌ Offline init error:', e);
-        }
+    if (m?.TeacherOffline) {
+        m.TeacherOffline.init();
+        Teacher.syncPending = () => m.TeacherOffline.syncPending();
+        window.TeacherOffline = m.TeacherOffline;
+        console.log('✅ TeacherOffline initialized');
     }
-}).catch(e => {
-    console.warn('⚠️ TeacherOffline not loaded:', e.message);
-});
+}).catch(e => console.warn('⚠️ TeacherOffline not loaded:', e.message));
 
 // গ্লোবাল এক্সপোজ
 window.AppState = AppState;
@@ -47,11 +40,10 @@ window.loadMathJax = loadMathJax;
 window.clearListeners = clearListeners;
 window.initRealTimeSync = initRealTimeSync;
 
-// ✅ নিরাপদ গ্লোবাল ভেরিয়েবল ইনিশিয়ালাইজ (যাতে অন্য ফাইলে ক্র্যাশ না করে)
+// ✅ নিরাপদ গ্লোবাল ভেরিয়েবল ইনিশিয়ালাইজ
 if (!window.ExamCache) window.ExamCache = {};
 if (!window.unsubscribes) window.unsubscribes = [];
 if (!window.folderStructure) window.folderStructure = { live: [], mock: [], uncategorized: [] };
-
 window.currentFocusedTextarea = null;
 window.questionMode = 'manual';
 
@@ -74,60 +66,88 @@ function hideSplash() {
     const splash = document.getElementById('splash-screen');
     if (splash && !splash.classList.contains('splash-hidden')) {
         splash.classList.add('splash-hidden');
-        setTimeout(() => { splash.style.display = 'none'; }, 500);
+        setTimeout(() => { splash.style.display = 'none'; }, 300);
     }
 }
 
-// Firebase Auth Observer
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+// =========================================================================
+// 🚀 FAST BOOT SYSTEM: ফায়ারবেসের জন্য অপেক্ষা না করে সাথে সাথে ড্যাশবোর্ড আনুন
+// =========================================================================
+const cachedTeacherData = localStorage.getItem('teacher_data');
+const isExplicitLogout = localStorage.getItem('explicit_logout') === 'true';
 
+if (cachedTeacherData && !isExplicitLogout) {
+    console.log('⚡ Fast Booting from Local Storage...');
+    AppState.currentUser = JSON.parse(cachedTeacherData);
+    AppState.user = { uid: AppState.currentUser.id };
+    
+    // সাথে সাথে UI লোড করে দাও
+    hideSplash();
+    initRealTimeSync();
+    Router.initTeacher();
+}
+
+// =========================================================================
+// 🔒 FIREBASE BACKGROUND SYNC & ANTI-LOGOUT LOGIC
+// =========================================================================
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 const auth = getAuth();
 
-// ✅ FIX: ৫ সেকেন্ডের মধ্যে Firebase সাড়া না দিলে ক্যাশ চেক করে অফলাইন মোডে ড্যাশবোর্ড দেখাবে
-const authTimeout = setTimeout(() => {
-    console.warn('⚠️ Firebase auth timeout — checking offline cache');
+// ফায়ারবেস যদি কোনো কারণে আটকে যায়, ৩ সেকেন্ড পর স্প্ল্যাশ সরিয়ে দিবে
+const fallbackTimer = setTimeout(() => {
     hideSplash();
-    
-    const cachedData = localStorage.getItem('teacher_data');
-    if (cachedData && !navigator.onLine) {
-        // অফলাইন থাকলে এবং ক্যাশ থাকলে সরাসরি লগিন
-        AppState.currentUser = JSON.parse(cachedData);
-        AppState.user = { uid: AppState.currentUser.id }; 
-        console.log('✅ Logged in via Offline Cache');
-        Router.initTeacher();
-    } else {
-        Router.showLogin();
-    }
-}, 5000);
+    if (!AppState.currentUser) Router.showLogin();
+}, 3000);
 
 onAuthStateChanged(auth, async (user) => {
-    clearTimeout(authTimeout);
+    clearTimeout(fallbackTimer);
 
     if (user) {
+        // ইউজার লিগ্যাল ভাবে লগিন করেছে, তাই লগ-আউট ফ্ল্যাগ মুছে দাও
+        localStorage.setItem('explicit_logout', 'false'); 
         AppState.user = user;
-        try {
-            // অনলাইনে থাকলে ফায়ারবেস থেকে প্রোফাইল আনবে, না থাকলে ক্যাশ থেকে
-            if (navigator.onLine) {
-                await Auth.loadTeacherProfile(user.uid);
-            } else {
-                const cachedData = localStorage.getItem('teacher_data');
-                if (cachedData) AppState.currentUser = JSON.parse(cachedData);
+        
+        if (!AppState.currentUser) {
+            // যদি Fast Boot না হয়ে থাকে (যেমন প্রথমবার লগিন)
+            try {
+                if (navigator.onLine) {
+                    await Auth.loadTeacherProfile(user.uid);
+                }
+                initRealTimeSync();
+                Router.initTeacher();
+            } catch (e) {
+                console.error('Profile load error:', e);
+                Router.initTeacher();
             }
-            initRealTimeSync();
-            Router.initTeacher();
-        } catch (err) {
-            console.error('Profile load error:', err);
-            // এরর হলেও ক্যাশ থেকে ডাটা নিয়ে চালিয়ে নেওয়ার চেষ্টা
-            const cachedData = localStorage.getItem('teacher_data');
-            if (cachedData) AppState.currentUser = JSON.parse(cachedData);
-            Router.initTeacher();
+            hideSplash();
+        } else {
+            // Fast Boot হয়ে গেছে, ব্যাকগ্রাউন্ডে শুধু প্রোফাইল আপডেট করে নাও
+            if (navigator.onLine) {
+                Auth.loadTeacherProfile(user.uid).catch(e => console.warn(e));
+            }
         }
     } else {
-        AppState.user = null;
-        Router.showLogin();
+        // ফায়ারবেস বলছে ইউজার লগ-আউট
+        const explicit = localStorage.getItem('explicit_logout') === 'true';
+        
+        if (explicit) {
+            // ইউজার নিজে বাটনে ক্লিক করে লগ-আউট করেছে, তাই বের করে দাও
+            AppState.user = null;
+            AppState.currentUser = null;
+            Router.showLogin();
+            hideSplash();
+        } else {
+            // 🛑 ফায়ারবেস অটোমেটিক লগ-আউট করতে চাইছে (অফলাইন বা ক্যাশ ইশুর কারণে)
+            // আমরা ফায়ারবেসকে ব্লক করবো এবং মেমোরির ডেটা ধরে রাখবো।
+            console.warn('🛡️ Blocked Firebase Auto-Logout. Keeping session active.');
+            
+            if (!AppState.currentUser) {
+                // যদি মেমোরিতেও কিছু না থাকে (সত্যিই লগআউট অবস্থায় থাকে)
+                Router.showLogin();
+                hideSplash();
+            }
+        }
     }
-
-    hideSplash();
 });
 
 // গ্লোবাল ক্লিক হ্যান্ডলার
