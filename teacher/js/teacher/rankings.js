@@ -1,5 +1,5 @@
 // js/teacher/rankings.js
-// Rankings and Result Viewing Features (English version with Analysis)
+// Rankings and Result Viewing Features (with course info card)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -11,7 +11,7 @@ import {
 let ExamCache = window.ExamCache;
 let unsubscribes = window.unsubscribes;
 
-// ------------- Rank View -------------
+// ------------- Rank View (with course card) -------------
 Teacher.rankView = () => {
     if (!AppState.selectedGroup) {
         Teacher.selectGroupView('rank');
@@ -22,6 +22,95 @@ Teacher.rankView = () => {
     document.getElementById('math-symbols-panel').classList.remove('show');
     
     const c = document.getElementById('app-container');
+    
+    // প্রথমে কোর্সের তথ্যসহ উপরের অংশ রেন্ডার করি, তারপর পরীক্ষার তালিকা লোড হবে
+    c.innerHTML = `
+    <div class="pb-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold font-en dark:text-white">Live Exam Rankings</h2>
+        </div>
+        
+        <!-- Current Course Info Card -->
+        <div id="rank-course-info-card" class="bg-white dark:bg-dark-secondary rounded-2xl shadow-sm border dark:border-dark-tertiary overflow-hidden mb-6">
+            <div class="p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold dark:text-white">${AppState.selectedGroup.name}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">বর্তমান কোর্স</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Only showing published live exams for the selected course.</p>
+        <div id="rank-exams-list" class="text-center p-10">
+            <div class="loader mx-auto"></div>
+        </div>
+    </div>`;
+    
+    // কোর্সের পূর্ণ তথ্য এনে কার্ড আপডেট করি
+    Teacher.updateRankCourseCard();
+    
+    // পরীক্ষার তালিকা লোড করি
+    Teacher.loadRankExamsList();
+};
+
+// কোর্সের বিস্তারিত তথ্য এনে কার্ড আপডেট করার ফাংশন
+Teacher.updateRankCourseCard = async () => {
+    try {
+        const groupDoc = await getDoc(doc(db, "groups", AppState.selectedGroup.id));
+        if (!groupDoc.exists()) return;
+        const group = groupDoc.data();
+        
+        const cardContainer = document.getElementById('rank-course-info-card');
+        if (!cardContainer) return;
+        
+        const classBadge = group.classLevel ? 
+            `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
+        const streamBadge = group.admissionStream ? 
+            `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">${group.admissionStream}</span>` : '';
+        const joinMethodText = {
+            'public': 'পাবলিক',
+            'code': 'কোর্স কোড',
+            'permission': 'পারমিশন কী'
+        }[group.joinMethod] || 'কোর্স কোড';
+        
+        const imageHtml = group.imageUrl ? 
+            `<img src="${group.imageUrl}" alt="${group.name}" class="w-full h-32 object-cover rounded-t-2xl">` : 
+            `<div class="w-full h-32 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-trophy"></i></div>`;
+        
+        cardContainer.innerHTML = `
+            ${imageHtml}
+            <div class="p-5">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="text-xl font-bold dark:text-white bengali-text">${group.name}</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            ${classBadge} ${streamBadge}
+                            <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">${joinMethodText}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${group.studentIds?.length || 0}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">শিক্ষার্থী</div>
+                    </div>
+                </div>
+                ${group.description ? `<p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-3">${group.description}</p>` : '<p class="text-sm text-slate-400 italic mb-4">কোনো বিবরণ নেই</p>'}
+            </div>
+        `;
+    } catch (e) {
+        console.error('Error updating rank course card:', e);
+    }
+};
+
+// পরীক্ষার তালিকা লোড করে UI-তে বসানো
+Teacher.loadRankExamsList = async () => {
+    const container = document.getElementById('rank-exams-list');
+    if (!container) return;
+    
     const exams = Object.values(ExamCache)
         .filter(e => e.type === 'live' && 
                e.groupId === AppState.selectedGroup.id && 
@@ -29,33 +118,28 @@ Teacher.rankView = () => {
                !e.cancelled)
         .sort((a,b) => b.createdAt - a.createdAt);
     
-    let h = '';
     if (exams.length === 0) {
-        h = '<div class="text-center p-10 text-slate-400">No published live exams found</div>';
-    } else {
-        exams.forEach(e => {
-            const date = moment(e.createdAt.toDate()).format('DD MMM, YYYY');
-            h += `<div onclick="Teacher.viewRank('${e.id}', '${e.title.replace(/'/g, "\\'")}')" class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-dark-tertiary cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group">
-                <div class="flex justify-between items-start mb-3">
-                    <span class="text-xs font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded uppercase">Live</span>
-                    <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-100 transition">
-                        <i class="fas fa-trophy text-sm"></i>
-                    </div>
-                </div>
-                <div class="font-bold text-sm text-slate-800 dark:text-white mb-2" style="line-height:1.4;">${e.title}</div>
-                <div class="text-xs text-slate-400">${date}</div>
-                <div class="mt-3 text-xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1">View Rank <i class="fas fa-arrow-right text-xs"></i></div>
-            </div>`;
-        });
+        container.innerHTML = '<div class="text-center p-10 text-slate-400">No published live exams found</div>';
+        return;
     }
     
-    c.innerHTML = `<div class="pb-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold font-en dark:text-white">Live Exam Rankings</h2>
-        </div>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Only showing published live exams for the selected course.</p>
-        ${h}
-    </div>`;
+    let h = '';
+    exams.forEach(e => {
+        const date = moment(e.createdAt.toDate()).format('DD MMM, YYYY');
+        h += `<div onclick="Teacher.viewRank('${e.id}', '${e.title.replace(/'/g, "\\'")}')" class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-dark-tertiary cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all group">
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-xs font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded uppercase">Live</span>
+                <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-100 transition">
+                    <i class="fas fa-trophy text-sm"></i>
+                </div>
+            </div>
+            <div class="font-bold text-sm text-slate-800 dark:text-white mb-2" style="line-height:1.4;">${e.title}</div>
+            <div class="text-xs text-slate-400">${date}</div>
+            <div class="mt-3 text-xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1">View Rank <i class="fas fa-arrow-right text-xs"></i></div>
+        </div>`;
+    });
+    
+    container.innerHTML = h;
 };
 
 Teacher.viewRank = async (eid, title) => {
