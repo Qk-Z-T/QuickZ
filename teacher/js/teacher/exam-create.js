@@ -1,12 +1,12 @@
 // js/teacher/exam-create.js
-// Exam creation features (Complete English version)
+// Exam creation features (with current course info card)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
 import { autoResizeTextarea } from '../core/utils.js';
 import { 
-    collection, addDoc, doc, updateDoc 
+    collection, addDoc, doc, updateDoc, getDoc 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { saveFolderStructureToFirebase } from '../features/realtime-sync.js';
 import { TeacherOffline } from '../offline.js';
@@ -14,7 +14,7 @@ import { TeacherOffline } from '../offline.js';
 let folderStructure = window.folderStructure;
 let ExamCache = window.ExamCache;
 
-// ------------- Create View -------------
+// ------------- Create View (with course card) -------------
 Teacher.createView = () => {
     if (!AppState.selectedGroup) {
         Teacher.selectGroupView('create');
@@ -30,6 +30,20 @@ Teacher.createView = () => {
             <div>
                 <h2 class="text-2xl font-bold font-en text-slate-800 dark:text-white">Teacher Dashboard</h2>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Create and manage exams</p>
+            </div>
+        </div>
+        <!-- Current Course Info Card -->
+        <div id="create-course-info-card" class="bg-white dark:bg-dark-secondary rounded-2xl shadow-sm border dark:border-dark-tertiary overflow-hidden mb-6">
+            <div class="p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold dark:text-white">${AppState.selectedGroup.name}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">সক্রিয় কোর্স</p>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
@@ -49,6 +63,58 @@ Teacher.createView = () => {
     </div>`;
     
     document.getElementById('floating-math-btn').classList.add('hidden');
+    
+    // কোর্সের বিস্তারিত তথ্য এনে কার্ড আপডেট করি
+    Teacher.updateCreateCourseCard();
+};
+
+// কোর্স কার্ড আপডেট করার ফাংশন
+Teacher.updateCreateCourseCard = async () => {
+    try {
+        const groupDoc = await getDoc(doc(db, "groups", AppState.selectedGroup.id));
+        if (!groupDoc.exists()) return;
+        const group = groupDoc.data();
+        
+        const cardContainer = document.getElementById('create-course-info-card');
+        if (!cardContainer) return;
+        
+        const classBadge = group.classLevel ? 
+            `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
+        const streamBadge = group.admissionStream ? 
+            `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">${group.admissionStream}</span>` : '';
+        const joinMethodText = {
+            'public': 'পাবলিক',
+            'code': 'কোর্স কোড',
+            'permission': 'পারমিশন কী'
+        }[group.joinMethod] || 'কোর্স কোড';
+        
+        const imageHtml = group.imageUrl ? 
+            `<img src="${group.imageUrl}" alt="${group.name}" class="w-full h-32 object-cover rounded-t-2xl">` : 
+            `<div class="w-full h-32 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-pencil-alt"></i></div>`;
+        
+        cardContainer.innerHTML = `
+            ${imageHtml}
+            <div class="p-5">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="text-xl font-bold dark:text-white bengali-text">${group.name}</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            ${classBadge} ${streamBadge}
+                            <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">${joinMethodText}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${group.studentIds?.length || 0}</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">শিক্ষার্থী</div>
+                    </div>
+                </div>
+                ${group.description ? `<p class="text-sm text-slate-600 dark:text-slate-400 mb-2 line-clamp-2">${group.description}</p>` : ''}
+                <p class="text-xs text-slate-400 mt-2"><i class="fas fa-info-circle mr-1"></i> এই কোর্সের জন্যই পরীক্ষা তৈরি হবে</p>
+            </div>
+        `;
+    } catch (e) {
+        console.error('Error updating create course card:', e);
+    }
 };
 
 Teacher.renderForm = function(type) {
@@ -78,6 +144,18 @@ Teacher.renderForm = function(type) {
             </button>
         </div>
         <h2 class="text-xl font-bold mb-4 font-en text-slate-800 dark:text-white">Create ${isLive ? 'Live Exam' : 'Practice Test'}</h2>
+        
+        <!-- Current Course Mini Info -->
+        <div id="form-course-mini-card" class="bg-white dark:bg-dark-secondary p-3 rounded-xl shadow-sm border dark:border-dark-tertiary mb-4 flex items-center gap-3">
+            <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 text-sm">
+                <i class="fas fa-book"></i>
+            </div>
+            <div>
+                <span class="font-bold dark:text-white text-sm">${AppState.selectedGroup.name}</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400 ml-2">পরীক্ষা তৈরি হচ্ছে</span>
+            </div>
+        </div>
+        
         <div class="bg-white dark:bg-dark-secondary p-5 rounded-2xl shadow-sm border dark:border-dark-tertiary w-full">
             <input id="nt" class="w-full p-3 border dark:border-dark-tertiary dark:bg-black dark:text-white rounded-xl" placeholder="Exam Title">
             <input type="hidden" id="nty" value="${type}"> 
@@ -284,6 +362,7 @@ Teacher.renderForm = function(type) {
     }
 };
 
+// ------------- Question Mode Switching & JSON Helpers -------------
 Teacher.switchQuestionMode = function(mode) {
     window.questionMode = mode;
     if(mode === 'manual') {
@@ -326,6 +405,7 @@ Teacher.clearJson = function() {
     autoResizeTextarea(document.getElementById('nq'));
 };
 
+// ------------- Question Management -------------
 Teacher.addQuestionToList = () => {
     const questionText = document.getElementById('textarea-question').value;
     const optionA = document.getElementById('option-a').value;
@@ -489,6 +569,7 @@ Teacher.deleteQuestion = (index) => {
     });
 };
 
+// ------------- Exam Creation & Update -------------
 Teacher.createExam = async (isDraft = false) => {
     const confirmText = isDraft ? 'Save to Library as Draft' : 'Publish Exam';
     const confirmMessage = isDraft ? 
