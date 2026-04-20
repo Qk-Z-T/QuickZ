@@ -1,5 +1,5 @@
 // js/teacher/dashboard.js
-// হোমপেজ / ড্যাশবোর্ড সম্পর্কিত ফিচার (রিফ্রেশ বাটন সরানো হয়েছে, পূর্বের মতো)
+// হোমপেজ / ড্যাশবোর্ড সম্পর্কিত ফিচার (নতুন কোর্স ফিল্ড সহ আপডেটেড)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -34,13 +34,14 @@ Teacher.homeView = async () => {
 
     try {
         const groupDoc = await getDoc(doc(db, "groups", AppState.selectedGroup.id));
+        let groupData = null;
         let studentCount = 0;
         let groupCode = '';
 
         if (groupDoc.exists()) {
-            const data = groupDoc.data();
-            studentCount = data.studentIds ? data.studentIds.length : 0;
-            groupCode = data.groupCode;
+            groupData = groupDoc.data();
+            studentCount = groupData.studentIds ? groupData.studentIds.length : 0;
+            groupCode = groupData.groupCode;
         }
 
         let pendingCount = 0;
@@ -74,6 +75,22 @@ Teacher.homeView = async () => {
             }
         });
 
+        // ক্লাস লেভেল ও জয়েন মেথড ব্যাজ
+        const classBadge = groupData?.classLevel ? 
+            `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${groupData.classLevel === 'Admission' ? 'এডমিশন' : groupData.classLevel}</span>` : '';
+        const streamBadge = groupData?.admissionStream ? 
+            `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">${groupData.admissionStream}</span>` : '';
+        const joinMethodText = {
+            'public': 'পাবলিক',
+            'code': 'কোর্স কোড',
+            'permission': 'পারমিশন কী'
+        }[groupData?.joinMethod] || 'কোর্স কোড';
+
+        // কোর্সের ছবি
+        const courseImageHtml = groupData?.imageUrl ? 
+            `<img src="${groupData.imageUrl}" alt="${groupData.name}" class="w-full h-32 object-cover rounded-t-2xl">` : 
+            `<div class="w-full h-32 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-book-open"></i></div>`;
+
         let html = `
         <div class="pb-6">
             <div class="flex justify-between items-center mb-6">
@@ -83,58 +100,87 @@ Teacher.homeView = async () => {
                 </div>
             </div>
             <div id="home-active-live-section"></div>
+            
+            <!-- কোর্সের বিস্তারিত কার্ড (নতুন) -->
             <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary shadow-sm mb-6 overflow-hidden">
-                <div class="p-5 border-b border-slate-100 dark:border-dark-tertiary flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-900/10">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fas fa-users"></i></div>
-                        <div class="font-bold text-lg dark:text-white bengali-text">Total Students</div>
+                ${courseImageHtml}
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="text-xl font-bold dark:text-white bengali-text">${AppState.selectedGroup.name}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                ${classBadge} ${streamBadge}
+                                <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">${joinMethodText}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${studentCount}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">শিক্ষার্থী</div>
+                        </div>
                     </div>
-                    <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${studentCount}</div>
-                </div>
-                <div class="p-5 border-b border-slate-100 dark:border-dark-tertiary flex justify-between items-center hover:bg-slate-50 dark:hover:bg-dark-tertiary transition">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fas fa-broadcast-tower"></i></div>
-                        <div class="font-bold text-lg dark:text-white bengali-text">Total Live Exams</div>
+                    ${groupData?.description ? `<p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-3">${groupData.description}</p>` : '<p class="text-sm text-slate-400 italic mb-4">কোনো বিবরণ নেই</p>'}
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="Teacher.viewGroupStudents('${AppState.selectedGroup.id}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-4 py-2 rounded-xl font-bold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-800 transition">
+                            <i class="fas fa-users mr-2"></i>শিক্ষার্থী দেখুন
+                        </button>
+                        <button onclick="Teacher.noticeManagementView()" class="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-4 py-2 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-800 transition">
+                            <i class="fas fa-bullhorn mr-2"></i>নোটিশ ও পোল
+                        </button>
                     </div>
-                    <div class="text-2xl font-black text-red-600 dark:text-red-400">${liveExams}</div>
-                </div>
-                <div class="p-5 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-dark-tertiary transition">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-xl shadow-sm"><i class="fas fa-book-reader"></i></div>
-                        <div class="font-bold text-lg dark:text-white bengali-text">Total Practice Exams</div>
-                    </div>
-                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400">${mockExams}</div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 shadow-lg text-white mb-6 relative overflow-hidden flex items-center justify-between">
-                <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
-                
-                <div class="relative z-10">
-                    <div class="text-indigo-200 text-xs font-bold uppercase tracking-wider mb-1 bengali-text">Active Course</div>
-                    <h3 class="text-3xl font-bold bengali-text">${AppState.selectedGroup.name}</h3>
-                    <div class="flex items-center gap-3 mt-3">
-                        <span class="bg-white/20 px-3 py-1.5 rounded-lg text-sm font-mono tracking-wider font-bold">
-                            Code: ${groupCode}
-                        </span>
-                        <button onclick="Teacher.copyGroupCode('${groupCode}')" class="text-white/70 hover:text-white transition bg-white/10 w-8 h-8 rounded flex items-center justify-center">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="flex gap-3 mt-6">
-                        <button onclick="Teacher.viewGroupStudents('${AppState.selectedGroup.id}')" class="bg-white text-indigo-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-50 transition shadow">
-                            <i class="fas fa-cog mr-2"></i> Manage Course
-                        </button>
-                        <button onclick="Teacher.noticeManagementView()" class="bg-indigo-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-900 transition shadow border border-indigo-500">
-                            <i class="fas fa-bullhorn mr-2"></i> Notice & Poll
-                        </button>
+            
+            <!-- পরিসংখ্যান কার্ড -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary p-5 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-xl">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black dark:text-white">${studentCount}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">মোট শিক্ষার্থী</div>
+                        </div>
                     </div>
                 </div>
-
-                <div onclick="Teacher.viewGroupStudents('${AppState.selectedGroup.id}', 'pending')" class="relative z-10 cursor-pointer bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl p-4 flex flex-col items-center justify-center w-28 h-28 hover:bg-white/20 transition transform hover:scale-105 shadow-xl">
-                    <span class="text-4xl font-black text-amber-300 drop-shadow-md">${pendingCount}</span>
-                    <span class="text-[10px] uppercase font-bold tracking-widest text-indigo-100 mt-1 bengali-text text-center">Pending<br>Request</span>
-                    ${pendingCount > 0 ? '<span class="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-ping"></span><span class="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full"></span>' : ''}
+                <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary p-5 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center text-xl">
+                            <i class="fas fa-broadcast-tower"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black dark:text-white">${liveExams}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">লাইভ পরীক্ষা</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary p-5 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-xl">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black dark:text-white">${mockExams}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">প্র্যাকটিস পরীক্ষা</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- দ্রুত অ্যাকশন -->
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white mb-6">
+                <h4 class="font-bold mb-3">দ্রুত অ্যাকশন</h4>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="Teacher.manageGroupsView()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition">
+                        <i class="fas fa-folder mr-2"></i>কোর্স ব্যবস্থাপনা
+                    </button>
+                    <button onclick="Router.teacher('create')" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition">
+                        <i class="fas fa-plus-circle mr-2"></i>নতুন পরীক্ষা
+                    </button>
+                    <button onclick="Teacher.liveExamManagementView()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition">
+                        <i class="fas fa-tasks mr-2"></i>লাইভ ব্যবস্থাপনা
+                    </button>
                 </div>
             </div>
         </div>`;
@@ -163,7 +209,6 @@ Teacher.renderActiveLiveExamOnHome = async (examId) => {
 
     const endTimeStr = moment(ex.endTime).format('hh:mm A, DD MMM');
 
-    // MathHelper দিয়ে শিরোনাম রেন্ডার (নতুন ফিচার বজায় রাখা)
     const titleHTML = window.MathHelper ? window.MathHelper.renderExamContent(ex.title) : ex.title;
     const subjectHTML = (ex.subject && window.MathHelper) ? window.MathHelper.renderExamContent(ex.subject) : (ex.subject || 'No Subject');
     const chapterHTML = (ex.chapter && window.MathHelper) ? window.MathHelper.renderExamContent(ex.chapter) : (ex.chapter || '');
