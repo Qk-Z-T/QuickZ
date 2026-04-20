@@ -1,3 +1,4 @@
+
 // js/teacher/teacher-core.js
 // Teacher object base structure, properties and common helper methods
 
@@ -354,7 +355,6 @@ export const Teacher = {
             const groupData = {
                 name, groupCode,
                 teacherId: AppState.currentUser.id,
-                teacherCode: AppState.currentUser.teacherCode,
                 teacherName: AppState.currentUser.fullName,
                 archived: false, approvalRequired: false, joinEnabled: true,
                 studentIds: [],
