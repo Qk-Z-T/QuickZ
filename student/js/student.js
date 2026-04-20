@@ -942,62 +942,94 @@ export const Student = {
             Swal.fire('ত্রুটি', 'প্রোফাইল সংরক্ষণ ব্যর্থ', 'error');
         }
     },
-    
     loadDashboard: async () => {
-        const myRouteId = window.currentRouteId;
-        const c = document.getElementById('app-container');
+    const myRouteId = window.currentRouteId;
+    const c = document.getElementById('app-container');
 
-        c.innerHTML = renderHeader('dashboard') + `
-        <div class="p-5 pb-20 max-w-lg mx-auto">
-            <div id="live-teacher-card" class="bg-gradient-to-r from-indigo-500 to-indigo-600 p-4 rounded-2xl text-white mb-6 shadow-lg">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl">
-                        <i class="fas fa-chalkboard-teacher"></i>
+    c.innerHTML = renderHeader('dashboard') + `
+    <div class="p-5 pb-20 max-w-lg mx-auto">
+        <!-- Active Course Card (replaces old teacher card) -->
+        <div id="active-course-card" class="bg-white dark:bg-dark-secondary rounded-2xl shadow-md border dark:border-dark-tertiary overflow-hidden mb-6">
+            <div class="p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 text-xl">
+                        <i class="fas fa-book-open"></i>
                     </div>
                     <div class="flex-1">
-                        <h4 id="t-name-display" class="font-bold">লোড হচ্ছে...</h4>
-                        <p id="t-phone-display" class="text-xs opacity-80">
-                            <i class="fas fa-phone-alt mr-1"></i> ...
-                        </p>
+                        <h4 class="font-bold dark:text-white">লোড হচ্ছে...</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">কোর্স তথ্য</p>
                     </div>
                 </div>
-                <div class="mt-3 flex justify-between items-center text-[10px] font-bold uppercase border-t border-white/10 pt-2">
-                    <span id="t-group-display">Course: ...</span>
-                    <span id="t-count-display">Students: ...</span>
+            </div>
+        </div>
+
+        <!-- Live & Mock Exam Cards -->
+        <div class="grid grid-cols-1 gap-6">
+            <button id="live-exam-card" onclick="Student.checkGroupAndLoad('live')" class="dashboard-card bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl">
+                <div class="dashboard-card-indicator live-now"></div>
+                <div class="dashboard-card-indicator upcoming"></div>
+                <div class="dashboard-card-content">
+                    <div class="dashboard-card-icon"><i class="fas fa-broadcast-tower"></i></div>
+                    <div class="dashboard-card-title">Live exam</div>
                 </div>
-            </div>
+            </button>
+            <button onclick="Student.checkGroupAndLoad('mock')" class="dashboard-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
+                <div class="dashboard-card-content">
+                    <div class="dashboard-card-icon"><i class="fas fa-book-reader"></i></div>
+                    <div class="dashboard-card-title">Mock exam</div>
+                </div>
+            </button>
+        </div>
+    </div>`;
 
-            <div class="grid grid-cols-1 gap-6">
-                <button id="live-exam-card" onclick="Student.checkGroupAndLoad('live')" class="dashboard-card bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl">
-                    <div class="dashboard-card-indicator live-now"></div>
-                    <div class="dashboard-card-indicator upcoming"></div>
-                    <div class="dashboard-card-content">
-                        <div class="dashboard-card-icon"><i class="fas fa-broadcast-tower"></i></div>
-                        <div class="dashboard-card-title">Live exam</div>
+    if (AppState.activeGroupId) {
+        try {
+            // সরাসরি গ্রুপ ডকুমেন্ট থেকে পূর্ণ তথ্য আনা
+            const groupDoc = await getDoc(doc(db, "groups", AppState.activeGroupId));
+            if (!groupDoc.exists()) return;
+
+            const group = groupDoc.data();
+            const cardContainer = document.getElementById('active-course-card');
+            if (!cardContainer) return;
+
+            const classBadge = group.classLevel ? 
+                `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
+            const streamBadge = group.admissionStream ? 
+                `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">${group.admissionStream}</span>` : '';
+            
+            const imageHtml = group.imageUrl ? 
+                `<img src="${group.imageUrl}" alt="${group.name}" class="w-full h-36 object-cover rounded-t-2xl">` : 
+                `<div class="w-full h-36 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-book-open"></i></div>`;
+
+            cardContainer.innerHTML = `
+                ${imageHtml}
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="text-xl font-bold dark:text-white bengali-text">${group.name}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                ${classBadge} ${streamBadge}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${group.studentIds?.length || 0}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">শিক্ষার্থী</div>
+                        </div>
                     </div>
-                </button>
-                <button onclick="Student.checkGroupAndLoad('mock')" class="dashboard-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
-                    <div class="dashboard-card-content">
-                        <div class="dashboard-card-icon"><i class="fas fa-book-reader"></i></div>
-                        <div class="dashboard-card-title">Mock exam</div>
+                    <p class="text-xs text-slate-500 mb-1"><i class="fas fa-user-tie"></i> ${group.teacherName || 'শিক্ষক'}</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-3">${group.description || 'কোনো বিবরণ নেই'}</p>
+                    <div class="flex gap-2">
+                        <button onclick="Student.showGroupMembersModal('${AppState.activeGroupId}')" class="flex-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-xs font-bold">
+                            <i class="fas fa-users mr-1"></i>সদস্য দেখুন
+                        </button>
+                        <button onclick="Router.student('courses')" class="flex-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 py-2 rounded-lg text-xs font-bold">
+                            <i class="fas fa-plus mr-1"></i>নতুন কোর্স
+                        </button>
                     </div>
-                </button>
-            </div>
-        </div>`;
+                </div>
+            `;
 
-        if (AppState.activeGroupId) {
-            const groupInfo = await Student.getGroupInfo(AppState.activeGroupId);
-            if (groupInfo.teacherId) {
-                const tSnap = await getDoc(doc(db, "teachers", groupInfo.teacherId));
-                if (tSnap.exists()) {
-                    const tData = tSnap.data();
-                    document.getElementById('t-name-display').innerText = tData.fullName || 'শিক্ষক';
-                    document.getElementById('t-phone-display').innerHTML = `<i class="fas fa-phone-alt mr-1"></i> ${tData.phone || 'নেই'}`;
-                    document.getElementById('t-group-display').innerText = `Course: ${groupInfo.name}`;
-                    document.getElementById('t-count-display').innerText = `Students: ${groupInfo.totalStudents}`;
-                }
-            }
-
+            // লাইভ পরীক্ষার স্ট্যাটাস চেক (আগের মত)
             const snap = await getDocs(query(
                 collection(db, "exams"),
                 where("groupId", "==", AppState.activeGroupId),
@@ -1025,8 +1057,27 @@ export const Student = {
                     liveCard.classList.remove('has-live', 'has-upcoming');
                 }
             }
+        } catch (e) {
+            console.error("Dashboard error:", e);
         }
-    },
+    } else {
+        // কোনো অ্যাক্টিভ কোর্স না থাকলে
+        const cardContainer = document.getElementById('active-course-card');
+        if (cardContainer) {
+            cardContainer.innerHTML = `
+                <div class="p-5 text-center">
+                    <i class="fas fa-info-circle text-3xl text-slate-400 mb-3"></i>
+                    <h4 class="font-bold dark:text-white mb-2">কোনো সক্রিয় কোর্স নেই</h4>
+                    <p class="text-xs text-slate-500 mb-4">পরীক্ষা দিতে ও র‍্যাংক দেখতে একটি কোর্সে জয়েন করুন</p>
+                    <button onclick="Router.student('courses')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">
+                        কোর্স খুঁজুন
+                    </button>
+                </div>
+            `;
+        }
+    }
+},
+    
 
     checkGroupAndLoad: (type) => {
         if (!AppState.activeGroupId) {
