@@ -1,3 +1,4 @@
+
 // js/router.js
 // Routing and page navigation — FIXED
 
@@ -96,20 +97,13 @@ export const Router = {
         const phone = document.getElementById('teacher-phone')?.value.trim();
         if (!fullName || !phone) { Swal.fire('Error', 'Please fill all fields', 'error'); return; }
 
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const numbers = '0123456789';
-        let teacherCode = '';
-        for (let i = 0; i < 5; i++) teacherCode += letters.charAt(Math.floor(Math.random() * letters.length));
-        teacherCode += '-';
-        for (let i = 0; i < 5; i++) teacherCode += numbers.charAt(Math.floor(Math.random() * numbers.length));
-
+        // আর teacherCode জেনারেট করছি না
         try {
             await updateDoc(doc(db, "teachers", AppState.currentUser.id), {
-                fullName, phone, teacherCode, profileCompleted: true, updatedAt: new Date()
+                fullName, phone, profileCompleted: true, updatedAt: new Date()
             });
             AppState.currentUser.fullName = fullName;
             AppState.currentUser.phone = phone;
-            AppState.currentUser.teacherCode = teacherCode;
             AppState.currentUser.profileCompleted = true;
             localStorage.setItem('teacher_data', JSON.stringify(AppState.currentUser));
             Swal.fire('Success', 'Profile saved!', 'success').then(() => Router.initTeacher());
