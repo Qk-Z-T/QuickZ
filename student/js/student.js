@@ -1,3 +1,4 @@
+
 // js/student.js
 // Student module - all student-related functionality
 
@@ -845,9 +846,16 @@ export const Student = {
         const schoolName = document.getElementById('school-name').value.trim();
         const collegeName = document.getElementById('college-name').value.trim();
         const teacherCode = document.getElementById('teacher-code').value.trim();
+        const classLevel = document.getElementById('class-level').value;
+        const admissionStream = document.getElementById('admission-stream')?.value || null;
         
-        if (!fullName || !fatherPhone || !motherPhone || !schoolName || !teacherCode) {
+        if (!fullName || !fatherPhone || !motherPhone || !schoolName || !teacherCode || !classLevel) {
             Swal.fire('ত্রুটি', 'সব আবশ্যক তথ্য পূরণ করুন', 'error');
+            return;
+        }
+        
+        if (classLevel === 'Admission' && !admissionStream) {
+            Swal.fire('ত্রুটি', 'অনুগ্রহ করে শাখা নির্বাচন করুন', 'error');
             return;
         }
         
@@ -864,6 +872,8 @@ export const Student = {
             motherPhone: motherPhone,
             schoolName: schoolName,
             collegeName: collegeName || "",
+            classLevel: classLevel,
+            admissionStream: admissionStream,
             teacherCodes: [{ code: teacherCode, active: true }],
             profileCompleted: true,
             updatedAt: new Date()
@@ -882,6 +892,10 @@ export const Student = {
             AppState.userProfile = { ...AppState.userProfile, ...profileData };
             AppState.teacherCodes = [{ code: teacherCode, active: true }];
             AppState.activeTeacherCode = teacherCode;
+            AppState.classLevel = classLevel;
+            AppState.admissionStream = admissionStream;
+            localStorage.setItem('studentClassLevel', classLevel);
+            if (admissionStream) localStorage.setItem('studentAdmissionStream', admissionStream);
             const teacherInfo = await Student.getTeacherInfo(teacherCode);
             AppState.teacherNames = { [teacherCode]: teacherInfo.name };
             localStorage.setItem('userProfile', JSON.stringify(AppState.userProfile));
@@ -910,6 +924,10 @@ export const Student = {
             AppState.teacherCodes = [{ code: teacherCode, active: true }];
             AppState.activeTeacherCode = teacherCode;
             AppState.teacherNames = { [teacherCode]: teacherInfo.name };
+            AppState.classLevel = classLevel;
+            AppState.admissionStream = admissionStream;
+            localStorage.setItem('studentClassLevel', classLevel);
+            if (admissionStream) localStorage.setItem('studentAdmissionStream', admissionStream);
             
             localStorage.setItem('userProfile', JSON.stringify(AppState.userProfile));
             localStorage.setItem('userLoggedIn', 'true');
@@ -2266,6 +2284,8 @@ export const Student = {
         const college = profile.collegeName;
         const fatherPhone = profile.fatherPhone || 'Not Set';
         const motherPhone = profile.motherPhone || 'Not Set';
+        const classLevel = profile.classLevel || '';
+        const admissionStream = profile.admissionStream || '';
         
         const schoolHTML = school ? `<div class="flex justify-between">
             <span class="text-slate-600">বিদ্যালয়:</span>
@@ -2274,6 +2294,10 @@ export const Student = {
         const collegeHTML = college ? `<div class="flex justify-between">
             <span class="text-slate-600">কলেজ:</span>
             <span class="font-medium">${college}</span>
+        </div>` : '';
+        const classHTML = classLevel ? `<div class="flex justify-between">
+            <span class="text-slate-600">ক্লাস:</span>
+            <span class="font-medium">${classLevel === 'Admission' ? 'এডমিশন' : (classLevel === 'SSC' ? 'এসএসসি' : (classLevel === 'HSC' ? 'এইচএসসি' : classLevel+'ম শ্রেণী'))} ${admissionStream ? '('+admissionStream+')' : ''}</span>
         </div>` : '';
 
         const c = document.getElementById('app-container');
@@ -2308,6 +2332,7 @@ export const Student = {
                         </div>
                         ${schoolHTML}
                         ${collegeHTML}
+                        ${classHTML}
                     </div>
                 </div>
                 
@@ -2350,12 +2375,42 @@ export const Student = {
                         <label class="block text-xs font-bold text-slate-500 mb-1 ml-1 uppercase">কলেজের নাম</label>
                         <input id="edit-college" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition" value="${profile.collegeName || ''}" placeholder="কলেজের নাম লিখুন">
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 ml-1 uppercase">ক্লাস/লেভেল</label>
+                        <select id="edit-class-level" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition">
+                            <option value="6" ${profile.classLevel === '6' ? 'selected' : ''}>৬ষ্ঠ শ্রেণী</option>
+                            <option value="7" ${profile.classLevel === '7' ? 'selected' : ''}>৭ম শ্রেণী</option>
+                            <option value="8" ${profile.classLevel === '8' ? 'selected' : ''}>৮ম শ্রেণী</option>
+                            <option value="SSC" ${profile.classLevel === 'SSC' ? 'selected' : ''}>এসএসসি</option>
+                            <option value="HSC" ${profile.classLevel === 'HSC' ? 'selected' : ''}>এইচএসসি</option>
+                            <option value="Admission" ${profile.classLevel === 'Admission' ? 'selected' : ''}>এডমিশন</option>
+                        </select>
+                    </div>
+                    <div id="edit-admission-stream-group" style="${profile.classLevel === 'Admission' ? '' : 'display:none;'}">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 ml-1 uppercase">শাখা</label>
+                        <select id="edit-admission-stream" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition">
+                            <option value="">নির্বাচন করুন</option>
+                            <option value="Science" ${profile.admissionStream === 'Science' ? 'selected' : ''}>সায়েন্স</option>
+                            <option value="Humanities" ${profile.admissionStream === 'Humanities' ? 'selected' : ''}>মানবিক</option>
+                            <option value="Commerce" ${profile.admissionStream === 'Commerce' ? 'selected' : ''}>কমার্স</option>
+                        </select>
+                    </div>
                     <button onclick="Student.saveEditedProfile()" class="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-4 rounded-xl font-bold mt-2 shadow-lg hover:shadow-indigo-500/30 transform hover:-translate-y-0.5 transition">
                         পরিবর্তন সংরক্ষণ
                     </button>
                 </div>
             </div>
         </div>`;
+        
+        const classSelect = document.getElementById('edit-class-level');
+        const streamGroup = document.getElementById('edit-admission-stream-group');
+        classSelect.addEventListener('change', function() {
+            if (this.value === 'Admission') {
+                streamGroup.style.display = 'block';
+            } else {
+                streamGroup.style.display = 'none';
+            }
+        });
     },
 
     saveEditedProfile: async () => {
@@ -2363,9 +2418,16 @@ export const Student = {
         const newPhone = document.getElementById('edit-phone').value.trim();
         const newSchool = document.getElementById('edit-school').value.trim();
         const newCollege = document.getElementById('edit-college').value.trim();
+        const newClassLevel = document.getElementById('edit-class-level').value;
+        const newAdmissionStream = document.getElementById('edit-admission-stream')?.value || null;
 
-        if (!newName) {
-            Swal.fire('ত্রুটি', 'নাম আবশ্যক', 'error');
+        if (!newName || !newClassLevel) {
+            Swal.fire('ত্রুটি', 'নাম ও ক্লাস আবশ্যক', 'error');
+            return;
+        }
+
+        if (newClassLevel === 'Admission' && !newAdmissionStream) {
+            Swal.fire('ত্রুটি', 'অনুগ্রহ করে শাখা নির্বাচন করুন', 'error');
             return;
         }
 
@@ -2374,6 +2436,8 @@ export const Student = {
             phone: newPhone,
             schoolName: newSchool,
             collegeName: newCollege,
+            classLevel: newClassLevel,
+            admissionStream: newAdmissionStream,
             updatedAt: new Date()
         };
 
@@ -2384,11 +2448,16 @@ export const Student = {
                 docId: auth.currentUser.uid,
                 payload: profileData
             });
-            // লোকাল স্টেট আপডেট
             AppState.userProfile.name = newName;
             AppState.userProfile.phone = newPhone;
             AppState.userProfile.schoolName = newSchool;
             AppState.userProfile.collegeName = newCollege;
+            AppState.userProfile.classLevel = newClassLevel;
+            AppState.userProfile.admissionStream = newAdmissionStream;
+            AppState.classLevel = newClassLevel;
+            AppState.admissionStream = newAdmissionStream;
+            localStorage.setItem('studentClassLevel', newClassLevel);
+            if (newAdmissionStream) localStorage.setItem('studentAdmissionStream', newAdmissionStream);
             localStorage.setItem('userProfile', JSON.stringify(AppState.userProfile));
             Swal.fire('অফলাইন', 'প্রোফাইল সংরক্ষিত হয়েছে, অনলাইনে এলে সিঙ্ক হবে।', 'info').then(() => {
                 Student.profile();
@@ -2404,6 +2473,12 @@ export const Student = {
             AppState.userProfile.phone = newPhone;
             AppState.userProfile.schoolName = newSchool;
             AppState.userProfile.collegeName = newCollege;
+            AppState.userProfile.classLevel = newClassLevel;
+            AppState.userProfile.admissionStream = newAdmissionStream;
+            AppState.classLevel = newClassLevel;
+            AppState.admissionStream = newAdmissionStream;
+            localStorage.setItem('studentClassLevel', newClassLevel);
+            if (newAdmissionStream) localStorage.setItem('studentAdmissionStream', newAdmissionStream);
             localStorage.setItem('userProfile', JSON.stringify(AppState.userProfile));
             Swal.fire('সফল', 'প্রোফাইল আপডেট হয়েছে', 'success').then(() => {
                 Student.profile();
@@ -2508,8 +2583,8 @@ export const Student = {
         <div class="mb-6">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="font-bold text-lg">আমার কোর্স</h3>
-                <button onclick="Student.showGroupCodeModal()" class="text-sm bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg font-bold">
-                    <i class="fas fa-plus mr-1"></i> কোড দিয়ে জয়েন
+                <button onclick="Router.student('courses')" class="text-sm bg-emerald-100 text-emerald-600 px-3 py-1 rounded-lg font-bold">
+                    <i class="fas fa-plus mr-1"></i> নতুন কোর্স খুঁজুন
                 </button>
             </div>
             <div class="space-y-2">
@@ -2864,298 +2939,298 @@ export const Student = {
                 Swal.fire('ত্রুটি', 'পাসওয়ার্ড পরিবর্তন ব্যর্থ', 'error');
             }
         }
-    }
-};
-// ========== কোর্সসমূহ পেজ (নতুন ফিচার) ==========
-Student.loadCourses = async () => {
-    const c = document.getElementById('app-container');
-    c.innerHTML = renderHeader('courses') + `
+    },
+
+    // ========== কোর্সসমূহ পেজ (নতুন ফিচার) ==========
+    loadCourses: async () => {
+        const c = document.getElementById('app-container');
+        c.innerHTML = renderHeader('courses') + `
+            <div class="p-5 pb-20">
+                <h2 class="text-2xl font-bold mb-4 text-center">কোর্সসমূহ</h2>
+                <div class="text-center p-10"><div class="loader mx-auto"></div></div>
+            </div>
+        `;
+
+        try {
+            const q = query(
+                collection(db, "groups"),
+                where("archived", "==", false),
+                where("joinEnabled", "==", true)
+            );
+            const snap = await getDocs(q);
+            const allGroups = [];
+            snap.forEach(doc => allGroups.push({ id: doc.id, ...doc.data() }));
+
+            window.allCoursesList = allGroups;
+            Student.renderCourseList();
+        } catch (error) {
+            console.error(error);
+            c.innerHTML = renderHeader('courses') + `<div class="p-5 text-center text-red-500">কোর্স লোড করতে ত্রুটি</div>`;
+        }
+    },
+
+    renderCourseList: () => {
+        const c = document.getElementById('app-container');
+        const allGroups = window.allCoursesList || [];
+        const studentClass = AppState.classLevel || '';
+        const studentStream = AppState.admissionStream || '';
+        const joinedGroupIds = (AppState.joinedGroups || []).map(g => g.groupId);
+
+        const filterClass = document.getElementById('course-filter-class')?.value || 'all';
+        const searchTerm = document.getElementById('course-search-input')?.value.toLowerCase().trim() || '';
+
+        let filtered = allGroups.filter(g => {
+            if (filterClass !== 'all') {
+                if (filterClass === 'Admission') {
+                    if (g.classLevel !== 'Admission') return false;
+                    const streamFilter = document.getElementById('course-filter-stream')?.value;
+                    if (streamFilter && streamFilter !== 'all' && g.admissionStream !== streamFilter) return false;
+                } else {
+                    if (g.classLevel !== filterClass) return false;
+                }
+            }
+            if (searchTerm) {
+                const name = (g.name || '').toLowerCase();
+                const teacher = (g.teacherName || '').toLowerCase();
+                const desc = (g.description || '').toLowerCase();
+                if (!name.includes(searchTerm) && !teacher.includes(searchTerm) && !desc.includes(searchTerm)) return false;
+            }
+            return true;
+        });
+
+        filtered.sort((a, b) => {
+            if (a.classLevel === studentClass && b.classLevel !== studentClass) return -1;
+            if (a.classLevel !== studentClass && b.classLevel === studentClass) return 1;
+            return 0;
+        });
+
+        const classLevels = ['6', '7', '8', 'SSC', 'HSC', 'Admission'];
+        const classOptions = classLevels.map(lvl => `<option value="${lvl}">${lvl === 'Admission' ? 'এডমিশন' : (lvl === 'SSC' ? 'এসএসসি' : (lvl === 'HSC' ? 'এইচএসসি' : lvl+'ম শ্রেণী'))}</option>`).join('');
+
+        const streamOptions = `
+            <option value="all">সব শাখা</option>
+            <option value="Science">সায়েন্স</option>
+            <option value="Humanities">মানবিক</option>
+            <option value="Commerce">কমার্স</option>
+        `;
+
+        let html = `
         <div class="p-5 pb-20">
-            <h2 class="text-2xl font-bold mb-4 text-center">কোর্সসমূহ</h2>
-            <div class="text-center p-10"><div class="loader mx-auto"></div></div>
+            <h2 class="text-2xl font-bold mb-2 text-center">কোর্সসমূহ</h2>
+            <p class="text-sm text-slate-500 mb-4 text-center">আপনার পছন্দের কোর্স খুঁজুন ও জয়েন করুন</p>
+            
+            <div class="bg-white dark:bg-dark-secondary p-4 rounded-xl shadow-sm border mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold mb-1">সার্চ</label>
+                        <input type="text" id="course-search-input" class="w-full p-2 border rounded-lg text-sm" placeholder="কোর্সের নাম, শিক্ষক...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1">ক্লাস/লেভেল</label>
+                        <select id="course-filter-class" class="w-full p-2 border rounded-lg text-sm">
+                            <option value="all">সব ক্লাস</option>
+                            ${classOptions}
+                        </select>
+                    </div>
+                    <div id="stream-filter-container" style="display:none;">
+                        <label class="block text-xs font-bold mb-1">শাখা</label>
+                        <select id="course-filter-stream" class="w-full p-2 border rounded-lg text-sm">
+                            ${streamOptions}
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="Student.applyCourseFilter()" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-bold">ফিল্টার</button>
+                    </div>
+                </div>
+                ${studentClass ? `<p class="text-xs text-indigo-600 mt-3"><i class="fas fa-graduation-cap"></i> আপনার ক্লাস: ${studentClass} ${studentStream ? '('+studentStream+')' : ''}</p>` : ''}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="course-list-container">
+                ${Student.renderCourseCards(filtered, joinedGroupIds)}
+            </div>
         </div>
-    `;
+        `;
 
-    try {
-        // সব গ্রুপ যেখানে archived: false এবং joinEnabled: true
-        const q = query(
-            collection(db, "groups"),
-            where("archived", "==", false),
-            where("joinEnabled", "==", true)
-        );
-        const snap = await getDocs(q);
-        const allGroups = [];
-        snap.forEach(doc => allGroups.push({ id: doc.id, ...doc.data() }));
+        c.innerHTML = renderHeader('courses') + html;
 
-        // UI রেন্ডারের জন্য ডেটা স্টোর
-        window.allCoursesList = allGroups;
+        const classSelect = document.getElementById('course-filter-class');
+        const streamContainer = document.getElementById('stream-filter-container');
+        if (classSelect) {
+            classSelect.addEventListener('change', function() {
+                if (this.value === 'Admission') {
+                    streamContainer.style.display = 'block';
+                } else {
+                    streamContainer.style.display = 'none';
+                }
+            });
+            if (classSelect.value === 'Admission') streamContainer.style.display = 'block';
+        }
+
+        const searchInput = document.getElementById('course-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') Student.applyCourseFilter();
+            });
+        }
+    },
+
+    renderCourseCards: (groups, joinedGroupIds) => {
+        if (groups.length === 0) {
+            return `<div class="col-span-2 text-center p-10 text-slate-400">কোনো কোর্স পাওয়া যায়নি</div>`;
+        }
+
+        return groups.map(group => {
+            const isJoined = joinedGroupIds.includes(group.id);
+            const joinMethodText = {
+                'public': 'পাবলিক',
+                'code': 'কোর্স কোড',
+                'permission': 'পারমিশন কী'
+            }[group.joinMethod] || 'কোর্স কোড';
+
+            const classBadge = group.classLevel ? 
+                `<span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
+            
+            const streamBadge = group.admissionStream ? 
+                `<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">${group.admissionStream}</span>` : '';
+
+            const imageHtml = group.imageUrl ? 
+                `<img src="${group.imageUrl}" class="w-full h-36 object-cover rounded-t-xl">` : 
+                `<div class="w-full h-36 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-xl"><i class="fas fa-book-open"></i></div>`;
+
+            const actionButton = isJoined ? 
+                `<button class="w-full bg-green-100 text-green-700 py-2 rounded-lg text-sm font-bold" disabled><i class="fas fa-check-circle"></i> জয়েন করেছেন</button>` :
+                `<button onclick="Student.joinCourse('${group.id}', '${group.joinMethod}', '${group.groupCode || ''}')" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-bold">জয়েন করুন</button>`;
+
+            return `
+            <div class="bg-white dark:bg-dark-secondary rounded-xl shadow-sm border overflow-hidden">
+                ${imageHtml}
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg">${group.name}</h3>
+                        <div class="flex gap-1">${classBadge} ${streamBadge}</div>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-1"><i class="fas fa-user-tie"></i> ${group.teacherName || 'শিক্ষক'}</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">${group.description || 'কোনো বিবরণ নেই'}</p>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs bg-slate-100 dark:bg-dark-tertiary px-2 py-1 rounded-full">${joinMethodText}</span>
+                        <span class="text-xs"><i class="fas fa-users"></i> ${group.studentIds?.length || 0} শিক্ষার্থী</span>
+                    </div>
+                    ${actionButton}
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    applyCourseFilter: () => {
         Student.renderCourseList();
-    } catch (error) {
-        console.error(error);
-        c.innerHTML = renderHeader('courses') + `<div class="p-5 text-center text-red-500">কোর্স লোড করতে ত্রুটি</div>`;
-    }
-};
+    },
 
-Student.renderCourseList = () => {
-    const c = document.getElementById('app-container');
-    const allGroups = window.allCoursesList || [];
-    const studentClass = AppState.classLevel || '';
-    const studentStream = AppState.admissionStream || '';
-    const joinedGroupIds = (AppState.joinedGroups || []).map(g => g.groupId);
-
-    const filterClass = document.getElementById('course-filter-class')?.value || 'all';
-    const searchTerm = document.getElementById('course-search-input')?.value.toLowerCase().trim() || '';
-
-    let filtered = allGroups.filter(g => {
-        if (filterClass !== 'all') {
-            if (filterClass === 'Admission') {
-                if (g.classLevel !== 'Admission') return false;
-                const streamFilter = document.getElementById('course-filter-stream')?.value;
-                if (streamFilter && streamFilter !== 'all' && g.admissionStream !== streamFilter) return false;
-            } else {
-                if (g.classLevel !== filterClass) return false;
-            }
-        }
-        if (searchTerm) {
-            const name = (g.name || '').toLowerCase();
-            const teacher = (g.teacherName || '').toLowerCase();
-            const desc = (g.description || '').toLowerCase();
-            if (!name.includes(searchTerm) && !teacher.includes(searchTerm) && !desc.includes(searchTerm)) return false;
-        }
-        return true;
-    });
-
-    filtered.sort((a, b) => {
-        if (a.classLevel === studentClass && b.classLevel !== studentClass) return -1;
-        if (a.classLevel !== studentClass && b.classLevel === studentClass) return 1;
-        return 0;
-    });
-
-    const classLevels = ['6', '7', '8', 'SSC', 'HSC', 'Admission'];
-    const classOptions = classLevels.map(lvl => `<option value="${lvl}">${lvl === 'Admission' ? 'এডমিশন' : (lvl === 'SSC' ? 'এসএসসি' : (lvl === 'HSC' ? 'এইচএসসি' : lvl+'ম শ্রেণী'))}</option>`).join('');
-
-    const streamOptions = `
-        <option value="all">সব শাখা</option>
-        <option value="Science">সায়েন্স</option>
-        <option value="Humanities">মানবিক</option>
-        <option value="Commerce">কমার্স</option>
-    `;
-
-    let html = `
-    <div class="p-5 pb-20">
-        <h2 class="text-2xl font-bold mb-2 text-center">কোর্সসমূহ</h2>
-        <p class="text-sm text-slate-500 mb-4 text-center">আপনার পছন্দের কোর্স খুঁজুন ও জয়েন করুন</p>
-        
-        <div class="bg-white dark:bg-dark-secondary p-4 rounded-xl shadow-sm border mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                    <label class="block text-xs font-bold mb-1">সার্চ</label>
-                    <input type="text" id="course-search-input" class="w-full p-2 border rounded-lg text-sm" placeholder="কোর্সের নাম, শিক্ষক...">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold mb-1">ক্লাস/লেভেল</label>
-                    <select id="course-filter-class" class="w-full p-2 border rounded-lg text-sm">
-                        <option value="all">সব ক্লাস</option>
-                        ${classOptions}
-                    </select>
-                </div>
-                <div id="stream-filter-container" style="display:none;">
-                    <label class="block text-xs font-bold mb-1">শাখা</label>
-                    <select id="course-filter-stream" class="w-full p-2 border rounded-lg text-sm">
-                        ${streamOptions}
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button onclick="Student.applyCourseFilter()" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-bold">ফিল্টার</button>
-                </div>
-            </div>
-            ${studentClass ? `<p class="text-xs text-indigo-600 mt-3"><i class="fas fa-graduation-cap"></i> আপনার ক্লাস: ${studentClass} ${studentStream ? '('+studentStream+')' : ''}</p>` : ''}
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="course-list-container">
-            ${Student.renderCourseCards(filtered, joinedGroupIds)}
-        </div>
-    </div>
-    `;
-
-    c.innerHTML = renderHeader('courses') + html;
-
-    const classSelect = document.getElementById('course-filter-class');
-    const streamContainer = document.getElementById('stream-filter-container');
-    if (classSelect) {
-        classSelect.addEventListener('change', function() {
-            if (this.value === 'Admission') {
-                streamContainer.style.display = 'block';
-            } else {
-                streamContainer.style.display = 'none';
-            }
-        });
-        if (classSelect.value === 'Admission') streamContainer.style.display = 'block';
-    }
-
-    const searchInput = document.getElementById('course-search-input');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') Student.applyCourseFilter();
-        });
-    }
-};
-
-Student.renderCourseCards = (groups, joinedGroupIds) => {
-    if (groups.length === 0) {
-        return `<div class="col-span-2 text-center p-10 text-slate-400">কোনো কোর্স পাওয়া যায়নি</div>`;
-    }
-
-    return groups.map(group => {
-        const isJoined = joinedGroupIds.includes(group.id);
-        const joinMethodText = {
-            'public': 'পাবলিক',
-            'code': 'কোর্স কোড',
-            'permission': 'পারমিশন কী'
-        }[group.joinMethod] || 'কোর্স কোড';
-
-        const classBadge = group.classLevel ? 
-            `<span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
-        
-        const streamBadge = group.admissionStream ? 
-            `<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">${group.admissionStream}</span>` : '';
-
-        const imageHtml = group.imageUrl ? 
-            `<img src="${group.imageUrl}" class="w-full h-36 object-cover rounded-t-xl">` : 
-            `<div class="w-full h-36 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-xl"><i class="fas fa-book-open"></i></div>`;
-
-        const actionButton = isJoined ? 
-            `<button class="w-full bg-green-100 text-green-700 py-2 rounded-lg text-sm font-bold" disabled><i class="fas fa-check-circle"></i> জয়েন করেছেন</button>` :
-            `<button onclick="Student.joinCourse('${group.id}', '${group.joinMethod}', '${group.groupCode || ''}')" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-bold">জয়েন করুন</button>`;
-
-        return `
-        <div class="bg-white dark:bg-dark-secondary rounded-xl shadow-sm border overflow-hidden">
-            ${imageHtml}
-            <div class="p-4">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-lg">${group.name}</h3>
-                    <div class="flex gap-1">${classBadge} ${streamBadge}</div>
-                </div>
-                <p class="text-xs text-slate-500 mb-1"><i class="fas fa-user-tie"></i> ${group.teacherName || 'শিক্ষক'}</p>
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">${group.description || 'কোনো বিবরণ নেই'}</p>
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs bg-slate-100 dark:bg-dark-tertiary px-2 py-1 rounded-full">${joinMethodText}</span>
-                    <span class="text-xs"><i class="fas fa-users"></i> ${group.studentIds?.length || 0} শিক্ষার্থী</span>
-                </div>
-                ${actionButton}
-            </div>
-        </div>`;
-    }).join('');
-};
-
-Student.applyCourseFilter = () => {
-    Student.renderCourseList();
-};
-
-Student.joinCourse = async (groupId, joinMethod, groupCode) => {
-    if (!navigator.onLine) {
-        Swal.fire('অফলাইন', 'ইন্টারনেট সংযোগ ছাড়া কোর্সে জয়েন করা যাবে না।', 'warning');
-        return;
-    }
-
-    try {
-        if (joinMethod === 'public') {
-            await Student.addToGroupDirectly(groupId);
+    joinCourse: async (groupId, joinMethod, groupCode) => {
+        if (!navigator.onLine) {
+            Swal.fire('অফলাইন', 'ইন্টারনেট সংযোগ ছাড়া কোর্সে জয়েন করা যাবে না।', 'warning');
             return;
         }
 
-        if (joinMethod === 'code') {
-            const { value: code } = await Swal.fire({
-                title: 'কোর্স কোড লিখুন',
-                input: 'text',
-                inputPlaceholder: 'কোর্স কোড',
-                showCancelButton: true,
-                inputValidator: (val) => !val ? 'কোর্স কোড আবশ্যক' : null
-            });
-            if (!code) return;
-            if (code !== groupCode) {
-                Swal.fire('ত্রুটি', 'ভুল কোর্স কোড', 'error');
+        try {
+            if (joinMethod === 'public') {
+                await Student.addToGroupDirectly(groupId);
                 return;
             }
-            await Student.addToGroupDirectly(groupId);
+
+            if (joinMethod === 'code') {
+                const { value: code } = await Swal.fire({
+                    title: 'কোর্স কোড লিখুন',
+                    input: 'text',
+                    inputPlaceholder: 'কোর্স কোড',
+                    showCancelButton: true,
+                    inputValidator: (val) => !val ? 'কোর্স কোড আবশ্যক' : null
+                });
+                if (!code) return;
+                if (code !== groupCode) {
+                    Swal.fire('ত্রুটি', 'ভুল কোর্স কোড', 'error');
+                    return;
+                }
+                await Student.addToGroupDirectly(groupId);
+                return;
+            }
+
+            if (joinMethod === 'permission') {
+                const { value: key } = await Swal.fire({
+                    title: 'পারমিশন কী লিখুন',
+                    input: 'text',
+                    inputPlaceholder: 'যেমন: abcde-12345',
+                    showCancelButton: true,
+                    inputValidator: (val) => !val ? 'পারমিশন কী আবশ্যক' : null
+                });
+                if (!key) return;
+
+                const groupDoc = await getDoc(doc(db, "groups", groupId));
+                if (!groupDoc.exists()) throw new Error("কোর্স নেই");
+                const group = groupDoc.data();
+
+                if (group.permissionKey !== key || group.permissionKeyUsed) {
+                    Swal.fire('ত্রুটি', 'ভুল বা ব্যবহৃত পারমিশন কী', 'error');
+                    return;
+                }
+
+                await updateDoc(doc(db, "groups", groupId), {
+                    permissionKeyUsed: true
+                });
+
+                await Student.addToGroupDirectly(groupId);
+            }
+        } catch (error) {
+            Swal.fire('ত্রুটি', error.message, 'error');
+        }
+    },
+
+    addToGroupDirectly: async (groupId) => {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        if ((AppState.joinedGroups || []).find(g => g.groupId === groupId)) {
+            Swal.fire('তথ্য', 'আপনি ইতিমধ্যে এই কোর্সে জয়েন করেছেন', 'info');
             return;
         }
 
-        if (joinMethod === 'permission') {
-            const { value: key } = await Swal.fire({
-                title: 'পারমিশন কী লিখুন',
-                input: 'text',
-                inputPlaceholder: 'যেমন: abcde-12345',
-                showCancelButton: true,
-                inputValidator: (val) => !val ? 'পারমিশন কী আবশ্যক' : null
+        const groupSnap = await getDoc(doc(db, "groups", groupId));
+        if (!groupSnap.exists()) throw new Error("কোর্স নেই");
+        const groupData = groupSnap.data();
+
+        if (groupData.approvalRequired) {
+            await addDoc(collection(db, "join_requests"), {
+                studentId: user.uid,
+                studentName: AppState.userProfile?.name || user.displayName,
+                studentEmail: user.email,
+                groupId: groupId,
+                teacherId: groupData.teacherId,
+                status: 'pending',
+                requestedAt: new Date()
             });
-            if (!key) return;
-
-            const groupDoc = await getDoc(doc(db, "groups", groupId));
-            if (!groupDoc.exists()) throw new Error("কোর্স নেই");
-            const group = groupDoc.data();
-
-            if (group.permissionKey !== key || group.permissionKeyUsed) {
-                Swal.fire('ত্রুটি', 'ভুল বা ব্যবহৃত পারমিশন কী', 'error');
-                return;
-            }
-
-            await updateDoc(doc(db, "groups", groupId), {
-                permissionKeyUsed: true
-            });
-
-            await Student.addToGroupDirectly(groupId);
+            Swal.fire('অনুরোধ পাঠানো হয়েছে', 'শিক্ষক অনুমোদন করলে আপনি কোর্সে যুক্ত হবেন।', 'success');
+            return;
         }
-    } catch (error) {
-        Swal.fire('ত্রুটি', error.message, 'error');
-    }
-};
 
-Student.addToGroupDirectly = async (groupId) => {
-    const user = auth.currentUser;
-    if (!user) return;
+        const studentIds = groupData.studentIds || [];
+        if (!studentIds.includes(user.uid)) {
+            studentIds.push(user.uid);
+            await updateDoc(doc(db, "groups", groupId), { studentIds });
+        }
 
-    if ((AppState.joinedGroups || []).find(g => g.groupId === groupId)) {
-        Swal.fire('তথ্য', 'আপনি ইতিমধ্যে এই কোর্সে জয়েন করেছেন', 'info');
-        return;
-    }
+        const joined = AppState.joinedGroups || [];
+        joined.push({ groupId, groupName: groupData.name, teacherCode: groupData.teacherCode });
+        await updateDoc(doc(db, "students", user.uid), { joinedGroups: joined });
 
-    const groupSnap = await getDoc(doc(db, "groups", groupId));
-    if (!groupSnap.exists()) throw new Error("কোর্স নেই");
-    const groupData = groupSnap.data();
+        AppState.joinedGroups = joined;
+        AppState.activeGroupId = groupId;
+        localStorage.setItem('activeGroupId', groupId);
+        localStorage.setItem('userProfile', JSON.stringify(AppState.userProfile));
 
-    if (groupData.approvalRequired) {
-        await addDoc(collection(db, "join_requests"), {
-            studentId: user.uid,
-            studentName: AppState.userProfile?.name || user.displayName,
-            studentEmail: user.email,
-            groupId: groupId,
-            teacherId: groupData.teacherId,
-            status: 'pending',
-            requestedAt: new Date()
+        Swal.fire('সফল', `"${groupData.name}" কোর্সে জয়েন করেছেন`, 'success').then(() => {
+            refreshExamCache();
+            Router.student('dashboard');
         });
-        Swal.fire('অনুরোধ পাঠানো হয়েছে', 'শিক্ষক অনুমোদন করলে আপনি কোর্সে যুক্ত হবেন।', 'success');
-        return;
     }
-
-    const studentIds = groupData.studentIds || [];
-    if (!studentIds.includes(user.uid)) {
-        studentIds.push(user.uid);
-        await updateDoc(doc(db, "groups", groupId), { studentIds });
-    }
-
-    const joined = AppState.joinedGroups || [];
-    joined.push({ groupId, groupName: groupData.name, teacherCode: groupData.teacherCode });
-    await updateDoc(doc(db, "students", user.uid), { joinedGroups: joined });
-
-    AppState.joinedGroups = joined;
-    AppState.activeGroupId = groupId;
-    localStorage.setItem('activeGroupId', groupId);
-    localStorage.setItem('userProfile', JSON.stringify(AppState.userProfile));
-
-    Swal.fire('সফল', `"${groupData.name}" কোর্সে জয়েন করেছেন`, 'success').then(() => {
-        refreshExamCache();
-        Router.student('dashboard');
-    });
 };
+
 window.Student = Student;
