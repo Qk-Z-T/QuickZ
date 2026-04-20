@@ -1,3 +1,4 @@
+
 // js/features/auth.js
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
@@ -83,7 +84,8 @@ export const Auth = {
         localStorage.setItem('teacher_email', AppState.currentUser.email);
         localStorage.setItem('teacher_data', JSON.stringify(AppState.currentUser));
         
-        if (!AppState.currentUser.fullName || !AppState.currentUser.phone || !AppState.currentUser.teacherCode) {
+        // এখন শুধু fullName ও phone চেক করব, teacherCode আর চেক করব না
+        if (!AppState.currentUser.fullName || !AppState.currentUser.phone) {
             if (window.Router && typeof window.Router.showTeacherProfileForm === 'function') {
                 window.Router.showTeacherProfileForm();
             } else {
@@ -112,7 +114,7 @@ export const Auth = {
                 AppState.role = 'teacher';
                 AppState.currentUser = { id: docSnap.id, ...docSnap.data() };
                 
-                if (!AppState.currentUser.fullName || !AppState.currentUser.phone || !AppState.currentUser.teacherCode) {
+                if (!AppState.currentUser.fullName || !AppState.currentUser.phone) {
                     if (window.Router && typeof window.Router.showTeacherProfileForm === 'function') {
                         window.Router.showTeacherProfileForm();
                     }
@@ -140,27 +142,18 @@ export const Auth = {
     },
     
     confirmLogout: async () => { 
-        const { value: teacherCode } = await Swal.fire({
+        // teacherCode আর লাগবে না, তাই সরাসরি লগআউট কনফার্মেশন
+        const result = await Swal.fire({
             title: 'Confirm Logout',
-            text: "Please enter your Teacher Code to logout",
-            input: 'text',
+            text: "Are you sure you want to logout?",
+            icon: 'warning',
             showCancelButton: true,
-            inputValidator: (value) => {
-                if (!value) return 'Teacher code is required!';
-                if (value !== AppState.currentUser.teacherCode) {
-                    return 'Incorrect Teacher Code!';
-                }
-            }
+            confirmButtonText: 'Yes, logout',
+            confirmButtonColor: '#ef4444'
         });
         
-        if (teacherCode) {
-            Swal.fire({ 
-                title: 'Logout?', 
-                icon: 'warning', 
-                showCancelButton: true, 
-                confirmButtonText: 'Yes', 
-                confirmButtonColor: '#ef4444' 
-            }).then((r)=>{if(r.isConfirmed) Auth.logout()});
+        if (result.isConfirmed) {
+            Auth.logout();
         }
     },
     
