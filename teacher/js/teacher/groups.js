@@ -1,5 +1,5 @@
 // js/teacher/groups.js
-// গ্রুপ ও শিক্ষার্থী ম্যানেজমেন্ট (ব্লক/ডিসেবল ফিচার সম্পূর্ণ অপসারিত)
+// গ্রুপ ও শিক্ষার্থী ম্যানেজমেন্ট (ব্লক/ডিসেবল ফিচার অপসারিত, শুধু কোর্স থেকে সরানোর ব্যবস্থা)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -9,11 +9,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 
-// ক্লাস লেভেল অপশন
 const CLASS_LEVELS = ['6', '7', '8', 'SSC', 'HSC', 'Admission'];
 const ADMISSION_STREAMS = ['Science', 'Humanities', 'Commerce'];
 
-// ------------- ম্যানেজ গ্রুপ ভিউ (কোর্স তালিকা ও তৈরির ফর্ম) -------------
+// ------------- ম্যানেজ গ্রুপ ভিউ -------------
 Teacher.manageGroupsView = async () => {
     document.getElementById('app-container').innerHTML = `
     <div class="pb-6">
@@ -83,7 +82,6 @@ Teacher.manageGroupsView = async () => {
         </div>
     </div>`;
     
-    // ক্লাস সিলেক্টে Admission সিলেক্ট করলে স্ট্রিম অপশন দেখাবে
     const classSelect = document.getElementById('new-group-class');
     const streamContainer = document.getElementById('admission-stream-container');
     classSelect.addEventListener('change', () => {
@@ -94,7 +92,6 @@ Teacher.manageGroupsView = async () => {
         }
     });
 
-    // ইমেজ প্রিভিউ
     const imageInput = document.getElementById('new-group-image');
     imageInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -116,7 +113,6 @@ Teacher.manageGroupsView = async () => {
     await Teacher.loadTeacherGroups();
 };
 
-// নতুন পূর্ণাঙ্গ গ্রুপ তৈরি (ছবি সহ)
 Teacher.createFullGroup = async () => {
     const name = document.getElementById('new-group-name').value.trim();
     const classLevel = document.getElementById('new-group-class').value;
@@ -124,7 +120,6 @@ Teacher.createFullGroup = async () => {
     const joinMethod = document.getElementById('new-group-join-method').value;
     const imageFile = document.getElementById('new-group-image').files[0];
     
-    // ভ্যালিডেশন
     if (!name) return Swal.fire('ত্রুটি', 'কোর্সের নাম আবশ্যক', 'error');
     if (!classLevel) return Swal.fire('ত্রুটি', 'ক্লাস/লেভেল সিলেক্ট করুন', 'error');
     
@@ -137,7 +132,6 @@ Teacher.createFullGroup = async () => {
     try {
         Swal.fire({ title: 'কোর্স তৈরি হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         
-        // কোর্স কোড জেনারেট
         const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const numbers = '0123456789';
         let groupCode = '';
@@ -145,9 +139,10 @@ Teacher.createFullGroup = async () => {
         for (let i = 0; i < 5; i++) groupCode += numbers.charAt(Math.floor(Math.random() * numbers.length));
         
         let imageUrl = null;
-        if (imageFile) {
-            imageUrl = await Teacher.uploadCourseImage(imageFile, groupCode);
-        }
+        // 🔧 Storage ইস্যু এড়াতে আপাতত ইমেজ আপলোড স্কিপ (পরবর্তীতে যুক্ত হবে)
+        // if (imageFile) {
+        //     imageUrl = await Teacher.uploadCourseImage(imageFile, groupCode);
+        // }
         
         const groupData = {
             name,
@@ -176,7 +171,6 @@ Teacher.createFullGroup = async () => {
             html: `<div class="text-left">
                 <p><strong>কোর্সের নাম:</strong> ${name}</p>
                 <p><strong>কোর্স কোড:</strong> <code>${groupCode}</code></p>
-                ${imageUrl ? '<p class="text-green-600"><i class="fas fa-check-circle"></i> কভার ইমেজ আপলোড হয়েছে</p>' : ''}
             </div>`,
             icon: 'success'
         }).then(() => {
@@ -188,7 +182,6 @@ Teacher.createFullGroup = async () => {
     }
 };
 
-// Firebase Storage-এ ইমেজ আপলোড
 Teacher.uploadCourseImage = async (file, groupCode) => {
     const storage = getStorage();
     const fileExt = file.name.split('.').pop();
@@ -203,7 +196,6 @@ Teacher.createGroupFromInput = async () => {
     Teacher.manageGroupsView();
 };
 
-// ------------- শিক্ষকের সব কোর্স লোড করে UI-তে দেখানো -------------
 Teacher.loadTeacherGroups = async () => {
     try {
         const groupsQuery = query(collection(db, "groups"), 
@@ -240,8 +232,6 @@ Teacher.loadTeacherGroups = async () => {
             
             const classBadge = group.classLevel ? 
                 `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
-            const streamBadge = group.admissionStream ? 
-                `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">${group.admissionStream}</span>` : '';
             const joinMethodText = {
                 'public': 'পাবলিক',
                 'code': 'কোর্স কোড',
@@ -284,7 +274,6 @@ Teacher.loadTeacherGroups = async () => {
                         </div>
                         <div class="flex flex-wrap gap-2 mb-2">
                             ${classBadge}
-                            ${streamBadge}
                             <span class="text-xs bg-slate-100 dark:bg-dark-tertiary text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">${joinMethodText}</span>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${group.description || 'কোনো বিবরণ নেই'}</p>
@@ -323,7 +312,6 @@ Teacher.loadTeacherGroups = async () => {
     }
 };
 
-// ------------- কোর্স সম্পাদনা -------------
 Teacher.editGroupDetails = async (groupId) => {
     const group = Teacher.teacherGroups.find(g => g.id === groupId);
     if (!group) return;
@@ -442,13 +430,14 @@ Teacher.editGroupDetails = async (groupId) => {
                 updateData.permissionKeyUsed = false;
             }
             
-            if (formValues.imageFile) {
-                if (formValues.imageFile.size > 2 * 1024 * 1024) {
-                    Swal.fire('ত্রুটি', 'ছবির সাইজ ২ এমবির বেশি', 'error');
-                    return;
-                }
-                updateData.imageUrl = await Teacher.uploadCourseImage(formValues.imageFile, group.groupCode);
-            }
+            // 🔧 Storage ইস্যু এড়াতে ইমেজ আপলোড স্কিপ
+            // if (formValues.imageFile) {
+            //     if (formValues.imageFile.size > 2 * 1024 * 1024) {
+            //         Swal.fire('ত্রুটি', 'ছবির সাইজ ২ এমবির বেশি', 'error');
+            //         return;
+            //     }
+            //     updateData.imageUrl = await Teacher.uploadCourseImage(formValues.imageFile, group.groupCode);
+            // }
             
             await updateDoc(doc(db, "groups", groupId), updateData);
             Object.assign(group, updateData);
@@ -473,7 +462,6 @@ Teacher.editGroupDetails = async (groupId) => {
     }, 100);
 };
 
-// ------------- পারমিশন কী জেনারেটর -------------
 Teacher.generatePermissionKey = async (groupId) => {
     try {
         const generateKey = () => {
@@ -557,7 +545,6 @@ Teacher.copyPermissionKey = (key) => {
     });
 };
 
-// ------------- গ্রুপ মেনু টগল -------------
 Teacher.toggleGroupMenu = (groupId) => {
     event.stopPropagation();
     document.querySelectorAll('.dot-menu-dropdown').forEach(dropdown => {
@@ -576,7 +563,7 @@ Teacher.toggleGroupSetting = async (groupId, setting, value) => {
     }
 };
 
-// ------------- শিক্ষার্থী তালিকা দেখা (ব্লক/ডিসেবল সম্পূর্ণ অপসারিত) -------------
+// ------------- শিক্ষার্থী তালিকা দেখা (ব্লক/ডিসেবল ফিচার অপসারিত) -------------
 Teacher.viewGroupStudents = async (groupId, initialFilter = 'all') => {
     try {
         const groupDoc = await getDoc(doc(db, "groups", groupId));
@@ -710,7 +697,7 @@ Teacher.viewGroupStudents = async (groupId, initialFilter = 'all') => {
     }
 };
 
-// ------------- শিক্ষার্থী তালিকা রেন্ডারিং (শুধু সক্রিয় ও অপেক্ষমান) -------------
+// ------------- শিক্ষার্থী তালিকা রেন্ডারিং (ব্লক/ডিসেবল বাদ) -------------
 Teacher.renderStudentList = function(students) {
     if (students.length === 0) {
         return `
@@ -863,7 +850,7 @@ Teacher.filterStudents = function(filter) {
     document.getElementById('student-list').innerHTML = Teacher.renderStudentList(filteredStudents);
 };
 
-// ------------- শিক্ষার্থীকে কোর্স থেকে সরানো (ব্লক/ডিসেবলের পরিবর্তে) -------------
+// ------------- শিক্ষার্থীকে কোর্স থেকে সরানো (নতুন ফাংশন) -------------
 Teacher.removeStudentFromGroup = async (studentId, groupId) => {
     const result = await Swal.fire({
         title: 'কোর্স থেকে সরাবেন?',
@@ -876,12 +863,10 @@ Teacher.removeStudentFromGroup = async (studentId, groupId) => {
     
     if (result.isConfirmed) {
         try {
-            // গ্রুপ থেকে studentId সরান
             await updateDoc(doc(db, "groups", groupId), {
                 studentIds: arrayRemove(studentId)
             });
             
-            // শিক্ষার্থীর joinedGroups থেকে এই গ্রুপ সরান
             const studentRef = doc(db, "students", studentId);
             const studentSnap = await getDoc(studentRef);
             if (studentSnap.exists()) {
@@ -911,22 +896,6 @@ Teacher.approveStudentRequest = async (requestId, groupId) => {
                 studentIds: arrayUnion(request.studentId),
                 updatedAt: new Date()
             });
-        }
-        
-        // শিক্ষার্থীর joinedGroups আপডেট
-        const studentRef = doc(db, "students", request.studentId);
-        const studentSnap = await getDoc(studentRef);
-        if (studentSnap.exists()) {
-            const studentData = studentSnap.data();
-            const joinedGroups = studentData.joinedGroups || [];
-            if (!joinedGroups.find(g => g.groupId === groupId)) {
-                joinedGroups.push({ 
-                    groupId: groupId, 
-                    groupName: groupDoc.data()?.name || '', 
-                    teacherCode: groupDoc.data()?.teacherCode || '' 
-                });
-                await updateDoc(studentRef, { joinedGroups });
-            }
         }
         
         await updateDoc(doc(db, "join_requests", requestId), {
