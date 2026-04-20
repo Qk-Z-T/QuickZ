@@ -14,7 +14,10 @@ export const AppState = {
     hasGroupCode: false,
     activeTeacherCode: null,
     activeGroupId: localStorage.getItem('activeGroupId') || null,
-    joinedGroups: []
+    joinedGroups: [],
+    // নতুন ফিল্ড: শিক্ষার্থীর ক্লাস/লেভেল
+    classLevel: localStorage.getItem('studentClassLevel') || '',
+    admissionStream: localStorage.getItem('studentAdmissionStream') || ''
 };
 
 // Cache for exams data
@@ -58,8 +61,8 @@ export function debounce(func, wait) {
 
 // Mobile drawer toggle
 export function toggleMobileDrawer() {
-    document.getElementById('mobileDrawer').classList.toggle('open');
-    document.getElementById('drawerOverlay').classList.toggle('open');
+    document.getElementById('mobileDrawer')?.classList.toggle('open');
+    document.getElementById('drawerOverlay')?.classList.toggle('open');
 }
 window.toggleMobileDrawer = toggleMobileDrawer;
 
@@ -142,7 +145,7 @@ export const MathHelper = {
 };
 window.MathHelper = MathHelper;
 
-// Header renderer
+// Header renderer (সাইডবারে নতুন 'কোর্সসমূহ' মেনু যোগ করা হবে পরে)
 export function renderHeader(activePage) {
     const user = AppState.userProfile || {};
     const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
@@ -168,6 +171,9 @@ export function renderHeader(activePage) {
         <div class="flex-1 overflow-y-auto py-6 px-4 space-y-2">
             <button onclick="Router.student('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activePage === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}">
                 <i class="fas fa-home w-5 text-lg"></i> হোম
+            </button>
+            <button onclick="Router.student('courses')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activePage === 'courses' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}">
+                <i class="fas fa-book-open w-5 text-lg"></i> কোর্সসমূহ
             </button>
             <button onclick="Router.student('rank')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activePage === 'rank' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}">
                 <i class="fas fa-trophy w-5 text-lg"></i> র‍্যাংক
@@ -210,7 +216,39 @@ export function renderHeader(activePage) {
                 <i class="fas fa-bars text-lg"></i>
             </button>
         </div>
-    </header>`;
+    </header>
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="flex justify-between items-center mb-6">
+            <div class="text-xl font-bold quickz-logo">
+                <span class="quick">Quick</span><span class="z">Z</span>
+            </div>
+            <button onclick="toggleMobileDrawer()" class="text-2xl" style="color:var(--text-primary);">&times;</button>
+        </div>
+        <div class="drawer-item" onclick="Router.student('dashboard'); toggleMobileDrawer()">
+            <i class="fas fa-home"></i> হোম
+        </div>
+        <div class="drawer-item" onclick="Router.student('courses'); toggleMobileDrawer()">
+            <i class="fas fa-book-open"></i> কোর্সসমূহ
+        </div>
+        <div class="drawer-item" onclick="Router.student('rank'); toggleMobileDrawer()">
+            <i class="fas fa-trophy"></i> র‍্যাংক
+        </div>
+        <div class="drawer-item" onclick="Router.student('results'); toggleMobileDrawer()">
+            <i class="fas fa-clipboard-list"></i> ফলাফল
+        </div>
+        <div class="drawer-item" onclick="Router.student('analysis'); toggleMobileDrawer()">
+            <i class="fas fa-chart-pie"></i> অগ্রগতি
+        </div>
+        <div class="drawer-item" onclick="Router.student('notices'); toggleMobileDrawer()">
+            <i class="fas fa-bell"></i> নোটিস
+        </div>
+        <div class="drawer-item" onclick="Router.student('management'); toggleMobileDrawer()">
+            <i class="fas fa-cogs"></i> ম্যানেজমেন্ট
+        </div>
+        <div class="drawer-item" onclick="ThemeManager.openThemeModal(); toggleMobileDrawer()">
+            <i class="fas fa-palette"></i> থিম পরিবর্তন
+        </div>
+    </div>`;
 }
 window.renderHeader = renderHeader;
 
