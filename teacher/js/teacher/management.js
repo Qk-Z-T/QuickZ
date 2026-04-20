@@ -1,5 +1,5 @@
 // js/teacher/management.js
-// ম্যানেজমেন্ট হাব ও লাইভ পরীক্ষা ব্যবস্থাপনা
+// ম্যানেজমেন্ট হাব ও লাইভ পরীক্ষা ব্যবস্থাপনা (নতুন কোর্স ফিল্ড সহ আপডেটেড)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -10,7 +10,7 @@ import {
 
 let unsubscribes = window.unsubscribes;
 
-// ------------- ম্যানেজমেন্ট ভিউ -------------
+// ------------- ম্যানেজমেন্ট হাব ভিউ -------------
 Teacher.managementView = () => {
     if (!AppState.selectedGroup) {
         Teacher.selectGroupView('management');
@@ -25,6 +25,23 @@ Teacher.managementView = () => {
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold font-en text-slate-800 dark:text-white bengali-text">ম্যানেজমেন্ট হাব</h2>
         </div>
+        
+        <!-- বর্তমান কোর্সের সংক্ষিপ্ত তথ্য -->
+        <div id="current-group-info-card" class="bg-white dark:bg-dark-secondary p-4 rounded-2xl shadow-sm border dark:border-dark-tertiary mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold dark:text-white">${AppState.selectedGroup.name}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">সক্রিয় কোর্স</p>
+                </div>
+                <button onclick="Teacher.manageGroupsView()" class="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-lg font-bold">
+                    <i class="fas fa-cog mr-1"></i>কোর্স ব্যবস্থাপনা
+                </button>
+            </div>
+        </div>
+        
         <div class="management-list">
              <div class="management-item" onclick="Teacher.liveExamManagementView()">
                  <div class="flex items-center gap-3">
@@ -81,6 +98,7 @@ Teacher.managementView = () => {
     </div>`;
 };
 
+// ------------- লাইভ পরীক্ষা ব্যবস্থাপনা ভিউ (আপডেটেড) -------------
 Teacher.liveExamManagementView = () => {
     if (!AppState.selectedGroup) {
         Teacher.selectGroupView('management');
@@ -99,6 +117,20 @@ Teacher.liveExamManagementView = () => {
             </button>
             <h2 class="text-2xl font-bold font-en dark:text-white bengali-text">লাইভ পরীক্ষা ব্যবস্থাপনা</h2>
         </div>
+        
+        <!-- বর্তমান কোর্সের তথ্য -->
+        <div id="live-mgmt-group-info" class="bg-white dark:bg-dark-secondary p-4 rounded-2xl shadow-sm border dark:border-dark-tertiary mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div>
+                    <span class="font-bold dark:text-white">${AppState.selectedGroup.name}</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 ml-2">কোর্স কোড: ${AppState.selectedGroup.groupCode || ''}</span>
+                </div>
+            </div>
+        </div>
+        
         <div id="live-exams-list-container" class="space-y-4">
             <div class="text-center p-10"><div class="loader mx-auto"></div></div>
         </div>
@@ -127,20 +159,28 @@ Teacher.liveExamManagementView = () => {
             
             html += `
                 <div class="live-exam-card bg-white dark:bg-dark-secondary p-4 rounded-xl border dark:border-dark-tertiary shadow-sm">
-                    <h3 class="font-bold dark:text-white bengali-text">${exam.title}</h3>
-                    <p class="text-xs text-slate-500 mb-3 bengali-text">${exam.subject || 'কোনো বিষয় নেই'} - ${exam.chapter || 'কোনো অধ্যায় নেই'}</p>
-                    <div class="text-[10px] text-slate-400 mb-3">
-                        শুরু: ${startTime} <br> শেষ: ${endTime}
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center text-red-600 text-sm flex-shrink-0">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold dark:text-white bengali-text">${exam.title}</h3>
+                            <p class="text-xs text-slate-500 bengali-text">${exam.subject || 'কোনো বিষয় নেই'} - ${exam.chapter || 'কোনো অধ্যায় নেই'}</p>
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-slate-400 mb-3 pl-13">
+                        <i class="far fa-calendar-alt mr-1"></i> শুরু: ${startTime} <br>
+                        <i class="far fa-clock mr-1"></i> শেষ: ${endTime}
                     </div>
                     <div class="flex gap-2">
                         <button onclick="Teacher.stopLiveExam('${exam.id}')" class="flex-1 bg-red-600 text-white py-2 rounded-lg text-xs font-bold bengali-text hover:bg-red-700 transition">
-                            বাতিল করুন
+                            <i class="fas fa-ban mr-1"></i> বাতিল
                         </button>
                         <button onclick="Teacher.extendExamTime('${exam.id}')" class="flex-1 bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold bengali-text hover:bg-emerald-700 transition">
-                            সময় বাড়ান
+                            <i class="fas fa-clock mr-1"></i> সময় বাড়ান
                         </button>
                         <button onclick="Teacher.publish('${exam.id}')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-xs font-bold bengali-text hover:bg-indigo-700 transition">
-                            ফলাফল প্রকাশ
+                            <i class="fas fa-bullhorn mr-1"></i> প্রকাশ
                         </button>
                     </div>
                 </div>`;
