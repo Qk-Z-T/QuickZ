@@ -1,10 +1,10 @@
 // js/teacher/profile.js
-// শিক্ষক প্রোফাইল ব্যবস্থাপনা
+// শিক্ষক প্রোফাইল ব্যবস্থাপনা (teacherCode বাদ দেওয়া হয়েছে)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
-import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // ------------- প্রোফাইল ভিউ -------------
 Teacher.viewProfile = function() {
@@ -47,17 +47,8 @@ Teacher.viewProfile = function() {
                 <input type="tel" id="profile-phone" class="w-full p-3 border border-slate-200 dark:border-dark-tertiary bg-slate-50 dark:bg-black/50 text-slate-500 dark:text-slate-400 rounded-xl" value="${AppState.currentUser.phone || ''}" readonly>
             </div>
             
-            <div class="mb-6">
-                <label class="block text-sm font-bold mb-1 dark:text-white bengali-text">শিক্ষক কোড</label>
-                <div class="teacher-code-badge flex justify-between items-center">
-                    <span>${AppState.currentUser.teacherCode}</span>
-                    <button onclick="Teacher.copyTeacherCode()" class="text-white hover:text-slate-200">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 bengali-text">এই কোডটি শিক্ষার্থীদের সাথে শেয়ার করুন</p>
-            </div>
-
+            <!-- শিক্ষক কোডের অংশ সম্পূর্ণ বাদ দেওয়া হলো -->
+            
             <button id="profile-save-btn" onclick="Teacher.saveProfile()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 rounded-xl font-bold hidden shadow-lg bengali-text">
                 <i class="fas fa-save mr-2"></i> পরিবর্তন সংরক্ষণ
             </button>
@@ -79,13 +70,7 @@ Teacher.enableProfileEdit = function() {
     document.getElementById('profile-fullname').focus();
 };
 
-Teacher.copyTeacherCode = function() {
-    navigator.clipboard.writeText(AppState.currentUser.teacherCode).then(() => {
-        Swal.fire('কপি হয়েছে!', 'শিক্ষক কোড কপি করা হয়েছে', 'success');
-    }).catch(() => {
-        Swal.fire('ত্রুটি', 'কোড কপি করতে ব্যর্থ', 'error');
-    });
-};
+// copyTeacherCode ফাংশনটি আর প্রয়োজন নেই, তাই সরিয়ে দেওয়া হয়েছে।
 
 Teacher.saveProfile = async function() {
     const fullName = document.getElementById('profile-fullname').value.trim();
@@ -165,7 +150,7 @@ Teacher.changePassword = async function() {
     }
 };
 
-// স্টুডেন্ট প্রোফাইল এডিট (শিক্ষক কর্তৃক)
+// স্টুডেন্ট প্রোফাইল এডিট (শিক্ষক কর্তৃক) - অপরিবর্তিত রাখা হয়েছে
 Teacher.viewStudentProfile = async (studentId, groupId) => {
     try {
         const studentDoc = await getDoc(doc(db, "students", studentId));
