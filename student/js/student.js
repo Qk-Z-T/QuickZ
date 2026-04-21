@@ -1,4 +1,4 @@
- // js/student.js
+// js/student.js
 // Student module - all student-related functionality
 
 import { auth, db } from './config.js';
@@ -18,7 +18,7 @@ import {
     loadMathJax,
     StarRating,
     MathHelper,
-    renderHeader,
+    renderHeader, // still imported but we won't call it directly in page functions
     refreshExamCache
 } from './state.js';
 import { renderRankSkeleton, renderAnalysisSkeleton, renderManagementSkeleton, renderResultsSkeleton } from './ui.js';
@@ -43,6 +43,18 @@ import {
     updatePassword, 
     updateProfile 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+// ---------- Page Content Helpers ----------
+function getContentContainer() {
+    return document.getElementById('page-content');
+}
+
+function setPageContent(html) {
+    const container = getContentContainer();
+    if (container) container.innerHTML = html;
+    return container;
+}
+// -----------------------------------------
 
 export const Student = {
     initNotificationListener: () => {
@@ -84,8 +96,8 @@ export const Student = {
     },
 
     loadNotices: async () => {
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('notices') + '<div class="p-5"><div class="loader mx-auto"></div></div>';
+        const contentEl = setPageContent(`<div class="p-5"><div class="loader mx-auto"></div></div>`);
+        if (!contentEl) return;
 
         const q = query(
             collection(db, "notices"),
@@ -149,7 +161,7 @@ export const Student = {
             });
         }
         html += `</div>`;
-        c.innerHTML = renderHeader('notices') + html;
+        contentEl.innerHTML = html;
     },
 
     votePoll: async (noticeId, optionIndex) => {
@@ -180,7 +192,6 @@ export const Student = {
 
     loadRankings: async () => {
         const myRouteId = window.currentRouteId;
-
         if (AppState.userDisabled) {
             Swal.fire('প্রবেশাধিকার নেই', 'আপনার অ্যাকাউন্ট নিষ্ক্রিয়।', 'warning');
             return;
@@ -190,7 +201,9 @@ export const Student = {
             return;
         }
 
-        const c = document.getElementById('app-container');
+        const contentEl = setPageContent(`<div class="p-5 pb-20 text-center"><div class="loader mx-auto"></div></div>`);
+        if (!contentEl) return;
+
         const q = query(
             collection(db, "exams"), 
             where("groupId", "==", AppState.activeGroupId),
@@ -206,7 +219,7 @@ export const Student = {
         exams.sort((a,b) => b.createdAt - a.createdAt);
         
         if (exams.length === 0) {
-            c.innerHTML = renderHeader('rank') + `<div class="p-5 pb-20 text-center">
+            contentEl.innerHTML = `<div class="p-5 pb-20 text-center">
                 <div class="p-10 text-slate-400">কোনো পরীক্ষার ফলাফল এখনো প্রকাশ করা হয়নি।</div>
             </div>`;
             return;
@@ -223,15 +236,15 @@ export const Student = {
                 </div>
             </div>`).join('');
 
-        c.innerHTML = renderHeader('rank') + `<div class="p-5 pb-20">
+        contentEl.innerHTML = `<div class="p-5 pb-20">
             ${h}
         </div>`;
     },
 
     openRank: async (eid, title) => {
         const myRouteId = window.currentRouteId;
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('rank') + '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="mt-2 text-xs">র‍্যাংক লোড হচ্ছে...</p></div>';
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="mt-2 text-xs">র‍্যাংক লোড হচ্ছে...</p></div>');
+        if (!contentEl) return;
         
         try {
             const exSnap = await getDoc(doc(db, "exams", eid));
@@ -298,7 +311,8 @@ export const Student = {
     },
 
     renderRankList: () => {
-        const c = document.getElementById('app-container');
+        const contentEl = getContentContainer();
+        if (!contentEl) return;
         const uid = auth.currentUser.uid;
         const searchQuery = rankSearchQuery.toLowerCase();
 
@@ -364,7 +378,7 @@ export const Student = {
         });
 
         const title = window.currentExamTitle || 'Exam';
-        c.innerHTML = renderHeader('rank') + `
+        contentEl.innerHTML = `
         <div class="p-5 pb-20" style="background-color:var(--bg-primary);">
             <button onclick="Student.loadRankings()" class="mb-4 text-xs font-bold" style="color:var(--text-muted);"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
             <div class="rounded-xl p-4 mb-6 shadow-sm border" style="background-color:var(--card-bg);border-color:var(--border-light);">
@@ -393,7 +407,7 @@ export const Student = {
                 ${rows || '<div class="p-10 text-center text-slate-400">কোনো ফলাফল পাওয়া যায়নি।</div>'}
             </div>
         </div>`;
-        loadMathJax(null, c);
+        loadMathJax(null, contentEl);
     },
 
     performRankSearch: () => {
@@ -405,8 +419,8 @@ export const Student = {
     },
 
     openExamAnalysis: async (examId) => {
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('rank') + '<div class="p-10 text-center"><div class="loader mx-auto"></div><p>বিশ্লেষণ লোড হচ্ছে...</p></div>';
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div><p>বিশ্লেষণ লোড হচ্ছে...</p></div>');
+        if (!contentEl) return;
         
         try {
             const examDoc = await getDoc(doc(db, "exams", examId));
@@ -437,7 +451,7 @@ export const Student = {
             
             const totalAttempts = attempts.length;
             if (totalAttempts === 0) {
-                c.innerHTML = renderHeader('rank') + `
+                contentEl.innerHTML = `
                     <div class="p-5 pb-20 text-center">
                         <button onclick="Student.loadRankings()" class="mb-4 text-xs font-bold" style="color:var(--text-muted);"><i class="fas fa-arrow-left"></i> র‍্যাংকে ফিরুন</button>
                         <div class="p-10 text-slate-400">এখনো কেউ এই পরীক্ষায় অংশগ্রহণ করেনি</div>
@@ -537,9 +551,9 @@ export const Student = {
             });
             
             html += `</div>`;
-            c.innerHTML = renderHeader('rank') + html;
+            contentEl.innerHTML = html;
             
-            loadMathJax(null, c);
+            loadMathJax(null, contentEl);
         } catch (error) {
             console.error(error);
             Swal.fire('ত্রুটি', 'বিশ্লেষণ লোড করতে ব্যর্থ', 'error');
@@ -990,9 +1004,7 @@ export const Student = {
     
     loadDashboard: async () => {
         const myRouteId = window.currentRouteId;
-        const c = document.getElementById('app-container');
-
-        c.innerHTML = renderHeader('dashboard') + `
+        const contentEl = setPageContent(`
         <div class="p-5 pb-20 max-w-lg mx-auto">
             <!-- Active Course Card (replaces old teacher card) -->
             <div id="active-course-card" class="bg-white dark:bg-dark-secondary rounded-2xl shadow-md border dark:border-dark-tertiary overflow-hidden mb-6">
@@ -1026,7 +1038,8 @@ export const Student = {
                     </div>
                 </button>
             </div>
-        </div>`;
+        </div>`);
+        if (!contentEl) return;
 
         if (AppState.activeGroupId) {
             try {
@@ -1124,7 +1137,6 @@ export const Student = {
         }
     },
     
-
     checkGroupAndLoad: (type) => {
         if (!AppState.activeGroupId) {
             Swal.fire('কোর্স প্রয়োজন', 'আপনাকে অবশ্যই একটি কোর্সে যোগ দিতে হবে', 'warning').then(() => {
@@ -1148,8 +1160,8 @@ export const Student = {
             return;
         }
 
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('dashboard') + '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs text-slate-400 mt-2">লাইভ পরীক্ষা লোড হচ্ছে...</p></div>';
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs text-slate-400 mt-2">লাইভ পরীক্ষা লোড হচ্ছে...</p></div>');
+        if (!contentEl) return;
 
         const uid = auth.currentUser ? auth.currentUser.uid : null;
         const now = new Date();
@@ -1167,7 +1179,7 @@ export const Student = {
                 } catch(e) {}
             }
             if (exams.length === 0) {
-                c.innerHTML = renderHeader('dashboard') + `<div class="p-10 text-center" style="color:var(--text-muted);">
+                contentEl.innerHTML = `<div class="p-10 text-center" style="color:var(--text-muted);">
                     <i class="fas fa-wifi-slash text-4xl mb-3 opacity-30"></i>
                     <p>অফলাইনে কোনো ক্যাশকৃত পরীক্ষা নেই।</p>
                     <p class="text-xs mt-2">ইন্টারনেট সংযোগ দিন।</p>
@@ -1358,7 +1370,7 @@ export const Student = {
             content = ongoingHTML + upcomingHTML + pastHTML;
         }
 
-        c.innerHTML = renderHeader('dashboard') + `
+        contentEl.innerHTML = `
         <div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
             <button onclick="Student.loadDashboard()" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
                 <i class="fas fa-arrow-left"></i> ড্যাশবোর্ড
@@ -1382,8 +1394,8 @@ export const Student = {
 
     loadPastLiveExams: async () => {
         if (AppState.userDisabled) return;
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('dashboard') + '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs text-slate-400 mt-2">পূর্ববর্তী পরীক্ষা লোড হচ্ছে...</p></div>';
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs text-slate-400 mt-2">পূর্ববর্তী পরীক্ষা লোড হচ্ছে...</p></div>');
+        if (!contentEl) return;
 
         try {
             const uid = auth.currentUser.uid;
@@ -1476,7 +1488,7 @@ export const Student = {
                 ? `<div class="text-center py-20 text-slate-400">কোনো পূর্ববর্তী লাইভ পরীক্ষা পাওয়া যায়নি</div>` 
                 : examsToShow.map(e => renderExamCard(e, e.attempt !== undefined)).join('');
 
-            c.innerHTML = renderHeader('dashboard') + `
+            contentEl.innerHTML = `
             <div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
                 <button onclick="Student.loadLiveExams()" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);"><i class="fas fa-arrow-left"></i> লাইভ পরীক্ষায় ফিরুন</button>
                 <h2 class="text-2xl font-bold font-bn mb-4 text-center" style="color:var(--text-primary);">পূর্বের লাইভ পরীক্ষা</h2>
@@ -1485,7 +1497,7 @@ export const Student = {
             </div>`;
 
             if (content.includes('$') || content.includes('\\(')) {
-                loadMathJax(null, document.getElementById('app-container'));
+                loadMathJax(null, contentEl);
             }
         } catch(e) {
             console.error(e);
@@ -1504,12 +1516,12 @@ export const Student = {
             return;
         }
 
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('dashboard') + '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs text-slate-400 mt-2">সমাধান লোড হচ্ছে...</p></div>';
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs text-slate-400 mt-2">সমাধান লোড হচ্ছে...</p></div>');
+        if (!contentEl) return;
         
         // অফলাইন চেক
         if (!navigator.onLine) {
-            c.innerHTML = renderHeader('dashboard') + `<div class="p-10 text-center" style="color:var(--text-muted);">
+            contentEl.innerHTML = `<div class="p-10 text-center" style="color:var(--text-muted);">
                 <i class="fas fa-wifi-slash text-4xl mb-3 opacity-30"></i>
                 <p>সমাধান দেখতে ইন্টারনেট সংযোগ প্রয়োজন।</p>
             </div>`;
@@ -1610,22 +1622,22 @@ export const Student = {
             </div>`;
         });
         
-        c.innerHTML = renderHeader('dashboard') + `<div class="p-5 pb-24">
+        contentEl.innerHTML = `<div class="p-5 pb-24">
             ${backButton}
             <h2 class="font-bold text-xl mb-4 text-center">${exam.title} - সমাধান</h2>
             <p class="text-sm text-slate-500 mb-6 text-center">মোট প্রশ্ন: ${qs.length}</p>
             ${solutionsHTML}
         </div>`;
         
-        loadMathJax(null, c);
+        loadMathJax(null, contentEl);
     },
 
     loadMockHub: async () => {
         const myRouteId = window.currentRouteId;
         if (AppState.userDisabled || !AppState.activeGroupId) return;
 
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('dashboard') + '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs mt-2">লোড হচ্ছে...</p></div>';
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="text-xs mt-2">লোড হচ্ছে...</p></div>');
+        if (!contentEl) return;
         
         // অফলাইন চেক
         if (!navigator.onLine) {
@@ -1635,7 +1647,7 @@ export const Student = {
                     const structure = JSON.parse(offlineCached);
                     const mockSubjects = structure.mock || [];
                     if(mockSubjects.length === 0) {
-                        c.innerHTML = renderHeader('dashboard') + `<div class="p-5 pb-20 text-center">
+                        contentEl.innerHTML = `<div class="p-5 pb-20 text-center">
                             <button onclick="Student.loadDashboard()" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
                                 <i class="fas fa-arrow-left"></i> ড্যাশবোর্ড
                             </button>
@@ -1651,7 +1663,7 @@ export const Student = {
                             </div>
                             <i class="fas fa-chevron-right text-slate-300"></i>
                         </div>`).join('');
-                    c.innerHTML = renderHeader('dashboard') + `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
+                    contentEl.innerHTML = `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
                         <button onclick="Student.loadDashboard()" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
                             <i class="fas fa-arrow-left"></i> ড্যাশবোর্ড
                         </button>
@@ -1661,7 +1673,7 @@ export const Student = {
                     return;
                 } catch(e) {}
             }
-            c.innerHTML = renderHeader('dashboard') + `<div class="p-10 text-center" style="color:var(--text-muted);">
+            contentEl.innerHTML = `<div class="p-10 text-center" style="color:var(--text-muted);">
                 <i class="fas fa-wifi-slash text-4xl mb-3 opacity-30"></i>
                 <p>অফলাইন মোডে মক পরীক্ষার তথ্য পাওয়া যায়নি।</p>
                 <p class="text-xs mt-2">ইন্টারনেট সংযোগ করে একবার লোড করুন।</p>
@@ -1680,7 +1692,7 @@ export const Student = {
             if (myRouteId !== window.currentRouteId) return;
 
             if (!docSnap.exists()) {
-                c.innerHTML = renderHeader('dashboard') + `<div class="p-10 text-center text-slate-400">কোনো অনুশীলন ফোল্ডার পাওয়া যায়নি।</div>`;
+                contentEl.innerHTML = `<div class="p-10 text-center text-slate-400">কোনো অনুশীলন ফোল্ডার পাওয়া যায়নি।</div>`;
                 return;
             }
 
@@ -1691,7 +1703,7 @@ export const Student = {
             const mockSubjects = structure.mock || [];
 
             if(mockSubjects.length === 0) {
-                c.innerHTML = renderHeader('dashboard') + `<div class="p-5 pb-20 text-center">
+                contentEl.innerHTML = `<div class="p-5 pb-20 text-center">
                     <button onclick="Student.loadDashboard()" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
                         <i class="fas fa-arrow-left"></i> ড্যাশবোর্ড
                     </button>
@@ -1709,7 +1721,7 @@ export const Student = {
                     <i class="fas fa-chevron-right text-slate-300"></i>
                 </div>`).join('');
 
-            c.innerHTML = renderHeader('dashboard') + `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
+            contentEl.innerHTML = `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
                 <button onclick="Student.loadDashboard()" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
                     <i class="fas fa-arrow-left"></i> ড্যাশবোর্ড
                 </button>
@@ -1717,13 +1729,15 @@ export const Student = {
                 ${h}
             </div>`;
         } catch (e) {
-            c.innerHTML = renderHeader('dashboard') + `<div class="p-10 text-center text-red-500">লোডিং এরর হয়েছে</div>`;
+            contentEl.innerHTML = `<div class="p-10 text-center text-red-500">লোডিং এরর হয়েছে</div>`;
         }
     },
 
     loadMockChaptersByStructure: async (subId, teacherId) => {
         const myRouteId = window.currentRouteId;
-        const c = document.getElementById('app-container');
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div></div>');
+        if (!contentEl) return;
+        
         const folderRef = doc(db, "folderStructures", `${teacherId}_${AppState.activeGroupId}`);
         const docSnap = await getDoc(folderRef);
         const structure = docSnap.data();
@@ -1739,7 +1753,7 @@ export const Student = {
                 <div class="text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-500">${chap.exams.length} পরীক্ষা</div>
             </div>`).join('');
 
-        c.innerHTML = renderHeader('dashboard') + `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
+        contentEl.innerHTML = `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
             <button onclick="Student.loadMockHub()" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
                 <i class="fas fa-arrow-left"></i> বিষয় তালিকা
             </button>
@@ -1751,7 +1765,9 @@ export const Student = {
 
     loadMockExamsByStructure: async (subId, chapId, teacherId) => {
         const myRouteId = window.currentRouteId;
-        const c = document.getElementById('app-container');
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div></div>');
+        if (!contentEl) return;
+        
         const folderRef = doc(db, "folderStructures", `${teacherId}_${AppState.activeGroupId}`);
         const docSnap = await getDoc(folderRef);
         const structure = docSnap.data();
@@ -1803,7 +1819,7 @@ export const Student = {
             </div>`;
         }).join('');
 
-        c.innerHTML = renderHeader('dashboard') + `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
+        contentEl.innerHTML = `<div class="p-5 pb-20 min-h-screen" style="background-color:var(--bg-primary);">
             <button onclick="Student.loadMockChaptersByStructure('${subId}', '${teacherId}')" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
                 <i class="fas fa-arrow-left"></i> অধ্যায় তালিকা
             </button>
@@ -1824,12 +1840,12 @@ export const Student = {
             return;
         }
 
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('results') + renderResultsSkeleton();
+        const contentEl = setPageContent(renderResultsSkeleton());
+        if (!contentEl) return;
 
         // অফলাইন চেক
         if (!navigator.onLine) {
-            c.innerHTML = renderHeader('results') + `<div class="p-10 text-center text-slate-400">
+            contentEl.innerHTML = `<div class="p-10 text-center text-slate-400">
                 <i class="fas fa-wifi-slash text-4xl mb-3 opacity-30"></i>
                 <p>ফলাফল দেখতে ইন্টারনেট সংযোগ প্রয়োজন।</p>
             </div>`;
@@ -1848,7 +1864,7 @@ export const Student = {
         if (myRouteId !== window.currentRouteId) return;
 
         if(snap.empty) {
-            c.innerHTML = renderHeader('results') + `<div class="p-10 text-center text-slate-400">আপনি এখনো কোনো পরীক্ষা দেননি।</div>`;
+            contentEl.innerHTML = `<div class="p-10 text-center text-slate-400">আপনি এখনো কোনো পরীক্ষা দেননি।</div>`;
             return;
         }
 
@@ -1928,7 +1944,7 @@ export const Student = {
         const liveActive = resultTypeFilter === 'live' ? 'active' : '';
         const mockActive = resultTypeFilter === 'mock' ? 'active' : '';
 
-        c.innerHTML = renderHeader('results') + `<div class="p-5 pb-20">
+        contentEl.innerHTML = `<div class="p-5 pb-20">
             <div class="result-tabs justify-center">
                 <button class="result-tab ${liveActive}" onclick="Student.filterResultType('live')">লাইভ (${filteredLive.length})</button>
                 <button class="result-tab ${mockActive}" onclick="Student.filterResultType('mock')">মক (${filteredMock.length})</button>
@@ -1956,8 +1972,8 @@ export const Student = {
             return;
         }
 
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('results') + '<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="mt-2 text-xs">ফলাফল বিশ্লেষণ করা হচ্ছে...</p></div>';
+        const contentEl = setPageContent('<div class="p-10 text-center"><div class="loader mx-auto"></div><p class="mt-2 text-xs">ফলাফল বিশ্লেষণ করা হচ্ছে...</p></div>');
+        if (!contentEl) return;
         
         try {
             const attSnap = await getDoc(doc(db, "attempts", id));
@@ -2104,14 +2120,14 @@ export const Student = {
                     <button onclick="Student.nextResultPage()" ${currentResultPage===totalPages?'disabled':''} class="px-3 py-1 bg-slate-200 rounded disabled:opacity-50">পরবর্তী</button>
                 </div>` : '';
 
-                c.innerHTML = renderHeader('results') + `
+                contentEl.innerHTML = `
                 <div class="p-5 pb-24">
                     <button onclick="Router.student('results')" class="mb-4 text-xs font-bold" style="color:var(--text-muted);"><i class="fas fa-arrow-left"></i> ফলাফল তালিকা</button>
                     ${summaryHeader}
                     ${renderQuestionsInternal(currentQs)}
                     ${pagination}
                 </div>`;
-                loadMathJax(null, c);
+                loadMathJax(null, contentEl);
             };
 
             Student.setResultFilter = (f) => {
@@ -2164,7 +2180,8 @@ export const Student = {
             Swal.fire('কোর্স প্রয়োজন', 'প্রথমে কোর্সে জয়েন করুন', 'warning').then(() => Student.showGroupCodeModal());
             return;
         }
-        const c = document.getElementById('app-container');
+        const contentEl = setPageContent(renderAnalysisSkeleton());
+        if (!contentEl) return;
         const uid = auth.currentUser.uid;
 
         try {
@@ -2267,7 +2284,7 @@ export const Student = {
                     <td class="py-2 text-sm">${perf.title}</td>
                     <td class="py-2 text-sm">${perf.score.toFixed(2)}/${perf.total}</td>
                     <td class="py-2 text-sm">${perf.percentage.toFixed(1)}%</td>
-                </table>`;
+                </tr>`;
             });
 
             const attendancePercent = totalLiveExams ? (attendedLive / totalLiveExams) * 100 : 0;
@@ -2285,7 +2302,7 @@ export const Student = {
                 </div>`;
             }
 
-            c.innerHTML = renderHeader('analysis') + `
+            contentEl.innerHTML = `
             <div class="p-5 pb-20" style="background-color:var(--bg-primary);">
                 <div class="analysis-stat-card">
                     <h3 class="font-bold text-lg mb-3">উপস্থিতি ও সার্বিক পারফরম্যান্স</h3>
@@ -2397,8 +2414,9 @@ export const Student = {
             <span class="font-medium">${classLevel === 'Admission' ? 'এডমিশন' : (classLevel === 'SSC' ? 'এসএসসি' : (classLevel === 'HSC' ? 'এইচএসসি' : classLevel+'ম শ্রেণী'))} ${admissionStream ? '('+admissionStream+')' : ''}</span>
         </div>` : '';
 
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('profile') + `
+        const contentEl = getContentContainer();
+        if (!contentEl) return;
+        contentEl.innerHTML = `
         <div class="p-5 max-w-md mx-auto">
             <div class="p-6 rounded-2xl shadow-sm border" style="background-color:var(--card-bg);border-color:var(--border-light);color:var(--text-primary);">
                 <button onclick="Router.student('dashboard')" class="mb-4 text-xs font-bold flex items-center gap-1" style="color:var(--text-muted);">
@@ -2442,8 +2460,9 @@ export const Student = {
 
     showEditProfile: () => {
         const profile = AppState.userProfile || {};
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('profile') + `
+        const contentEl = getContentContainer();
+        if (!contentEl) return;
+        contentEl.innerHTML = `
         <div class="p-5 max-w-md mx-auto">
             <div class="p-6 rounded-2xl shadow-sm border" style="background-color:var(--card-bg);border-color:var(--border-light);color:var(--text-primary);">
                 <button onclick="Student.profile()" class="mb-6 text-sm font-bold text-slate-500 flex items-center gap-2 hover:text-indigo-600 transition">
@@ -2587,8 +2606,8 @@ export const Student = {
     },
 
     loadManagement: async () => {
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('management') + renderManagementSkeleton();
+        const contentEl = setPageContent(renderManagementSkeleton());
+        if (!contentEl) return;
 
         const teacherCodes = AppState.teacherCodes || [];
         await Student.loadTeacherNames();
@@ -2728,7 +2747,7 @@ export const Student = {
             </div>
         </div>`;
 
-        c.innerHTML = renderHeader('management') + `
+        contentEl.innerHTML = `
         <div class="p-5 pb-20 max-w-md mx-auto">
             <div class="p-6 rounded-2xl shadow-sm border" style="background-color:var(--card-bg);border-color:var(--border-light);color:var(--text-primary);">
                 <h2 class="text-2xl font-bold mb-6 text-center">ম্যানেজমেন্ট</h2>
@@ -3040,13 +3059,13 @@ export const Student = {
 
     // ========== কোর্সসমূহ পেজ (নতুন ফিচার) ==========
     loadCourses: async () => {
-        const c = document.getElementById('app-container');
-        c.innerHTML = renderHeader('courses') + `
+        const contentEl = setPageContent(`
             <div class="p-5 pb-20">
                 <h2 class="text-2xl font-bold mb-4 text-center">কোর্সসমূহ</h2>
                 <div class="text-center p-10"><div class="loader mx-auto"></div></div>
             </div>
-        `;
+        `);
+        if (!contentEl) return;
 
         try {
             const q = query(
@@ -3062,12 +3081,13 @@ export const Student = {
             Student.renderCourseList();
         } catch (error) {
             console.error(error);
-            c.innerHTML = renderHeader('courses') + `<div class="p-5 text-center text-red-500">কোর্স লোড করতে ত্রুটি</div>`;
+            contentEl.innerHTML = `<div class="p-5 text-center text-red-500">কোর্স লোড করতে ত্রুটি</div>`;
         }
     },
 
     renderCourseList: () => {
-        const c = document.getElementById('app-container');
+        const contentEl = getContentContainer();
+        if (!contentEl) return;
         const allGroups = window.allCoursesList || [];
         const studentClass = AppState.classLevel || '';
         const studentStream = AppState.admissionStream || '';
@@ -3148,7 +3168,7 @@ export const Student = {
         </div>
         `;
 
-        c.innerHTML = renderHeader('courses') + html;
+        contentEl.innerHTML = html;
 
         const classSelect = document.getElementById('course-filter-class');
         const streamContainer = document.getElementById('stream-filter-container');
@@ -3335,4 +3355,4 @@ export const Student = {
     }
 };
 
-window.Student = Student;  
+window.Student = Student;
