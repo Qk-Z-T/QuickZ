@@ -1,4 +1,3 @@
-
 // js/student.js
 // Student module - all student-related functionality
 
@@ -827,15 +826,66 @@ export const Student = {
         }
     },
     
+    // Updated switchGroup function with UI sync for course switcher
     switchGroup: async (groupId) => {
         AppState.activeGroupId = groupId;
         localStorage.setItem('activeGroupId', groupId);
         refreshExamCache();
+        
+        // Update UI: change the course name display in desktop header
+        const activeGroup = (AppState.joinedGroups || []).find(g => g.groupId === groupId);
+        if (activeGroup) {
+            const displayName = document.getElementById('current-course-name-display');
+            if (displayName) displayName.textContent = activeGroup.groupName || 'অজানা কোর্স';
+            // Also update mobile select if present
+            const mobileSelect = document.getElementById('mobile-course-switcher');
+            if (mobileSelect) mobileSelect.value = groupId;
+        }
+        
         Swal.fire('সফল', 'কোর্স পরিবর্তন করা হয়েছে', 'success').then(() => {
             import('./router.js').then(({ Router }) => {
                 Router.student('dashboard');
             });
         });
+    },
+    
+    // ----- Course Switcher Dropdown Functions -----
+    toggleCourseSwitcher: function() {
+        const menu = document.getElementById('course-switcher-menu');
+        if (menu) {
+            menu.classList.toggle('hidden');
+        }
+        // Add outside click listener if menu is opened
+        if (menu && !menu.classList.contains('hidden')) {
+            setTimeout(() => {
+                window.addEventListener('click', Student.closeCourseSwitcherOnOutsideClick);
+            }, 10);
+        } else {
+            window.removeEventListener('click', Student.closeCourseSwitcherOnOutsideClick);
+        }
+    },
+
+    closeCourseSwitcherOnOutsideClick: function(e) {
+        const btn = document.getElementById('course-switcher-btn');
+        const menu = document.getElementById('course-switcher-menu');
+        if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+            menu.classList.add('hidden');
+            window.removeEventListener('click', Student.closeCourseSwitcherOnOutsideClick);
+        }
+    },
+
+    switchCourseFromDropdown: async function(groupId) {
+        const menu = document.getElementById('course-switcher-menu');
+        if (menu) menu.classList.add('hidden');
+        
+        if (groupId === AppState.activeGroupId) return;
+        
+        await Student.switchGroup(groupId);
+    },
+
+    switchCourseFromMobile: async function(groupId) {
+        if (!groupId || groupId === AppState.activeGroupId) return;
+        await Student.switchGroup(groupId);
     },
     
     saveProfile: async () => {
@@ -2221,7 +2271,7 @@ export const Student = {
                     <td class="py-2 text-sm">${perf.title}</td>
                     <td class="py-2 text-sm">${perf.score.toFixed(2)}/${perf.total}</td>
                     <td class="py-2 text-sm">${perf.percentage.toFixed(1)}%</td>
-                </tr>`;
+                </table>`;
             });
 
             const attendancePercent = totalLiveExams ? (attendedLive / totalLiveExams) * 100 : 0;
