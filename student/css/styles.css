@@ -1,5 +1,5 @@
 /* ============================================================
-   উন্নত থিম সিস্টেম — শুধুমাত্র Light & Dark (দুটি মোড)
+   উন্নত থিম সিস্টেম — Light & Dark (দুটি মোড)
 ============================================================ */
 :root {
     --bg-primary: #f8fafc;
@@ -24,7 +24,7 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
-/* ডার্ক মোড — নরম, আরামদায়ক (অতিরিক্ত ঘুটঘুটে নয়) */
+/* ডার্ক মোড — নরম, আরামদায়ক */
 .theme-dark {
     --bg-primary: #1a1f2e;
     --bg-secondary: #242938;
@@ -53,6 +53,14 @@ html, body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: background-color 0.25s ease, color 0.25s ease;
+    min-height: 100vh;
+}
+
+/* অ্যাপ কন্টেইনার — সবচেয়ে গুরুত্বপূর্ণ */
+#app-container {
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+    transition: background-color 0.25s ease;
 }
 
 /* ব্যাকগ্রাউন্ড ক্লাস */
@@ -105,7 +113,7 @@ input::placeholder, textarea::placeholder {
     border-color: var(--border-light) !important;
 }
 
-/* হেডার — থিম-অ্যাওয়ার (গুরুত্বপূর্ণ ফিক্স) */
+/* হেডার — থিম-অ্যাওয়ার */
 header {
     background-color: var(--header-bg) !important;
     border-color: var(--header-border) !important;
@@ -113,7 +121,6 @@ header {
 header * {
     color: var(--text-primary);
 }
-/* হেডারে রঙিন বাটন/আইকন রক্ষা */
 header .text-indigo-500, header .text-indigo-600 { color: #6366f1 !important; }
 header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
 
@@ -140,7 +147,7 @@ header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
     color: var(--text-primary) !important;
 }
 
-/* ব্যাখ্যা বক্স — থিম-অ্যাওয়ার (গুরুত্বপূর্ণ ফিক্স) */
+/* ব্যাখ্যা বক্স */
 .explanation-box {
     background-color: var(--expl-bg) !important;
     border-color: var(--expl-border) !important;
@@ -162,11 +169,6 @@ header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
 }
 .theme-dark .text-indigo-600 {
     color: #93c5fd !important;
-}
-/* লাইভ এক্সাম স্ট্যাটস বক্স ডার্ক ফিক্স */
-.theme-dark .live-exam-stats {
-    background-color: var(--bg-tertiary) !important;
-    color: var(--text-secondary) !important;
 }
 
 /* Auth Screen */
@@ -202,10 +204,9 @@ header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
     color: var(--text-primary) !important;
 }
 
-/* লাইট মোডে ড্যাশবোর্ড কার্ডে টেক্সট সাদা থাকবে (গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড বলে) */
-/* FIX 1: লাইট মোডে টেক্সট কালো হবে */
+/* ড্যাশবোর্ড কার্ড */
 .dashboard-card {
-    color: #1e293b !important; /* গাঢ় স্লেট, লাইট মোডে স্পষ্ট */
+    color: #1e293b !important;
 }
 .theme-dark .dashboard-card {
     color: white !important;
@@ -213,7 +214,6 @@ header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
 .dashboard-card * {
     color: inherit !important;
 }
-/* আইকনের রঙ কালো হবে লাইট মোডে */
 .dashboard-card .dashboard-card-icon {
     background: rgba(0,0,0,0.05) !important;
     backdrop-filter: blur(10px);
@@ -225,36 +225,17 @@ header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
     border-color: rgba(255,255,255,0.2) !important;
 }
 
-/* লাইট মোডে পাস্ট এক্সাম কার্ডে সঠিক টেক্সট */
 .past-action-btn {
     color: white !important;
 }
 
-/* মডাল ব্যাকগ্রাউন্ড বাটন */
 .theme-dark #group-code-modal .bg-slate-100,
 .theme-dark #signup-modal .bg-slate-100 {
     background-color: var(--bg-tertiary) !important;
     color: var(--text-primary) !important;
 }
 
-/* অফলাইন ব্যানার */
-.offline-banner {
-    background: #f59e0b;
-    color: white;
-    text-align: center;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: bold;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 99998;
-    display: none;
-}
-.offline-banner.show { display: block; }
-
-/* পরীক্ষার হেডার ডার্ক মোড ফিক্স */
+/* পরীক্ষার হেডার */
 .theme-dark .exam-header-bar {
     background-color: var(--card-bg) !important;
     border-color: var(--border-light) !important;
@@ -271,7 +252,7 @@ header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
     color: #93c5fd !important;
 }
 
-/* ডার্ক মোডে Rank কার্ড */
+/* Rank কার্ড */
 .theme-dark .rank-1 { background: #3a2a06 !important; }
 .theme-dark .rank-2 { background: var(--card-bg) !important; }
 .theme-dark .rank-3 { background: #2d1a03 !important; }
@@ -279,15 +260,7 @@ header .text-green-500, header .text-emerald-500 { color: #10b981 !important; }
 .theme-dark .bg-emerald-50 { background-color: #0a2e1e !important; }
 .theme-dark .bg-amber-50 { background-color: #2d1f03 !important; }
 
-/* সার্ভিস ওয়ার্কার ব্যানার */
-#sw-status {
-    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
-    background: #4f46e5; color: white; padding: 8px 16px;
-    border-radius: 20px; font-size: 12px; font-weight: bold;
-    display: none; z-index: 9999;
-}
-
-/* Force SolaimanLipi on all text elements except icons */
+/* Force SolaimanLipi */
 *:not(i):not(.fa):not(.fas):not(.far):not(.fab):not(.fa-solid):not(.fa-regular):not(.fa-brands) {
     font-family: 'SolaimanLipi', 'Segoe UI', 'Arial', sans-serif !important;
 }
@@ -314,36 +287,20 @@ mjx-container * {
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* Glassmorphism - থিমের সাথে মানানসই */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-lg);
+/* QuickZ লোগো */
+.quickz-logo .quick {
+    color: var(--text-primary);
+}
+.quickz-logo .z {
+    color: #10b981 !important;
+}
+.splash-logo .quick {
+    color: var(--text-primary);
+}
+.splash-logo .z {
+    color: #10b981;
 }
 
-.btn-glass {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(168, 85, 247, 0.9));
-    backdrop-filter: blur(4px);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-}
-
-.btn-glass:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
-}
-
-#auth-screen {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-}
-.theme-dark #auth-screen {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-}
-
-/* FIX 6: উত্তর কার্ডের রঙ উন্নত */
 .ans-card.correct { 
     border-left: 4px solid #10b981 !important;
     background: #f0fdf4 !important; 
@@ -386,65 +343,12 @@ mjx-container * {
 }
 .theme-dark .opt-res.wrong-select { background: #7f1d1d; color: #fca5a5; }
 
-/* FIX 3: QuickZ লোগো */
-.quickz-logo .quick {
-    color: var(--text-primary);
-}
-.quickz-logo .z {
-    color: #10b981 !important; /* সবুজ সবসময় */
-}
-/* স্প্ল্যাশ ও হেডারে একই রকম দেখাবে */
-.splash-logo .quick {
-    color: var(--text-primary);
-}
-.splash-logo .z {
-    color: #10b981;
-}
-
-/* মেডাল */
-.medal-1 { color: #eab308; text-shadow: 0 2px 4px rgba(234, 179, 8, 0.3); }
-.medal-2 { color: #94a3b8; }
-.medal-3 { color: #b45309; }
-
-@keyframes pulse-red {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-.animate-pulse { animation: pulse-red 2s infinite; }
-
-@keyframes pulse-yellow {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-}
-
-.live-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 5px;
-}
-
-.live-now {
-    background-color: #ef4444;
-    animation: pulse-red 2s infinite;
-}
-
-.upcoming {
-    background-color: #f59e0b;
-    animation: pulse-yellow 2s infinite;
-}
-
-/* ---------- অপশন সিলেকশন স্টাইল (উন্নত) ---------- */
 .option-btn {
     transition: all 0.2s;
     border: 1px solid var(--border-light) !important;
     background-color: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
 }
-/* সিলেক্টেড অপশন - শুধু বর্ডার ও টিক চিহ্ন, ব্যাকগ্রাউন্ড অপরিবর্তিত */
 .option-btn.selected {
     border-color: #3b82f6 !important;
     border-width: 2px !important;
@@ -459,7 +363,6 @@ mjx-container * {
     pointer-events: none;
     opacity: 0.8;
 }
-/* ডার্ক মোডে সিলেক্টেড */
 .theme-dark .option-btn.selected,
 .theme-dark .option-btn.selected .fa-check { color: #60a5fa; }
 
@@ -1490,7 +1393,6 @@ mjx-container {
 }
 .offline-toast .toast-close:hover { opacity: 1; }
 
-/* অনলাইন টোস্ট */
 .online-toast-bar {
     position: fixed;
     bottom: 20px;
@@ -1528,14 +1430,7 @@ mjx-container {
     opacity: 0.8;
     margin-left: 12px;
 }
-/* টপ হেডারের জন্য মূল কন্টেন্টের মার্জিন */
-@media (min-width: 769px) {
-    #app-container {
-        margin-left: 250px;
-        width: calc(100% - 250px);
-        padding-top: 60px; /* নতুন হেডারের উচ্চতা */
-    }
-}
+
 /* কোর্স সুইচার ড্রপডাউন */
 .course-switcher-dropdown {
     position: relative;
@@ -1549,16 +1444,18 @@ mjx-container {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* টপ হেডারের জন্য প্যাডিং */
-@media (min-width: 769px) {
-    #app-container {
-        padding-top: 70px; /* টপ বারের উচ্চতা অনুযায়ী */
-    }
-}
-
 /* মোবাইল ড্রয়ারের সিলেক্ট বক্স */
 #mobile-course-switcher {
     background-color: var(--input-bg);
     color: var(--text-primary);
     border: 1px solid var(--border-light);
+}
+
+/* টপ হেডারের জন্য মূল কন্টেন্টের মার্জিন */
+@media (min-width: 769px) {
+    #app-container {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+        padding-top: 60px; /* নতুন হেডারের উচ্চতা */
+    }
 }
