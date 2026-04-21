@@ -177,8 +177,12 @@
         </div>
     </div>
 
-    <!-- App Container -->
-    <main id="app-container" class="flex-1 overflow-y-auto hidden"></main>
+    <!-- App Container: পুরো UI (সাইডবার, টপবার, মেইন) renderHeader দিয়ে তৈরি হবে -->
+    <div id="app-wrapper" class="flex flex-1 overflow-hidden relative">
+        <!-- Desktop Sidebar এবং Topbar এখানে JavaScript দ্বারা ইনজেক্ট হবে -->
+        <!-- Main Content Area -->
+        <main id="app-container" class="flex-1 overflow-y-auto hidden relative"></main>
+    </div>
     
     <!-- Review Panel Button -->
     <button id="review-panel-btn" class="review-panel-btn hidden">
@@ -191,7 +195,7 @@
         <div id="question-numbers" class="question-numbers"></div>
     </div>
 
-    <!-- Mobile Drawer Menu -->
+    <!-- Mobile Drawer Menu (এটি শুধুমাত্র মোবাইলে দেখা যাবে, সাইডবার ওপেন করার জন্য) -->
     <div class="drawer-overlay" id="drawerOverlay" onclick="toggleMobileDrawer()"></div>
     <div class="mobile-drawer" id="mobileDrawer">
         <div class="flex justify-between items-center mb-6">
@@ -200,8 +204,18 @@
             </div>
             <button onclick="toggleMobileDrawer()" class="text-2xl" style="color:var(--text-primary);">&times;</button>
         </div>
+        <!-- মোবাইল ড্রয়ারে কোর্স সুইচার (drop down) -->
+        <div class="mb-4 px-2">
+            <label class="text-xs font-bold text-slate-500 mb-2 block">বর্তমান কোর্স</label>
+            <select id="mobile-course-switcher" class="w-full p-3 rounded-xl border text-sm" style="background-color:var(--input-bg);border-color:var(--border-light);color:var(--text-primary);" onchange="Student.switchCourseFromMobile(this.value)">
+                <!-- অপশনগুলো JavaScript দিয়ে পূরণ হবে -->
+            </select>
+        </div>
         <div class="drawer-item" onclick="Router.student('dashboard'); toggleMobileDrawer()">
             <i class="fas fa-home"></i> হোম
+        </div>
+        <div class="drawer-item" onclick="Router.student('courses'); toggleMobileDrawer()">
+            <i class="fas fa-book-open"></i> কোর্সসমূহ
         </div>
         <div class="drawer-item" onclick="Router.student('rank'); toggleMobileDrawer()">
             <i class="fas fa-trophy"></i> র‍্যাংক
@@ -237,8 +251,7 @@
 
     <!-- Main Application Scripts (modular) -->
     <script type="module" src="js/app.js"></script>
-<script src="../js/db.js" defer></script>
-<script src="js/offline.js" type="module">
-    </script>
+    <script src="../js/db.js" defer></script>
+    <script src="js/offline.js" type="module"></script>
 </body>
 </html>
