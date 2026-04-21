@@ -1,6 +1,4 @@
 // js/config.js
-// Firebase configuration and initialization
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getFirestore, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
@@ -14,14 +12,15 @@ const firebaseConfig = {
     appId: "1:887013693688:web:35cedd5b463bf642fa030d"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-    console.warn('Persistence failed', err);
+// Enable offline persistence with exclusive access
+enableIndexedDbPersistence(db, {
+    experimentalForceOwningTab: true
+}).catch((err) => {
+    console.warn('Persistence failed, falling back to memory cache:', err.message);
 });
 
 export { app, auth, db };
