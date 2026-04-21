@@ -1528,3 +1528,11 @@ mjx-container {
     opacity: 0.8;
     margin-left: 12px;
 }
+/* টপ হেডারের জন্য মূল কন্টেন্টের মার্জিন */
+@media (min-width: 769px) {
+    #app-container {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+        padding-top: 60px; /* নতুন হেডারের উচ্চতা */
+    }
+}
