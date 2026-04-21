@@ -1,5 +1,5 @@
 // js/teacher/dashboard.js
-// হোমপেজ / ড্যাশবোর্ড সম্পর্কিত ফিচার (পারমিশন কী জেনারেটর ও জয়েন সেটিংস সহ)
+// হোমপেজ / ড্যাশবোর্ড (পারমিশন কী জেনারেটর ও জয়েন সেটিংস সহ)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
@@ -10,7 +10,6 @@ import {
 
 let ExamCache = window.ExamCache;
 
-// ------------- হোম ভিউ -------------
 Teacher.homeView = async () => {
     if (!AppState.selectedGroup) {
         Teacher.selectGroupView('home');
@@ -89,7 +88,6 @@ Teacher.homeView = async () => {
             `<img src="${groupData.imageUrl}" alt="${groupData.name}" class="w-full h-32 object-cover rounded-t-2xl">` : 
             `<div class="w-full h-32 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-book-open"></i></div>`;
 
-        // পারমিশন কী সেকশন (শুধুমাত্র joinMethod 'permission' হলে দেখাবে)
         let permissionKeySection = '';
         if (groupData?.joinMethod === 'permission') {
             if (groupData.permissionKey && !groupData.permissionKeyUsed) {
@@ -109,7 +107,6 @@ Teacher.homeView = async () => {
                     </div>
                 </div>`;
             } else if (groupData.permissionKeyUsed) {
-                // ব্যবহৃত হলে ছোট ব্যাজ ও View বাটন
                 const usedByStudentId = groupData.permissionKeyUsedBy || '';
                 const usedAt = groupData.permissionKeyUsedAt ? moment(groupData.permissionKeyUsedAt.toDate()).format('lll') : '';
                 permissionKeySection = `
@@ -153,7 +150,6 @@ Teacher.homeView = async () => {
             </div>
             <div id="home-active-live-section"></div>
             
-            <!-- কোর্সের বিস্তারিত কার্ড -->
             <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary shadow-sm mb-6 overflow-hidden">
                 ${courseImageHtml}
                 <div class="p-5">
@@ -188,7 +184,6 @@ Teacher.homeView = async () => {
                 </div>
             </div>
             
-            <!-- পরিসংখ্যান কার্ড -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary p-5 shadow-sm">
                     <div class="flex items-center gap-3">
@@ -225,7 +220,6 @@ Teacher.homeView = async () => {
                 </div>
             </div>
             
-            <!-- দ্রুত অ্যাকশন -->
             <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white mb-6">
                 <h4 class="font-bold mb-3">দ্রুত অ্যাকশন</h4>
                 <div class="flex flex-wrap gap-3">
@@ -253,7 +247,6 @@ Teacher.homeView = async () => {
     }
 };
 
-// ------------- হোমপেজ থেকে পারমিশন কী জেনারেটর -------------
 Teacher.generatePermissionKeyFromHome = async (groupId) => {
     try {
         const generateKey = () => {
@@ -296,14 +289,13 @@ Teacher.generatePermissionKeyFromHome = async (groupId) => {
         }).then(() => {
             navigator.clipboard.writeText(newKey);
             Swal.fire('কপি হয়েছে', 'পারমিশন কী ক্লিপবোর্ডে কপি করা হয়েছে', 'success');
-            Teacher.homeView(); // হোমপেজ রিফ্রেশ
+            Teacher.homeView();
         });
     } catch (error) {
         Swal.fire('ত্রুটি', error.message, 'error');
     }
 };
 
-// ------------- দ্রুত জয়েন মেথড পরিবর্তন -------------
 Teacher.quickEditJoinMethod = async (groupId, currentMethod) => {
     const { value: newMethod } = await Swal.fire({
         title: 'জয়েন মেথড পরিবর্তন',
@@ -324,7 +316,6 @@ Teacher.quickEditJoinMethod = async (groupId, currentMethod) => {
                 joinMethod: newMethod,
                 updatedAt: new Date()
             };
-            // যদি permission থেকে অন্য কিছুতে যায়, তাহলে permissionKey রিসেট
             if (currentMethod === 'permission' && newMethod !== 'permission') {
                 updateData.permissionKey = null;
                 updateData.permissionKeyUsed = false;
@@ -334,14 +325,13 @@ Teacher.quickEditJoinMethod = async (groupId, currentMethod) => {
             await updateDoc(doc(db, "groups", groupId), updateData);
             
             Swal.fire('সফল', 'জয়েন মেথড আপডেট হয়েছে', 'success');
-            Teacher.homeView(); // রিফ্রেশ
+            Teacher.homeView();
         } catch (error) {
             Swal.fire('ত্রুটি', error.message, 'error');
         }
     }
 };
 
-// copyPermissionKey ফাংশন
 Teacher.copyPermissionKey = (key) => {
     navigator.clipboard.writeText(key).then(() => {
         Swal.fire('কপি হয়েছে', 'পারমিশন কী কপি করা হয়েছে', 'success');
