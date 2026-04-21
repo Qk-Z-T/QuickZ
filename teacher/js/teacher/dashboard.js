@@ -109,12 +109,28 @@ Teacher.homeView = async () => {
                     </div>
                 </div>`;
             } else if (groupData.permissionKeyUsed) {
+                // ব্যবহৃত হলে ছোট ব্যাজ ও View বাটন
+                const usedByStudentId = groupData.permissionKeyUsedBy || '';
+                const usedAt = groupData.permissionKeyUsedAt ? moment(groupData.permissionKeyUsedAt.toDate()).format('lll') : '';
                 permissionKeySection = `
-                <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200">
-                    <p class="text-sm text-red-600 dark:text-red-400"><i class="fas fa-info-circle mr-1"></i>পারমিশন কী ব্যবহৃত হয়ে গেছে</p>
-                    <button onclick="Teacher.generatePermissionKeyFromHome('${AppState.selectedGroup.id}')" class="mt-2 w-full bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold">
-                        <i class="fas fa-key mr-1"></i>নতুন পারমিশন কী জেনারেট
-                    </button>
+                <div class="mt-4 p-3 bg-slate-50 dark:bg-dark-tertiary rounded-xl border">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">পারমিশন কী:</span>
+                            <code class="bg-white dark:bg-black px-3 py-1 rounded text-sm line-through opacity-60">${groupData.permissionKey}</code>
+                        </div>
+                        <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full">ব্যবহৃত</span>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="Teacher.generatePermissionKeyFromHome('${AppState.selectedGroup.id}')" class="flex-1 bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold">
+                            <i class="fas fa-plus mr-1"></i>নতুন জেনারেট
+                        </button>
+                        ${usedByStudentId ? `
+                        <button onclick="Teacher.viewStudentProfile('${usedByStudentId}', '${AppState.selectedGroup.id}')" class="flex-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-xs font-bold">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>` : ''}
+                    </div>
+                    ${usedByStudentId ? `<p class="text-[10px] text-slate-400 mt-2"><i class="far fa-clock mr-1"></i>${usedAt}</p>` : ''}
                 </div>`;
             } else {
                 permissionKeySection = `
@@ -267,7 +283,9 @@ Teacher.generatePermissionKeyFromHome = async (groupId) => {
         
         await updateDoc(doc(db, "groups", groupId), {
             permissionKey: newKey,
-            permissionKeyUsed: false
+            permissionKeyUsed: false,
+            permissionKeyUsedBy: null,
+            permissionKeyUsedAt: null
         });
         
         Swal.fire({
@@ -302,18 +320,18 @@ Teacher.quickEditJoinMethod = async (groupId, currentMethod) => {
     
     if (newMethod) {
         try {
-            await updateDoc(doc(db, "groups", groupId), {
+            const updateData = {
                 joinMethod: newMethod,
                 updatedAt: new Date()
-            });
-            
+            };
             // যদি permission থেকে অন্য কিছুতে যায়, তাহলে permissionKey রিসেট
             if (currentMethod === 'permission' && newMethod !== 'permission') {
-                await updateDoc(doc(db, "groups", groupId), {
-                    permissionKey: null,
-                    permissionKeyUsed: false
-                });
+                updateData.permissionKey = null;
+                updateData.permissionKeyUsed = false;
+                updateData.permissionKeyUsedBy = null;
+                updateData.permissionKeyUsedAt = null;
             }
+            await updateDoc(doc(db, "groups", groupId), updateData);
             
             Swal.fire('সফল', 'জয়েন মেথড আপডেট হয়েছে', 'success');
             Teacher.homeView(); // রিফ্রেশ
@@ -323,7 +341,7 @@ Teacher.quickEditJoinMethod = async (groupId, currentMethod) => {
     }
 };
 
-// copyPermissionKey ফাংশন (যদি না থাকে)
+// copyPermissionKey ফাংশন
 Teacher.copyPermissionKey = (key) => {
     navigator.clipboard.writeText(key).then(() => {
         Swal.fire('কপি হয়েছে', 'পারমিশন কী কপি করা হয়েছে', 'success');
