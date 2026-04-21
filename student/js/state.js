@@ -9,14 +9,14 @@ export const AppState = {
 
     profileCompleted: false,
     userProfile: null,
-    teacherCodes: [],
+    teacherCodes:[],
     teacherNames: {},
     groupCode: null,
     hasGroupCode: false,
     activeTeacherCode: null,
     activeGroupId: localStorage.getItem('activeGroupId') || null,
-    joinedGroups: [],
-    // নতুন ফিল্ড: শিক্ষার্থীর ক্লাস/লেভেল
+    joinedGroups:[],
+    // শিক্ষার্থীর ক্লাস/লেভেল
     classLevel: localStorage.getItem('studentClassLevel') || '',
     admissionStream: localStorage.getItem('studentAdmissionStream') || ''
 };
@@ -25,12 +25,12 @@ export const AppState = {
 export let ExamCache = {};
 
 // Array to store unsubscribe functions for Firestore listeners
-export let unsubscribes = [];
+export let unsubscribes =[];
 
 // Pagination and filter state
 export let currentResultPage = 1;
 export let resultFilter = 'all';
-export let filteredQuestions = [];
+export let filteredQuestions =[];
 export let resultTypeFilter = 'live';
 export let pastSubjectFilter = 'all';
 export let resultsSubjectFilter = 'all';
@@ -39,12 +39,12 @@ export let pastLiveExamSearchQuery = '';
 export let liveExamSearchQuery = '';
 export let currentRouteId = 0;
 export let rankSearchQuery = '';
-export let allRankAttempts = [];
+export let allRankAttempts =[];
 
 // Helper to clear all Firestore listeners
 export const clearListeners = () => { 
     unsubscribes.forEach(u => u()); 
-    unsubscribes = []; 
+    unsubscribes =[]; 
 };
 
 // Debounce utility
@@ -72,16 +72,15 @@ export function toggleMobileDrawer() {
     
     if (isOpen) {
         drawer.classList.remove('open');
-        overlay.classList.remove('open');
+        if(overlay) overlay.classList.remove('open');
         body.style.overflow = ''; // স্ক্রোল পুনরায় চালু
     } else {
         drawer.classList.add('open');
-        overlay.classList.add('open');
+        if(overlay) overlay.classList.add('open');
         body.style.overflow = 'hidden'; // ব্যাকগ্রাউন্ড স্ক্রোল বন্ধ
     }
 }
 window.toggleMobileDrawer = toggleMobileDrawer;
-
 
 // MathJax loader
 export function loadMathJax(callback, targetElement) {
@@ -162,10 +161,11 @@ export const MathHelper = {
 };
 window.MathHelper = MathHelper;
 
-// Header renderer (সাইডবারে নতুন 'কোর্সসমূহ' মেনু যোগ করা হবে পরে)
+// Header renderer
 export function renderHeader(activePage) {
     const user = AppState.userProfile || {};
-    const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+    // Name error fix: checks if user and user.name exists
+    const initial = (user && user.name) ? user.name.charAt(0).toUpperCase() : 'U';
     
     // জয়েন করা কোর্সের তালিকা থেকে বর্তমান সক্রিয় কোর্সের নাম বের করা
     let currentCourseName = 'কোর্স নির্বাচন করুন';
@@ -223,7 +223,7 @@ export function renderHeader(activePage) {
     </aside>
 
     <!-- মোবাইল হেডার (শুধু ছোট স্ক্রিনে) -->
-    <header class="md:hidden sticky top-0 z-50 px-5 py-3 backdrop-blur-md border-b flex items-center justify-between shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
+    <header class="md:hidden sticky top-0 z-40 px-5 py-3 backdrop-blur-md border-b flex items-center justify-between shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
         <div class="flex items-center gap-3">
             <div>
                 <div class="text-xl font-bold quickz-logo">
@@ -291,16 +291,19 @@ export function renderHeader(activePage) {
         </div>
     </div>
 
-    <!-- মোবাইল ড্রয়ার (সাইডবারের পরিবর্তে) -->
-    <div class="mobile-drawer" id="mobileDrawer">
-        <div class="flex justify-between items-center mb-6">
+    <!-- মোবাইল ড্রয়ার ওভারলে -->
+    <div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity" onclick="toggleMobileDrawer()"></div>
+
+    <!-- মোবাইল ড্রয়ার -->
+    <div class="mobile-drawer z-50 fixed top-0 left-0 h-full w-[280px] bg-white transform -translate-x-full transition-transform duration-300" id="mobileDrawer">
+        <div class="flex justify-between items-center mb-6 p-5">
             <div class="text-xl font-bold quickz-logo">
                 <span class="quick">Quick</span><span class="z">Z</span>
             </div>
             <button onclick="toggleMobileDrawer()" class="text-2xl" style="color:var(--text-primary);">&times;</button>
         </div>
         <!-- মোবাইল ড্রয়ারে কোর্স সুইচার -->
-        <div class="mb-4 px-2">
+        <div class="mb-4 px-5">
             <label class="text-xs font-bold text-slate-500 mb-2 block">বর্তমান কোর্স</label>
             <select id="mobile-course-switcher" class="w-full p-3 rounded-xl border text-sm" style="background-color:var(--input-bg);border-color:var(--border-light);color:var(--text-primary);" onchange="Student.switchCourseFromMobile(this.value)">
                 ${AppState.joinedGroups && AppState.joinedGroups.length > 0 ? 
@@ -309,31 +312,38 @@ export function renderHeader(activePage) {
                 }
             </select>
         </div>
-        <div class="drawer-item" onclick="Router.student('dashboard'); toggleMobileDrawer()">
-            <i class="fas fa-home"></i> হোম
-        </div>
-        <div class="drawer-item" onclick="Router.student('courses'); toggleMobileDrawer()">
-            <i class="fas fa-book-open"></i> কোর্সসমূহ
-        </div>
-        <div class="drawer-item" onclick="Router.student('rank'); toggleMobileDrawer()">
-            <i class="fas fa-trophy"></i> র‍্যাংক
-        </div>
-        <div class="drawer-item" onclick="Router.student('results'); toggleMobileDrawer()">
-            <i class="fas fa-clipboard-list"></i> ফলাফল
-        </div>
-        <div class="drawer-item" onclick="Router.student('analysis'); toggleMobileDrawer()">
-            <i class="fas fa-chart-pie"></i> অগ্রগতি
-        </div>
-        <div class="drawer-item" onclick="Router.student('notices'); toggleMobileDrawer()">
-            <i class="fas fa-bell"></i> নোটিস
-        </div>
-        <div class="drawer-item" onclick="Router.student('management'); toggleMobileDrawer()">
-            <i class="fas fa-cogs"></i> ম্যানেজমেন্ট
-        </div>
-        <div class="drawer-item" onclick="ThemeManager.openThemeModal(); toggleMobileDrawer()">
-            <i class="fas fa-palette"></i> থিম পরিবর্তন
+        <div class="px-3 space-y-1">
+            <div class="drawer-item" onclick="Router.student('dashboard'); toggleMobileDrawer()">
+                <i class="fas fa-home"></i> হোম
+            </div>
+            <div class="drawer-item" onclick="Router.student('courses'); toggleMobileDrawer()">
+                <i class="fas fa-book-open"></i> কোর্সসমূহ
+            </div>
+            <div class="drawer-item" onclick="Router.student('rank'); toggleMobileDrawer()">
+                <i class="fas fa-trophy"></i> র‍্যাংক
+            </div>
+            <div class="drawer-item" onclick="Router.student('results'); toggleMobileDrawer()">
+                <i class="fas fa-clipboard-list"></i> ফলাফল
+            </div>
+            <div class="drawer-item" onclick="Router.student('analysis'); toggleMobileDrawer()">
+                <i class="fas fa-chart-pie"></i> অগ্রগতি
+            </div>
+            <div class="drawer-item" onclick="Router.student('notices'); toggleMobileDrawer()">
+                <i class="fas fa-bell"></i> নোটিস
+            </div>
+            <div class="drawer-item" onclick="Router.student('management'); toggleMobileDrawer()">
+                <i class="fas fa-cogs"></i> ম্যানেজমেন্ট
+            </div>
+            <div class="drawer-item" onclick="ThemeManager.openThemeModal(); toggleMobileDrawer()">
+                <i class="fas fa-palette"></i> থিম পরিবর্তন
+            </div>
         </div>
     </div>
+
+    <!-- মূল কন্টেন্ট লোড হওয়ার অংশ (এটি মিসিং থাকার কারনেই পেজ সাদা আসছিল) -->
+    <main id="page-content" class="md:ml-[250px] md:pt-[60px] min-h-screen relative w-full md:w-[calc(100%-250px)]">
+        <!-- Dashboard/Results etc will be loaded inside this main container -->
+    </main>
     `;
 }
 window.renderHeader = renderHeader;
