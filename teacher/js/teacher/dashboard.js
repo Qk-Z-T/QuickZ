@@ -1,11 +1,11 @@
 // js/teacher/dashboard.js
-// হোমপেজ / ড্যাশবোর্ড সম্পর্কিত ফিচার (নতুন কোর্স ফিল্ড সহ আপডেটেড)
+// হোমপেজ / ড্যাশবোর্ড সম্পর্কিত ফিচার (পারমিশন কী জেনারেটর ও জয়েন সেটিংস সহ)
 
 import { Teacher } from './teacher-core.js';
 import { db } from '../config/firebase.js';
 import { AppState } from '../core/state.js';
 import { 
-    collection, query, where, getDocs, doc, getDoc 
+    collection, query, where, getDocs, doc, getDoc, updateDoc 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 let ExamCache = window.ExamCache;
@@ -75,7 +75,6 @@ Teacher.homeView = async () => {
             }
         });
 
-        // ক্লাস লেভেল ও জয়েন মেথড ব্যাজ
         const classBadge = groupData?.classLevel ? 
             `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${groupData.classLevel === 'Admission' ? 'এডমিশন' : groupData.classLevel}</span>` : '';
         const streamBadge = groupData?.admissionStream ? 
@@ -86,10 +85,47 @@ Teacher.homeView = async () => {
             'permission': 'পারমিশন কী'
         }[groupData?.joinMethod] || 'কোর্স কোড';
 
-        // কোর্সের ছবি
         const courseImageHtml = groupData?.imageUrl ? 
             `<img src="${groupData.imageUrl}" alt="${groupData.name}" class="w-full h-32 object-cover rounded-t-2xl">` : 
             `<div class="w-full h-32 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-book-open"></i></div>`;
+
+        // পারমিশন কী সেকশন (শুধুমাত্র joinMethod 'permission' হলে দেখাবে)
+        let permissionKeySection = '';
+        if (groupData?.joinMethod === 'permission') {
+            if (groupData.permissionKey && !groupData.permissionKeyUsed) {
+                permissionKeySection = `
+                <div class="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-bold text-amber-700 dark:text-amber-300">পারমিশন কী:</span>
+                        <code class="bg-white dark:bg-black px-3 py-1 rounded text-sm">${groupData.permissionKey}</code>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="Teacher.copyPermissionKey('${groupData.permissionKey}')" class="flex-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-xs font-bold">
+                            <i class="fas fa-copy mr-1"></i>কপি করুন
+                        </button>
+                        <button onclick="Teacher.generatePermissionKeyFromHome('${AppState.selectedGroup.id}')" class="flex-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 py-2 rounded-lg text-xs font-bold">
+                            <i class="fas fa-sync-alt mr-1"></i>নতুন জেনারেট
+                        </button>
+                    </div>
+                </div>`;
+            } else if (groupData.permissionKeyUsed) {
+                permissionKeySection = `
+                <div class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200">
+                    <p class="text-sm text-red-600 dark:text-red-400"><i class="fas fa-info-circle mr-1"></i>পারমিশন কী ব্যবহৃত হয়ে গেছে</p>
+                    <button onclick="Teacher.generatePermissionKeyFromHome('${AppState.selectedGroup.id}')" class="mt-2 w-full bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold">
+                        <i class="fas fa-key mr-1"></i>নতুন পারমিশন কী জেনারেট
+                    </button>
+                </div>`;
+            } else {
+                permissionKeySection = `
+                <div class="mt-4 p-3 bg-slate-50 dark:bg-dark-tertiary rounded-xl border">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">কোনো পারমিশন কী তৈরি হয়নি</p>
+                    <button onclick="Teacher.generatePermissionKeyFromHome('${AppState.selectedGroup.id}')" class="mt-2 w-full bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold">
+                        <i class="fas fa-plus mr-1"></i>পারমিশন কী জেনারেট
+                    </button>
+                </div>`;
+            }
+        }
 
         let html = `
         <div class="pb-6">
@@ -101,7 +137,7 @@ Teacher.homeView = async () => {
             </div>
             <div id="home-active-live-section"></div>
             
-            <!-- কোর্সের বিস্তারিত কার্ড (নতুন) -->
+            <!-- কোর্সের বিস্তারিত কার্ড -->
             <div class="bg-white dark:bg-dark-secondary rounded-2xl border dark:border-dark-tertiary shadow-sm mb-6 overflow-hidden">
                 ${courseImageHtml}
                 <div class="p-5">
@@ -120,12 +156,17 @@ Teacher.homeView = async () => {
                     </div>
                     ${groupData?.description ? `<p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-3">${groupData.description}</p>` : '<p class="text-sm text-slate-400 italic mb-4">কোনো বিবরণ নেই</p>'}
                     
-                    <div class="flex flex-wrap gap-3">
+                    ${permissionKeySection}
+
+                    <div class="flex flex-wrap gap-3 mt-4">
                         <button onclick="Teacher.viewGroupStudents('${AppState.selectedGroup.id}')" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-4 py-2 rounded-xl font-bold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-800 transition">
                             <i class="fas fa-users mr-2"></i>শিক্ষার্থী দেখুন
                         </button>
                         <button onclick="Teacher.noticeManagementView()" class="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-4 py-2 rounded-xl font-bold text-sm hover:bg-amber-100 dark:hover:bg-amber-800 transition">
                             <i class="fas fa-bullhorn mr-2"></i>নোটিশ ও পোল
+                        </button>
+                        <button onclick="Teacher.quickEditJoinMethod('${AppState.selectedGroup.id}', '${groupData?.joinMethod || 'code'}')" class="bg-slate-100 dark:bg-dark-tertiary text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-dark-tertiary/80 transition">
+                            <i class="fas fa-edit mr-2"></i>জয়েন সেটিংস
                         </button>
                     </div>
                 </div>
@@ -194,6 +235,99 @@ Teacher.homeView = async () => {
         console.error(e);
         c.innerHTML = `<div class="text-center p-10 text-red-500 bengali-text">Error loading homepage</div>`;
     }
+};
+
+// ------------- হোমপেজ থেকে পারমিশন কী জেনারেটর -------------
+Teacher.generatePermissionKeyFromHome = async (groupId) => {
+    try {
+        const generateKey = () => {
+            const letters = 'abcdefghijklmnopqrstuvwxyz';
+            const numbers = '0123456789';
+            let key = '';
+            for (let i = 0; i < 5; i++) key += letters.charAt(Math.floor(Math.random() * letters.length));
+            key += '-';
+            for (let i = 0; i < 5; i++) key += numbers.charAt(Math.floor(Math.random() * numbers.length));
+            return key;
+        };
+        
+        let newKey;
+        let isUnique = false;
+        let attempts = 0;
+        while (!isUnique && attempts < 20) {
+            newKey = generateKey();
+            const q = query(collection(db, "groups"), 
+                where("permissionKey", "==", newKey),
+                where("permissionKeyUsed", "==", false));
+            const snap = await getDocs(q);
+            if (snap.empty) isUnique = true;
+            attempts++;
+        }
+        
+        if (!isUnique) throw new Error('ইউনিক কী জেনারেট করা যায়নি, আবার চেষ্টা করুন');
+        
+        await updateDoc(doc(db, "groups", groupId), {
+            permissionKey: newKey,
+            permissionKeyUsed: false
+        });
+        
+        Swal.fire({
+            title: 'পারমিশন কী তৈরি হয়েছে',
+            html: `<p>নতুন পারমিশন কী:</p><code style="font-size:1.5rem;background:#f0f0f0;padding:5px 15px;border-radius:8px;">${newKey}</code>`,
+            icon: 'success',
+            confirmButtonText: 'কপি করুন'
+        }).then(() => {
+            navigator.clipboard.writeText(newKey);
+            Swal.fire('কপি হয়েছে', 'পারমিশন কী ক্লিপবোর্ডে কপি করা হয়েছে', 'success');
+            Teacher.homeView(); // হোমপেজ রিফ্রেশ
+        });
+    } catch (error) {
+        Swal.fire('ত্রুটি', error.message, 'error');
+    }
+};
+
+// ------------- দ্রুত জয়েন মেথড পরিবর্তন -------------
+Teacher.quickEditJoinMethod = async (groupId, currentMethod) => {
+    const { value: newMethod } = await Swal.fire({
+        title: 'জয়েন মেথড পরিবর্তন',
+        input: 'select',
+        inputOptions: {
+            'public': 'পাবলিক (যে কেউ জয়েন করতে পারবে)',
+            'code': 'কোর্স কোড প্রয়োজন',
+            'permission': 'পারমিশন কী প্রয়োজন'
+        },
+        inputValue: currentMethod,
+        showCancelButton: true,
+        confirmButtonText: 'সংরক্ষণ'
+    });
+    
+    if (newMethod) {
+        try {
+            await updateDoc(doc(db, "groups", groupId), {
+                joinMethod: newMethod,
+                updatedAt: new Date()
+            });
+            
+            // যদি permission থেকে অন্য কিছুতে যায়, তাহলে permissionKey রিসেট
+            if (currentMethod === 'permission' && newMethod !== 'permission') {
+                await updateDoc(doc(db, "groups", groupId), {
+                    permissionKey: null,
+                    permissionKeyUsed: false
+                });
+            }
+            
+            Swal.fire('সফল', 'জয়েন মেথড আপডেট হয়েছে', 'success');
+            Teacher.homeView(); // রিফ্রেশ
+        } catch (error) {
+            Swal.fire('ত্রুটি', error.message, 'error');
+        }
+    }
+};
+
+// copyPermissionKey ফাংশন (যদি না থাকে)
+Teacher.copyPermissionKey = (key) => {
+    navigator.clipboard.writeText(key).then(() => {
+        Swal.fire('কপি হয়েছে', 'পারমিশন কী কপি করা হয়েছে', 'success');
+    });
 };
 
 Teacher.renderActiveLiveExamOnHome = async (examId) => {
