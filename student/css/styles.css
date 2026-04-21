@@ -1536,3 +1536,29 @@ mjx-container {
         padding-top: 60px; /* নতুন হেডারের উচ্চতা */
     }
 }
+/* কোর্স সুইচার ড্রপডাউন */
+.course-switcher-dropdown {
+    position: relative;
+}
+#course-switcher-menu {
+    min-width: 250px;
+    animation: fadeInDown 0.2s ease;
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* টপ হেডারের জন্য প্যাডিং */
+@media (min-width: 769px) {
+    #app-container {
+        padding-top: 70px; /* টপ বারের উচ্চতা অনুযায়ী */
+    }
+}
+
+/* মোবাইল ড্রয়ারের সিলেক্ট বক্স */
+#mobile-course-switcher {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+}
