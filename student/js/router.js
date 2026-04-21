@@ -9,6 +9,7 @@ import { renderRankSkeleton, renderAnalysisSkeleton, renderProfileSkeleton, rend
 // Helper to render header + content into app-container
 function renderPage(pageId, contentCallback) {
     const appContainer = document.getElementById('app-container');
+    if (!appContainer) return;
     // Render the full layout (sidebar + topbar + page-content container)
     appContainer.innerHTML = renderHeader(pageId);
     // Now the page-content div exists, get it
