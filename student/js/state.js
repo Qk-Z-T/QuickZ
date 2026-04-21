@@ -6,6 +6,7 @@ export const AppState = {
     role: 'student', 
     user: null, 
     userDisabled: false, 
+
     profileCompleted: false,
     userProfile: null,
     teacherCodes: [],
@@ -149,7 +150,16 @@ window.MathHelper = MathHelper;
 export function renderHeader(activePage) {
     const user = AppState.userProfile || {};
     const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+    
+    // জয়েন করা কোর্সের তালিকা থেকে বর্তমান সক্রিয় কোর্সের নাম বের করা
+    let currentCourseName = 'কোর্স নির্বাচন করুন';
+    if (AppState.activeGroupId && AppState.joinedGroups) {
+        const active = AppState.joinedGroups.find(g => g.groupId === AppState.activeGroupId);
+        if (active) currentCourseName = active.groupName || 'অজানা কোর্স';
+    }
+    
     return `
+    <!-- ডেস্কটপ সাইডবার (বাম পাশে স্থির) -->
     <aside class="desktop-sidebar hidden md:flex flex-col bg-white border-r fixed left-0 top-0 h-screen w-[250px] z-50 shadow-sm">
         <div class="p-6 flex items-center border-b border-slate-100">
             <div class="flex-1">
@@ -195,6 +205,8 @@ export function renderHeader(activePage) {
             </button>
         </div>
     </aside>
+
+    <!-- মোবাইল হেডার (শুধু ছোট স্ক্রিনে) -->
     <header class="md:hidden sticky top-0 z-50 px-5 py-3 backdrop-blur-md border-b flex items-center justify-between shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
         <div class="flex items-center gap-3">
             <div>
@@ -217,12 +229,69 @@ export function renderHeader(activePage) {
             </button>
         </div>
     </header>
+
+    <!-- ডেস্কটপ টপ বার (কোর্স সুইচার ও প্রোফাইল) -->
+    <div class="hidden md:block fixed top-0 left-[250px] right-0 z-40 px-6 py-2 border-b shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-medium" style="color:var(--text-secondary);">বর্তমান কোর্স:</span>
+                <div class="relative course-switcher-dropdown">
+                    <button id="course-switcher-btn" onclick="Student.toggleCourseSwitcher()" class="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition" style="background-color:var(--card-bg);border-color:var(--border-light);color:var(--text-primary);">
+                        <i class="fas fa-book-open text-indigo-500"></i>
+                        <span id="current-course-name-display">${currentCourseName}</span>
+                        <i class="fas fa-chevron-down text-xs opacity-60"></i>
+                    </button>
+                    <div id="course-switcher-menu" class="hidden absolute top-full left-0 mt-2 w-64 rounded-xl shadow-lg border z-50 max-h-80 overflow-y-auto" style="background-color:var(--card-bg);border-color:var(--border-light);">
+                        <div id="course-switcher-list" class="py-2">
+                            ${AppState.joinedGroups && AppState.joinedGroups.length > 0 ? 
+                                AppState.joinedGroups.map(g => `
+                                    <div class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-dark-tertiary cursor-pointer transition flex items-center justify-between ${g.groupId === AppState.activeGroupId ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''}" onclick="Student.switchCourseFromDropdown('${g.groupId}')">
+                                        <div class="flex-1">
+                                            <div class="font-medium text-sm" style="color:var(--text-primary);">${g.groupName || 'অজানা কোর্স'}</div>
+                                        </div>
+                                        ${g.groupId === AppState.activeGroupId ? '<i class="fas fa-check text-indigo-600 text-xs"></i>' : ''}
+                                    </div>
+                                `).join('') 
+                                : '<div class="px-4 py-3 text-center text-sm text-slate-400">কোনো কোর্সে জয়েন নেই</div>'
+                            }
+                        </div>
+                        <div class="border-t p-2" style="border-color:var(--border-light);">
+                            <button onclick="Router.student('courses'); Student.toggleCourseSwitcher();" class="w-full text-center text-xs text-indigo-600 font-bold py-2 hover:underline">
+                                <i class="fas fa-plus mr-1"></i> নতুন কোর্স খুঁজুন
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="Router.student('notices')" class="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-dark-tertiary transition">
+                    <i class="fas fa-bell text-lg" style="color:var(--text-secondary);"></i>
+                    <span id="notification-badge-desktop" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                <button onclick="Router.student('profile')" class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-base border-2 border-white shadow-sm">
+                    ${initial}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- মোবাইল ড্রয়ার (সাইডবারের পরিবর্তে) -->
     <div class="mobile-drawer" id="mobileDrawer">
         <div class="flex justify-between items-center mb-6">
             <div class="text-xl font-bold quickz-logo">
                 <span class="quick">Quick</span><span class="z">Z</span>
             </div>
             <button onclick="toggleMobileDrawer()" class="text-2xl" style="color:var(--text-primary);">&times;</button>
+        </div>
+        <!-- মোবাইল ড্রয়ারে কোর্স সুইচার -->
+        <div class="mb-4 px-2">
+            <label class="text-xs font-bold text-slate-500 mb-2 block">বর্তমান কোর্স</label>
+            <select id="mobile-course-switcher" class="w-full p-3 rounded-xl border text-sm" style="background-color:var(--input-bg);border-color:var(--border-light);color:var(--text-primary);" onchange="Student.switchCourseFromMobile(this.value)">
+                ${AppState.joinedGroups && AppState.joinedGroups.length > 0 ? 
+                    AppState.joinedGroups.map(g => `<option value="${g.groupId}" ${g.groupId === AppState.activeGroupId ? 'selected' : ''}>${g.groupName || 'অজানা কোর্স'}</option>`).join('') 
+                    : '<option disabled>কোনো কোর্স নেই</option>'
+                }
+            </select>
         </div>
         <div class="drawer-item" onclick="Router.student('dashboard'); toggleMobileDrawer()">
             <i class="fas fa-home"></i> হোম
@@ -248,7 +317,8 @@ export function renderHeader(activePage) {
         <div class="drawer-item" onclick="ThemeManager.openThemeModal(); toggleMobileDrawer()">
             <i class="fas fa-palette"></i> থিম পরিবর্তন
         </div>
-    </div>`;
+    </div>
+    `;
 }
 window.renderHeader = renderHeader;
 
