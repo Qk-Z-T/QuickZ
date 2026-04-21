@@ -1,8 +1,8 @@
 // sw.js
 importScripts('assets.js');
 
-const CACHE_STATIC = 'quickz-static-v3';
-const CACHE_DYNAMIC = 'quickz-dynamic-v3';
+const CACHE_STATIC = 'quickz-static-v4';
+const CACHE_DYNAMIC = 'quickz-dynamic-v4';
 const CACHE_API = 'quickz-api-v1';
 const OFFLINE_PAGE = '/offline.html';
 
@@ -34,7 +34,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // API কল (firestore, realtime db, নিজস্ব API) - নেটওয়ার্ক ফার্স্ট + ক্যাশ ফলব্যাক
+  // শুধুমাত্র GET রিকোয়েস্ট ক্যাশ করা হবে
+  if (event.request.method !== 'GET') {
+    return; // POST, PUT, DELETE ইত্যাদি ক্যাশ করার চেষ্টা করবে না
+  }
+
+  // API কল (firestore, realtime db) - নেটওয়ার্ক ফার্স্ট + ক্যাশ ফলব্যাক
   if (url.pathname.includes('/api/') || url.hostname.includes('firebaseio') || url.hostname.includes('firestore')) {
     event.respondWith(networkFirstWithCache(event.request, CACHE_API));
     return;
@@ -45,16 +50,11 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // ক্যাশে এই রেসপন্স সংরক্ষণ (ডায়নামিক ক্যাশ)
           const cloned = response.clone();
           caches.open(CACHE_DYNAMIC).then(cache => cache.put(event.request, cloned));
           return response;
         })
-        .catch(() => {
-          // নেটওয়ার্ক নেই -> প্রথমে ডায়নামিক ক্যাশ, তারপর স্ট্যাটিক ক্যাশ, শেষে offline.html
-          return caches.match(event.request)
-            .then(cached => cached || caches.match(OFFLINE_PAGE));
-        })
+        .catch(() => caches.match(event.request) || caches.match(OFFLINE_PAGE))
     );
     return;
   }
