@@ -62,10 +62,26 @@ export function debounce(func, wait) {
 
 // Mobile drawer toggle
 export function toggleMobileDrawer() {
-    document.getElementById('mobileDrawer')?.classList.toggle('open');
-    document.getElementById('drawerOverlay')?.classList.toggle('open');
+    const drawer = document.getElementById('mobileDrawer');
+    const overlay = document.getElementById('drawerOverlay');
+    const body = document.body;
+    
+    if (!drawer || !overlay) return;
+    
+    const isOpen = drawer.classList.contains('open');
+    
+    if (isOpen) {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        body.style.overflow = ''; // স্ক্রোল পুনরায় চালু
+    } else {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        body.style.overflow = 'hidden'; // ব্যাকগ্রাউন্ড স্ক্রোল বন্ধ
+    }
 }
 window.toggleMobileDrawer = toggleMobileDrawer;
+
 
 // MathJax loader
 export function loadMathJax(callback, targetElement) {
