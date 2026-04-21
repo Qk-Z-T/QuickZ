@@ -16,18 +16,13 @@ export const AppState = {
     activeTeacherCode: null,
     activeGroupId: localStorage.getItem('activeGroupId') || null,
     joinedGroups:[],
-    // শিক্ষার্থীর ক্লাস/লেভেল
     classLevel: localStorage.getItem('studentClassLevel') || '',
     admissionStream: localStorage.getItem('studentAdmissionStream') || ''
 };
 
-// Cache for exams data
 export let ExamCache = {};
-
-// Array to store unsubscribe functions for Firestore listeners
 export let unsubscribes =[];
 
-// Pagination and filter state
 export let currentResultPage = 1;
 export let resultFilter = 'all';
 export let filteredQuestions =[];
@@ -41,13 +36,11 @@ export let currentRouteId = 0;
 export let rankSearchQuery = '';
 export let allRankAttempts =[];
 
-// Helper to clear all Firestore listeners
 export const clearListeners = () => { 
     unsubscribes.forEach(u => u()); 
     unsubscribes =[]; 
 };
 
-// Debounce utility
 export function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -60,35 +53,41 @@ export function debounce(func, wait) {
     };
 }
 
-// Mobile drawer toggle
+// Fixed Mobile Drawer Logic using Tailwind Classes
 export function toggleMobileDrawer() {
     const drawer = document.getElementById('mobileDrawer');
     const overlay = document.getElementById('drawerOverlay');
     const body = document.body;
     
-    if (!drawer || !overlay) return;
+    if (!drawer) return;
     
-    const isOpen = drawer.classList.contains('open');
+    // Check if drawer is closed (-translate-x-full)
+    const isClosed = drawer.classList.contains('-translate-x-full');
     
-    if (isOpen) {
-        drawer.classList.remove('open');
-        if(overlay) overlay.classList.remove('open');
-        body.style.overflow = ''; // স্ক্রোল পুনরায় চালু
+    if (isClosed) {
+        // Open drawer
+        drawer.classList.remove('-translate-x-full');
+        drawer.classList.add('translate-x-0');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+        }
+        body.style.overflow = 'hidden';
     } else {
-        drawer.classList.add('open');
-        if(overlay) overlay.classList.add('open');
-        body.style.overflow = 'hidden'; // ব্যাকগ্রাউন্ড স্ক্রোল বন্ধ
+        // Close drawer
+        drawer.classList.remove('translate-x-0');
+        drawer.classList.add('-translate-x-full');
+        if (overlay) {
+            overlay.classList.add('hidden');
+        }
+        body.style.overflow = '';
     }
 }
 window.toggleMobileDrawer = toggleMobileDrawer;
 
-// MathJax loader
 export function loadMathJax(callback, targetElement) {
     setTimeout(() => {
         if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-            if (window.MathJax.typesetClear) {
-                window.MathJax.typesetClear();
-            }
+            if (window.MathJax.typesetClear) window.MathJax.typesetClear();
             MathJax.typesetPromise(targetElement ? [targetElement] : undefined)
                 .then(() => { if (callback) callback(); })
                 .catch(err => console.warn('MathJax error', err));
@@ -100,7 +99,7 @@ export function loadMathJax(callback, targetElement) {
             script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js';
             script.async = true;
             script.onload = () => {
-                MathJax.typesetPromise(targetElement ? [targetElement] : undefined)
+                MathJax.typesetPromise(targetElement ?[targetElement] : undefined)
                     .then(() => { if (callback) callback(); })
                     .catch(err => console.warn('MathJax error', err));
             };
@@ -110,7 +109,6 @@ export function loadMathJax(callback, targetElement) {
 }
 window.loadMathJax = loadMathJax;
 
-// Star Rating component
 export function StarRating(percentage) {
     const fullStars = Math.floor(percentage / 20);
     const remainder = percentage % 20;
@@ -125,7 +123,6 @@ export function StarRating(percentage) {
 }
 window.StarRating = StarRating;
 
-// Math Helper for rendering exam content
 export const MathHelper = {
     renderExamContent: (text) => {
         if (!text) return '';
@@ -138,12 +135,8 @@ export const MathHelper = {
         const hasBengali = /[\u0980-\u09FF]/.test(text);
         const hasMathDelimiters = text.includes('$') || text.includes('\\(') || text.includes('\\[');
         const hasMathSymbols = /[_^\\]/.test(text);
-        if (hasMathDelimiters) {
-            return `<span class="bengali-text">${text}</span>`;
-        }
-        if (!hasBengali && hasMathSymbols) {
-            return `<span class="bengali-text">\\(${text}\\)</span>`;
-        }
+        if (hasMathDelimiters) return `<span class="bengali-text">${text}</span>`;
+        if (!hasBengali && hasMathSymbols) return `<span class="bengali-text">\\(${text}\\)</span>`;
         if (hasBengali && hasMathSymbols) {
             let autoFixedText = text.replace(/([A-Za-z0-9]*[_^\\][A-Za-z0-9{}\\\-+=.]+)/g, '$$$1$$');
             return `<span class="bengali-text">${autoFixedText}</span>`;
@@ -161,13 +154,10 @@ export const MathHelper = {
 };
 window.MathHelper = MathHelper;
 
-// Header renderer
 export function renderHeader(activePage) {
     const user = AppState.userProfile || {};
-    // Name error fix: checks if user and user.name exists
     const initial = (user && user.name) ? user.name.charAt(0).toUpperCase() : 'U';
     
-    // জয়েন করা কোর্সের তালিকা থেকে বর্তমান সক্রিয় কোর্সের নাম বের করা
     let currentCourseName = 'কোর্স নির্বাচন করুন';
     if (AppState.activeGroupId && AppState.joinedGroups) {
         const active = AppState.joinedGroups.find(g => g.groupId === AppState.activeGroupId);
@@ -175,7 +165,6 @@ export function renderHeader(activePage) {
     }
     
     return `
-    <!-- ডেস্কটপ সাইডবার (বাম পাশে স্থির) -->
     <aside class="desktop-sidebar hidden md:flex flex-col bg-white border-r fixed left-0 top-0 h-screen w-[250px] z-50 shadow-sm">
         <div class="p-6 flex items-center border-b border-slate-100">
             <div class="flex-1">
@@ -222,7 +211,6 @@ export function renderHeader(activePage) {
         </div>
     </aside>
 
-    <!-- মোবাইল হেডার (শুধু ছোট স্ক্রিনে) -->
     <header class="md:hidden sticky top-0 z-40 px-5 py-3 backdrop-blur-md border-b flex items-center justify-between shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
         <div class="flex items-center gap-3">
             <div>
@@ -246,7 +234,6 @@ export function renderHeader(activePage) {
         </div>
     </header>
 
-    <!-- ডেস্কটপ টপ বার (কোর্স সুইচার ও প্রোফাইল) -->
     <div class="hidden md:block fixed top-0 left-[250px] right-0 z-40 px-6 py-2 border-b shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -280,10 +267,6 @@ export function renderHeader(activePage) {
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="Router.student('notices')" class="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-dark-tertiary transition">
-                    <i class="fas fa-bell text-lg" style="color:var(--text-secondary);"></i>
-                    <span id="notification-badge-desktop" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center hidden">0</span>
-                </button>
                 <button onclick="Router.student('profile')" class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-base border-2 border-white shadow-sm">
                     ${initial}
                 </button>
@@ -302,7 +285,6 @@ export function renderHeader(activePage) {
             </div>
             <button onclick="toggleMobileDrawer()" class="text-2xl" style="color:var(--text-primary);">&times;</button>
         </div>
-        <!-- মোবাইল ড্রয়ারে কোর্স সুইচার -->
         <div class="mb-4 px-5">
             <label class="text-xs font-bold text-slate-500 mb-2 block">বর্তমান কোর্স</label>
             <select id="mobile-course-switcher" class="w-full p-3 rounded-xl border text-sm" style="background-color:var(--input-bg);border-color:var(--border-light);color:var(--text-primary);" onchange="Student.switchCourseFromMobile(this.value)">
@@ -340,15 +322,12 @@ export function renderHeader(activePage) {
         </div>
     </div>
 
-    <!-- মূল কন্টেন্ট লোড হওয়ার অংশ (এটি মিসিং থাকার কারনেই পেজ সাদা আসছিল) -->
-    <main id="page-content" class="md:ml-[250px] md:pt-[60px] min-h-screen relative w-full md:w-[calc(100%-250px)]">
-        <!-- Dashboard/Results etc will be loaded inside this main container -->
-    </main>
+    <!-- মূল কন্টেন্ট লোড হওয়ার অংশ -->
+    <main id="page-content" class="md:ml-[250px] md:pt-[60px] min-h-screen relative w-full md:w-[calc(100%-250px)]"></main>
     `;
 }
 window.renderHeader = renderHeader;
 
-// Theme Manager
 export const ThemeManager = {
     openThemeModal: () => {
         const current = localStorage.getItem('theme') || 'light';
@@ -384,7 +363,6 @@ export const ThemeManager = {
 };
 window.ThemeManager = ThemeManager;
 
-// Refresh Exam Cache
 export const refreshExamCache = () => {
     clearListeners();
     if (!AppState.activeGroupId) {
@@ -398,7 +376,6 @@ export const refreshExamCache = () => {
             const unsubscribe = onSnapshot(q, (snap) => {
                 ExamCache = {};
                 snap.forEach(d => ExamCache[d.id] = { id: d.id, ...d.data() });
-                // Also save to offline cache
                 const examCache = {};
                 snap.forEach(d => { examCache[d.id] = { id: d.id, ...d.data() }; });
                 localStorage.setItem('offlineExamCache_' + AppState.activeGroupId, JSON.stringify(examCache));
