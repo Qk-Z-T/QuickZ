@@ -1,4 +1,4 @@
-// js/student.js
+ // js/student.js
 // Student module - all student-related functionality
 
 import { auth, db } from './config.js';
@@ -761,7 +761,6 @@ export const Student = {
             return;
         }
         
-        // অফলাইন চেক
         if (!navigator.onLine) {
             Swal.fire('অফলাইন', 'ইন্টারনেট সংযোগ ছাড়া কোর্সে যোগ দেওয়া যাবে না।', 'warning');
             return;
@@ -780,11 +779,6 @@ export const Student = {
             const groupData = groupDoc.data();
             const groupId = groupDoc.id;
             
-            if (groupData.teacherCode !== AppState.activeTeacherCode) {
-                Swal.fire('ত্রুটি', 'এই কোর্সটি আপনার বর্তমান শিক্ষকের নয়।', 'error');
-                return;
-            }
-            
             const user = auth.currentUser;
             
             let joinedGroups = AppState.userProfile.joinedGroups || [];
@@ -794,7 +788,8 @@ export const Student = {
                 return;
             }
             
-            joinedGroups.push({ groupId, groupName: groupData.name, teacherCode: groupData.teacherCode });
+            // teacherCode বাদ দিয়ে শুধু groupId ও groupName রাখা হয়েছে
+            joinedGroups.push({ groupId, groupName: groupData.name });
             
             await updateDoc(doc(db, "students", user.uid), { joinedGroups });
             
@@ -992,141 +987,142 @@ export const Student = {
             Swal.fire('ত্রুটি', 'প্রোফাইল সংরক্ষণ ব্যর্থ', 'error');
         }
     },
+    
     loadDashboard: async () => {
-    const myRouteId = window.currentRouteId;
-    const c = document.getElementById('app-container');
+        const myRouteId = window.currentRouteId;
+        const c = document.getElementById('app-container');
 
-    c.innerHTML = renderHeader('dashboard') + `
-    <div class="p-5 pb-20 max-w-lg mx-auto">
-        <!-- Active Course Card (replaces old teacher card) -->
-        <div id="active-course-card" class="bg-white dark:bg-dark-secondary rounded-2xl shadow-md border dark:border-dark-tertiary overflow-hidden mb-6">
-            <div class="p-5">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 text-xl">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold dark:text-white">লোড হচ্ছে...</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">কোর্স তথ্য</p>
+        c.innerHTML = renderHeader('dashboard') + `
+        <div class="p-5 pb-20 max-w-lg mx-auto">
+            <!-- Active Course Card (replaces old teacher card) -->
+            <div id="active-course-card" class="bg-white dark:bg-dark-secondary rounded-2xl shadow-md border dark:border-dark-tertiary overflow-hidden mb-6">
+                <div class="p-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 text-xl">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold dark:text-white">লোড হচ্ছে...</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">কোর্স তথ্য</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Live & Mock Exam Cards -->
-        <div class="grid grid-cols-1 gap-6">
-            <button id="live-exam-card" onclick="Student.checkGroupAndLoad('live')" class="dashboard-card bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl">
-                <div class="dashboard-card-indicator live-now"></div>
-                <div class="dashboard-card-indicator upcoming"></div>
-                <div class="dashboard-card-content">
-                    <div class="dashboard-card-icon"><i class="fas fa-broadcast-tower"></i></div>
-                    <div class="dashboard-card-title">Live exam</div>
-                </div>
-            </button>
-            <button onclick="Student.checkGroupAndLoad('mock')" class="dashboard-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
-                <div class="dashboard-card-content">
-                    <div class="dashboard-card-icon"><i class="fas fa-book-reader"></i></div>
-                    <div class="dashboard-card-title">Mock exam</div>
-                </div>
-            </button>
-        </div>
-    </div>`;
+            <!-- Live & Mock Exam Cards -->
+            <div class="grid grid-cols-1 gap-6">
+                <button id="live-exam-card" onclick="Student.checkGroupAndLoad('live')" class="dashboard-card bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl">
+                    <div class="dashboard-card-indicator live-now"></div>
+                    <div class="dashboard-card-indicator upcoming"></div>
+                    <div class="dashboard-card-content">
+                        <div class="dashboard-card-icon"><i class="fas fa-broadcast-tower"></i></div>
+                        <div class="dashboard-card-title">Live exam</div>
+                    </div>
+                </button>
+                <button onclick="Student.checkGroupAndLoad('mock')" class="dashboard-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
+                    <div class="dashboard-card-content">
+                        <div class="dashboard-card-icon"><i class="fas fa-book-reader"></i></div>
+                        <div class="dashboard-card-title">Mock exam</div>
+                    </div>
+                </button>
+            </div>
+        </div>`;
 
-    if (AppState.activeGroupId) {
-        try {
-            // সরাসরি গ্রুপ ডকুমেন্ট থেকে পূর্ণ তথ্য আনা
-            const groupDoc = await getDoc(doc(db, "groups", AppState.activeGroupId));
-            if (!groupDoc.exists()) return;
+        if (AppState.activeGroupId) {
+            try {
+                // সরাসরি গ্রুপ ডকুমেন্ট থেকে পূর্ণ তথ্য আনা
+                const groupDoc = await getDoc(doc(db, "groups", AppState.activeGroupId));
+                if (!groupDoc.exists()) return;
 
-            const group = groupDoc.data();
-            const cardContainer = document.getElementById('active-course-card');
-            if (!cardContainer) return;
+                const group = groupDoc.data();
+                const cardContainer = document.getElementById('active-course-card');
+                if (!cardContainer) return;
 
-            const classBadge = group.classLevel ? 
-                `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
-            const streamBadge = group.admissionStream ? 
-                `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">${group.admissionStream}</span>` : '';
-            
-            const imageHtml = group.imageUrl ? 
-                `<img src="${group.imageUrl}" alt="${group.name}" class="w-full h-36 object-cover rounded-t-2xl">` : 
-                `<div class="w-full h-36 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-book-open"></i></div>`;
+                const classBadge = group.classLevel ? 
+                    `<span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full">${group.classLevel === 'Admission' ? 'এডমিশন' : group.classLevel}</span>` : '';
+                const streamBadge = group.admissionStream ? 
+                    `<span class="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full ml-1">${group.admissionStream}</span>` : '';
+                
+                const imageHtml = group.imageUrl ? 
+                    `<img src="${group.imageUrl}" alt="${group.name}" class="w-full h-36 object-cover rounded-t-2xl">` : 
+                    `<div class="w-full h-36 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center text-3xl text-indigo-400 rounded-t-2xl"><i class="fas fa-book-open"></i></div>`;
 
-            cardContainer.innerHTML = `
-                ${imageHtml}
-                <div class="p-5">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="text-xl font-bold dark:text-white bengali-text">${group.name}</h3>
-                            <div class="flex items-center gap-2 mt-1">
-                                ${classBadge} ${streamBadge}
+                cardContainer.innerHTML = `
+                    ${imageHtml}
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold dark:text-white bengali-text">${group.name}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    ${classBadge} ${streamBadge}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${group.studentIds?.length || 0}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">শিক্ষার্থী</div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400">${group.studentIds?.length || 0}</div>
-                            <div class="text-xs text-slate-500 dark:text-slate-400">শিক্ষার্থী</div>
+                        <p class="text-xs text-slate-500 mb-1"><i class="fas fa-user-tie"></i> ${group.teacherName || 'শিক্ষক'}</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-3">${group.description || 'কোনো বিবরণ নেই'}</p>
+                        <div class="flex gap-2">
+                            <button onclick="Student.showGroupMembersModal('${AppState.activeGroupId}')" class="flex-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-xs font-bold">
+                                <i class="fas fa-users mr-1"></i>সদস্য দেখুন
+                            </button>
+                            <button onclick="Router.student('courses')" class="flex-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 py-2 rounded-lg text-xs font-bold">
+                                <i class="fas fa-plus mr-1"></i>নতুন কোর্স
+                            </button>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-500 mb-1"><i class="fas fa-user-tie"></i> ${group.teacherName || 'শিক্ষক'}</p>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-3">${group.description || 'কোনো বিবরণ নেই'}</p>
-                    <div class="flex gap-2">
-                        <button onclick="Student.showGroupMembersModal('${AppState.activeGroupId}')" class="flex-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 py-2 rounded-lg text-xs font-bold">
-                            <i class="fas fa-users mr-1"></i>সদস্য দেখুন
-                        </button>
-                        <button onclick="Router.student('courses')" class="flex-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 py-2 rounded-lg text-xs font-bold">
-                            <i class="fas fa-plus mr-1"></i>নতুন কোর্স
+                `;
+
+                // লাইভ পরীক্ষার স্ট্যাটাস চেক (আগের মত)
+                const snap = await getDocs(query(
+                    collection(db, "exams"),
+                    where("groupId", "==", AppState.activeGroupId),
+                    where("type", "==", "live")
+                ));
+                const now = new Date();
+                let hasOngoing = false, hasUpcoming = false;
+                snap.forEach(doc => {
+                    const e = doc.data();
+                    if (e.isDraft || e.cancelled || e.resultPublished) return;
+                    const startTime = new Date(e.startTime);
+                    const endTime = new Date(e.endTime);
+                    if (now >= startTime && now <= endTime) hasOngoing = true;
+                    else if (now < startTime) hasUpcoming = true;
+                });
+                const liveCard = document.getElementById('live-exam-card');
+                if (liveCard) {
+                    if (hasOngoing) {
+                        liveCard.classList.add('has-live');
+                        liveCard.classList.remove('has-upcoming');
+                    } else if (hasUpcoming) {
+                        liveCard.classList.add('has-upcoming');
+                        liveCard.classList.remove('has-live');
+                    } else {
+                        liveCard.classList.remove('has-live', 'has-upcoming');
+                    }
+                }
+            } catch (e) {
+                console.error("Dashboard error:", e);
+            }
+        } else {
+            // কোনো অ্যাক্টিভ কোর্স না থাকলে
+            const cardContainer = document.getElementById('active-course-card');
+            if (cardContainer) {
+                cardContainer.innerHTML = `
+                    <div class="p-5 text-center">
+                        <i class="fas fa-info-circle text-3xl text-slate-400 mb-3"></i>
+                        <h4 class="font-bold dark:text-white mb-2">কোনো সক্রিয় কোর্স নেই</h4>
+                        <p class="text-xs text-slate-500 mb-4">পরীক্ষা দিতে ও র‍্যাংক দেখতে একটি কোর্সে জয়েন করুন</p>
+                        <button onclick="Router.student('courses')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">
+                            কোর্স খুঁজুন
                         </button>
                     </div>
-                </div>
-            `;
-
-            // লাইভ পরীক্ষার স্ট্যাটাস চেক (আগের মত)
-            const snap = await getDocs(query(
-                collection(db, "exams"),
-                where("groupId", "==", AppState.activeGroupId),
-                where("type", "==", "live")
-            ));
-            const now = new Date();
-            let hasOngoing = false, hasUpcoming = false;
-            snap.forEach(doc => {
-                const e = doc.data();
-                if (e.isDraft || e.cancelled || e.resultPublished) return;
-                const startTime = new Date(e.startTime);
-                const endTime = new Date(e.endTime);
-                if (now >= startTime && now <= endTime) hasOngoing = true;
-                else if (now < startTime) hasUpcoming = true;
-            });
-            const liveCard = document.getElementById('live-exam-card');
-            if (liveCard) {
-                if (hasOngoing) {
-                    liveCard.classList.add('has-live');
-                    liveCard.classList.remove('has-upcoming');
-                } else if (hasUpcoming) {
-                    liveCard.classList.add('has-upcoming');
-                    liveCard.classList.remove('has-live');
-                } else {
-                    liveCard.classList.remove('has-live', 'has-upcoming');
-                }
+                `;
             }
-        } catch (e) {
-            console.error("Dashboard error:", e);
         }
-    } else {
-        // কোনো অ্যাক্টিভ কোর্স না থাকলে
-        const cardContainer = document.getElementById('active-course-card');
-        if (cardContainer) {
-            cardContainer.innerHTML = `
-                <div class="p-5 text-center">
-                    <i class="fas fa-info-circle text-3xl text-slate-400 mb-3"></i>
-                    <h4 class="font-bold dark:text-white mb-2">কোনো সক্রিয় কোর্স নেই</h4>
-                    <p class="text-xs text-slate-500 mb-4">পরীক্ষা দিতে ও র‍্যাংক দেখতে একটি কোর্সে জয়েন করুন</p>
-                    <button onclick="Router.student('courses')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">
-                        কোর্স খুঁজুন
-                    </button>
-                </div>
-            `;
-        }
-    }
-},
+    },
     
 
     checkGroupAndLoad: (type) => {
@@ -3233,6 +3229,9 @@ export const Student = {
         }
 
         try {
+            const user = auth.currentUser;
+            if (!user) return;
+
             if (joinMethod === 'public') {
                 await Student.addToGroupDirectly(groupId);
                 return;
@@ -3275,7 +3274,9 @@ export const Student = {
                 }
 
                 await updateDoc(doc(db, "groups", groupId), {
-                    permissionKeyUsed: true
+                    permissionKeyUsed: true,
+                    permissionKeyUsedBy: user.uid,
+                    permissionKeyUsedAt: new Date()
                 });
 
                 await Student.addToGroupDirectly(groupId);
@@ -3319,7 +3320,7 @@ export const Student = {
         }
 
         const joined = AppState.joinedGroups || [];
-        joined.push({ groupId, groupName: groupData.name, teacherCode: groupData.teacherCode });
+        joined.push({ groupId, groupName: groupData.name });
         await updateDoc(doc(db, "students", user.uid), { joinedGroups: joined });
 
         AppState.joinedGroups = joined;
@@ -3334,4 +3335,4 @@ export const Student = {
     }
 };
 
-window.Student = Student;
+window.Student = Student;  
