@@ -10,8 +10,10 @@ import { renderRankSkeleton, renderAnalysisSkeleton, renderProfileSkeleton, rend
 function renderPage(pageId, contentCallback) {
     const appContainer = document.getElementById('app-container');
     if (!appContainer) return;
+    
     // Render the full layout (sidebar + topbar + page-content container)
     appContainer.innerHTML = renderHeader(pageId);
+    
     // Now the page-content div exists, get it
     const pageContent = document.getElementById('page-content');
     if (pageContent && contentCallback) {
@@ -145,7 +147,8 @@ export const Router = {
     },
     
     student: (p) => {
-        window.currentRouteId++;
+        // Fix for undefined route ID crash
+        window.currentRouteId = (window.currentRouteId || 0) + 1;
         const myRouteId = window.currentRouteId;
 
         clearListeners();
