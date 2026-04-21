@@ -23,7 +23,7 @@
     <script>
         window.MathJax = {
             tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                inlineMath: [['$', '$'],['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true,
                 packages: ['base', 'ams', 'noerrors', 'noundefined']
@@ -38,7 +38,9 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-50">
+
+<!-- FIX 1: Removed overflow-hidden and h-screen to allow native scrolling -->
+<body class="text-slate-800 bg-slate-50">
 
     <!-- Splash Screen -->
     <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
@@ -178,8 +180,8 @@
         </div>
     </div>
 
-    <!-- App Container: পুরো UI (সাইডবার, টপবার, মেইন এবং ড্রয়ার) renderHeader দিয়ে এর ভেতরে তৈরি হবে -->
-    <div id="app-container" class="hidden w-full h-full"></div>
+    <!-- FIX 2: Updated class to 'min-h-screen' allowing flexible height -->
+    <div id="app-container" class="hidden min-h-screen w-full"></div>
     
     <!-- Review Panel Button -->
     <button id="review-panel-btn" class="review-panel-btn hidden">
