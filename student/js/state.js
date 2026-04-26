@@ -53,7 +53,6 @@ export function debounce(func, wait) {
     };
 }
 
-// Fixed Mobile Drawer Logic using Tailwind Classes
 export function toggleMobileDrawer() {
     const drawer = document.getElementById('mobileDrawer');
     const overlay = document.getElementById('drawerOverlay');
@@ -61,24 +60,17 @@ export function toggleMobileDrawer() {
     
     if (!drawer) return;
     
-    // Check if drawer is closed (-translate-x-full)
     const isClosed = drawer.classList.contains('-translate-x-full');
     
     if (isClosed) {
-        // Open drawer
         drawer.classList.remove('-translate-x-full');
         drawer.classList.add('translate-x-0');
-        if (overlay) {
-            overlay.classList.remove('hidden');
-        }
+        if (overlay) overlay.classList.remove('hidden');
         body.style.overflow = 'hidden';
     } else {
-        // Close drawer
         drawer.classList.remove('translate-x-0');
         drawer.classList.add('-translate-x-full');
-        if (overlay) {
-            overlay.classList.add('hidden');
-        }
+        if (overlay) overlay.classList.add('hidden');
         body.style.overflow = '';
     }
 }
@@ -165,7 +157,8 @@ export function renderHeader(activePage) {
     }
     
     return `
-    <aside class="desktop-sidebar hidden md:flex flex-col bg-white border-r fixed left-0 top-0 h-screen w-[250px] z-50 shadow-sm">
+    <!-- ডেস্কটপ সাইডবার (md:!flex ব্যবহার করা হয়েছে যাতে ডেস্কটপে জোর করে দৃশ্যমান হয়) -->
+    <aside class="desktop-sidebar hidden md:!flex flex-col bg-white border-r fixed left-0 top-0 h-screen w-[250px] z-50 shadow-sm">
         <div class="p-6 flex items-center border-b border-slate-100">
             <div class="flex-1">
                 <div class="text-xl font-bold quickz-logo">
@@ -211,7 +204,8 @@ export function renderHeader(activePage) {
         </div>
     </aside>
 
-    <header class="md:hidden sticky top-0 z-40 px-5 py-3 backdrop-blur-md border-b flex items-center justify-between shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
+    <!-- মোবাইল হেডার (md:!hidden ব্যবহার করা হয়েছে যাতে ডেস্কটপে লুকিয়ে যায়) -->
+    <header class="md:!hidden sticky top-0 z-40 px-5 py-3 backdrop-blur-md border-b flex items-center justify-between shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
         <div class="flex items-center gap-3">
             <div>
                 <div class="text-xl font-bold quickz-logo">
@@ -234,7 +228,8 @@ export function renderHeader(activePage) {
         </div>
     </header>
 
-    <div class="hidden md:block fixed top-0 left-[250px] right-0 z-40 px-6 py-2 border-b shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
+    <!-- ডেস্কটপ টপ বার (md:!block ব্যবহার করা হয়েছে) -->
+    <div class="hidden md:!block fixed top-0 left-[250px] right-0 z-40 px-6 py-2 border-b shadow-sm" style="background-color:var(--header-bg);border-color:var(--header-border);">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <span class="text-sm font-medium" style="color:var(--text-secondary);">বর্তমান কোর্স:</span>
